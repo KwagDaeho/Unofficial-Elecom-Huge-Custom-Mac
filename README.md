@@ -1,6 +1,6 @@
 # Unofficial Elecom Huge Custom (Mac)
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.2)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.2/Unofficial-Elecom-Huge-Custom-Mac-1.0.2-aarch64.dmg)
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.3)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.3/Unofficial-Elecom-Huge-Custom-Mac-1.0.3-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
 **Language / 언어:** [한국어](#ko) · [English](#en)
@@ -27,7 +27,7 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 
 ### 요구 사항
 
-- macOS 12+ (v1.0.2은 Apple Silicon / M1 이상)
+- macOS 12+ (v1.0.3은 Apple Silicon / M1 이상)
 - ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 (`M-HT1DRBK`)
 - 소스에서 빌드 시: Node 20+, Rust (stable)
 
@@ -36,7 +36,7 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 1. 위 **Download macOS DMG** 버튼을 누르거나 [Releases](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)에서 받습니다.
 2. `.dmg`를 엽니다.
 3. **설치하기 (Install)** 를 더블클릭합니다.  
-   → 응용 프로그램으로 복사한 뒤 DMG를 자동으로 추출(닫기)하고 앱을 실행합니다.  
+   → 응용 프로그램으로 복사하고, 이전 버전의 권한 기록을 정리한 뒤, **개인정보 보호 및 보안** 설정을 연 다음 DMG를 닫고 앱을 실행합니다.  
    (원하면 예전처럼 앱 아이콘을 **응용 프로그램**으로 드래그해도 됩니다.)
 4. 디스크 이미지가 남아 있으면 직접 꺼내도 됩니다.
 
@@ -53,11 +53,15 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 
 #### 방법 A (권장 · Sonoma / Sequoia)
 
-1. **완료**를 누릅니다 (앱은 응용 프로그램에 그대로 둡니다).
-2. **시스템 설정** → **개인정보 보호 및 보안**을 엽니다.
+1. **완료**를 누릅니다 (앱은 응용 프로그램에 그대로 둡니다).  
+   **설치하기**로 설치했다면 이미 **개인정보 보호 및 보안** 창이 열려 있을 수 있습니다.
+2. 없다면 **시스템 설정** → **개인정보 보호 및 보안**을 엽니다.  
+   (앱이 이미 열린 경우 정보 탭의 **개인정보 보호 및 보안 열기** 버튼으로도 가능합니다.)
 3. 아래로 스크롤하면 **Elecom Huge Custom**이 차단되었다는 문구가 보입니다.
 4. **확인 없이 열기**를 누릅니다.
 5. 한 번 더 물으면 **열기**를 누릅니다.
+
+> Apple은 보안상 «확인 없이 열기»를 앱이 대신 눌러 주는 것을 허용하지 않습니다. 설정 페이지까지 여는 것이 자동화할 수 있는 한계입니다.
 
 #### 방법 B (Finder)
 
@@ -84,6 +88,17 @@ open "/Applications/Elecom Huge Custom.app"
    (및 **입력 모니터링**)
 
 리맵이 안 되면 위 목록에서 **Elecom Huge Custom**이 켜져 있는지 확인한 뒤, 메뉴 바 아이콘에서 앱을 종료하고 다시 실행하세요.
+
+### 업데이트 후 권한이 안 먹을 때
+
+공증되지 않은(ad-hoc) 빌드는 버전마다 코드 서명이 달라집니다. 그래서 **시스템 설정에는 권한이 켜져 있는데 앱만 계속 권한을 요구**하는 경우가 있습니다(1.0.0 → 1.0.1 같은 재설치에서 흔함).
+
+1. 앱 정보 탭에서 **권한 초기화**를 누릅니다.  
+   (또는 터미널: `tccutil reset Accessibility com.kwagdaeho.elecom-huge`)
+2. 손쉬운 사용 / 입력 모니터링에서 **Elecom Huge Custom**을 다시 켭니다.
+3. 앱을 완전히 종료한 뒤 다시 실행합니다.
+
+**설치하기**로 올리면 설치 시점에 이 정리를 자동으로 시도합니다.
 
 ### 개발
 
@@ -123,7 +138,7 @@ Source in this repository matches the tagged release so you can audit before ins
 
 ### Requirements
 
-- macOS 12+ (v1.0.2 is Apple Silicon / M1+)
+- macOS 12+ (v1.0.3 is Apple Silicon / M1+)
 - ELECOM HUGE wired (`M-HT1URBK`) or wireless (`M-HT1DRBK`)
 - Building from source: Node 20+, Rust (stable)
 
@@ -132,7 +147,7 @@ Source in this repository matches the tagged release so you can audit before ins
 1. Click **Download macOS DMG** above (or open [Releases](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)).
 2. Open the `.dmg`.
 3. Double-click **Install (설치하기)**.  
-   It copies the app to **Applications**, ejects the DMG, and launches the app.  
+   It copies the app to **Applications**, clears stale permission records from older builds, opens **Privacy & Security**, ejects the DMG, and launches the app.  
    (You can still drag the app to Applications manually if you prefer.)
 4. If the disk image is still mounted, eject it yourself.
 
@@ -149,11 +164,15 @@ Buttons are often only **Move to Trash** and **Done** — **no Open** on that sh
 
 #### Method A (recommended on Sonoma / Sequoia)
 
-1. Click **Done** (leave the app in Applications).
-2. Open **System Settings** → **Privacy & Security**.
+1. Click **Done** (leave the app in Applications).  
+   If you used **Install**, **Privacy & Security** may already be open.
+2. Otherwise open **System Settings** → **Privacy & Security**.  
+   (From the running app: Info tab → **Open Privacy & Security**.)
 3. Scroll down. You should see that **Elecom Huge Custom** was blocked.
 4. Click **Open Anyway**.
 5. Confirm with **Open** if asked again.
+
+> Apple does not allow apps to click **Open Anyway** for you. Opening the Settings pane is as far as automation can go.
 
 #### Method B (Finder)
 
@@ -180,6 +199,17 @@ The remapper needs macOS permissions to inject mouse/keyboard actions:
    (and **Input Monitoring**).
 
 If remaps do nothing, ensure **Elecom Huge Custom** is enabled there, then quit and relaunch from the menu bar icon.
+
+### After an update — Settings ON but app still asks
+
+Ad-hoc (non-notarized) builds get a new code signature each release. macOS may keep an old TCC row that looks **ON** in Settings while the new binary is still denied (common when replacing 1.0.0 with 1.0.1).
+
+1. In the app Info tab, click **Reset permissions**.  
+   (Or terminal: `tccutil reset Accessibility com.kwagdaeho.elecom-huge`)
+2. Turn **Elecom Huge Custom** back on under Accessibility / Input Monitoring.
+3. Fully quit the app and relaunch.
+
+Using **Install** from the DMG attempts this cleanup automatically.
 
 ### Develop
 

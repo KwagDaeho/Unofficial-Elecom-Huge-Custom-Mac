@@ -89,6 +89,16 @@ fn open_accessibility_settings() -> Result<(), String> {
 }
 
 #[tauri::command]
+fn open_privacy_security_settings() -> Result<(), String> {
+    inject::open_privacy_security_settings()
+}
+
+#[tauri::command]
+fn reset_tcc_permissions() -> Result<(), String> {
+    inject::reset_tcc_permissions()
+}
+
+#[tauri::command]
 fn button_catalog() -> Vec<serde_json::Value> {
     device::ButtonId::ALL
         .into_iter()
@@ -161,6 +171,8 @@ pub fn run() {
             permission_status,
             request_accessibility,
             open_accessibility_settings,
+            open_privacy_security_settings,
+            reset_tcc_permissions,
             button_catalog,
             set_key_capture,
             list_installed_apps,

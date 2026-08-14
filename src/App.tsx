@@ -599,7 +599,7 @@ export default function App() {
                   {i18n.inputMonitoring}: {perms?.inputMonitoring ? "ON" : "OFF"}
                 </li>
               </ul>
-      <div className="row">
+              <div className="row">
                 <button
                   type="button"
                   onClick={async () => {
@@ -611,6 +611,24 @@ export default function App() {
                 </button>
                 <button type="button" className="ghost" onClick={() => void invoke("open_accessibility_settings")}>
                   {i18n.openSettings}
+                </button>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => void invoke("open_privacy_security_settings")}>
+                  {i18n.openPrivacySecurity}
+                </button>
+              </div>
+              <div className="row">
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={async () => {
+                    await invoke("reset_tcc_permissions");
+                    await invoke("open_accessibility_settings");
+                    setPerms(await invoke<PermissionStatus>("permission_status"));
+                  }}>
+                  {i18n.resetPermissions}
                 </button>
               </div>
             </section>

@@ -1095,6 +1095,42 @@ mod macos {
         )
         .map_err(|e| e.to_string())
     }
+
+    /// Privacy & Security root (where Gatekeeper “Open Anyway” appears after a block).
+    pub fn open_privacy_security_settings() -> Result<(), String> {
+        let urls = [
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension",
+            "x-apple.systempreferences:com.apple.preference.security",
+        ];
+        for url in urls {
+            if tauri_plugin_opener::open_url(url, None::<&str>).is_ok() {
+                return Ok(());
+            }
+        }
+        // Last resort: Security pref pane path
+        std::process::Command::new("open")
+            .arg("/System/Library/PreferencePanes/Security.prefPane")
+            .status()
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    const BUNDLE_ID: &str = "com.kwagdaeho.elecom-huge";
+
+    /// Clear stale TCC rows for this bundle (common after ad-hoc update reinstall).
+    /// Settings can still show the toggle ON while AXIsProcessTrusted is false.
+    pub fn reset_tcc_permissions() -> Result<(), String> {
+        for service in ["Accessibility", "ListenEvent", "PostEvent"] {
+            let status = std::process::Command::new("/usr/bin/tccutil")
+                .args(["reset", service, BUNDLE_ID])
+                .status()
+                .map_err(|e| e.to_string())?;
+            if !status.success() {
+                log::warn!("tccutil reset {service} exited with {status}");
+            }
+        }
+        Ok(())
+    }
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -1159,6 +1195,12 @@ mod stub {
         true
     }
     pub fn open_permission_settings() -> Result<(), String> {
+        Ok(())
+    }
+    pub fn open_privacy_security_settings() -> Result<(), String> {
+        Ok(())
+    }
+    pub fn reset_tcc_permissions() -> Result<(), String> {
         Ok(())
     }
 }

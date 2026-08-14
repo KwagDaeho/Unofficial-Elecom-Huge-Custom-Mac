@@ -1,8 +1,9 @@
--- Install helper for the DMG: copy app → Applications, eject DMG, launch.
--- Built into "Install.app" (display name: 설치하기) via make-install-app.sh
+-- Install helper for the DMG: copy app → Applications, reset stale TCC,
+-- open Privacy & Security (for “Open Anyway”), eject DMG, launch.
 
 property appBundleName : "Elecom Huge Custom.app"
 property destPath : "/Applications/Elecom Huge Custom.app"
+property bundleId : "com.kwagdaeho.elecom-huge"
 
 on run
 	try
@@ -39,12 +40,37 @@ on doInstall()
 		do shell script "/usr/bin/xattr -cr " & quoted form of destPath
 	end try
 	
+	-- Ad-hoc builds change code signature every release; old TCC rows look "ON"
+	-- but do not match the new binary. Reset so macOS prompts cleanly again.
+	try
+		do shell script "/usr/bin/tccutil reset Accessibility " & bundleId & "; /usr/bin/tccutil reset ListenEvent " & bundleId & "; /usr/bin/tccutil reset PostEvent " & bundleId & "; true"
+	end try
+	
+	display dialog "설치했습니다. 확인을 누르면:
+
+1) «개인정보 보호 및 보안» 설정이 열립니다.
+2) 앱이 바로 실행됩니다. «열지 않음» 창이 뜨면 «완료»를 누르세요.
+3) 설정 화면으로 돌아와 «확인 없이 열기»를 누르세요.
+4) 손쉬운 사용 권한 요청이 뜨면 허용하세요.
+
+Installed. After OK:
+1) Privacy & Security opens.
+2) The app launches — if blocked, click Done.
+3) Click Open Anyway in Settings.
+4) Allow Accessibility when asked." buttons {"계속 / Continue"} default button 1 with title "Elecom Huge Custom"
+	
+	-- Open the pane where “Open Anyway” appears (try modern URL, then fallbacks)
+	try
+		do shell script "open 'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension' 2>/dev/null || open 'x-apple.systempreferences:com.apple.preference.security' 2>/dev/null || open '/System/Library/PreferencePanes/Security.prefPane' 2>/dev/null || true"
+	end try
+	
 	display notification "응용 프로그램에 설치했습니다. DMG를 닫습니다." with title "Elecom Huge Custom"
 	
 	-- Eject after we quit (Install.app lives on the volume), then open the installed app
 	set ejectCmd to "VOL=" & quoted form of volumeRoot & "; (" & ¬
 		"sleep 1; " & ¬
 		"/usr/bin/hdiutil detach \"$VOL\" -quiet || /usr/bin/hdiutil detach \"$VOL\" -force -quiet; " & ¬
+		"sleep 0.3; " & ¬
 		"/usr/bin/open " & quoted form of destPath & ¬
 		") >/dev/null 2>&1 &"
 	do shell script ejectCmd
