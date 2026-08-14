@@ -7,8 +7,8 @@
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
 **Contact**  
-이메일: [1438eogh@gmail.com](mailto:1438eogh@gmail.com)  
-카카오: [open.kakao.com/me/Theo_Kwag](https://open.kakao.com/me/Theo_Kwag)
+Email: [1438eogh@gmail.com](mailto:1438eogh@gmail.com)  
+Kakao: [open.kakao.com/me/Theo_Kwag](https://open.kakao.com/me/Theo_Kwag)
 
 <br />
 
