@@ -1,8 +1,9 @@
+pub mod setup;
 pub mod state;
-pub mod tray;
 
 use crate::app::state::AppState;
 use crate::commands;
+use crate::constants::BUNDLE_ID;
 use crate::domain::engine::Engine;
 use crate::persistence::{instance_lock, profile_store};
 use crate::platform::capture;
@@ -17,7 +18,7 @@ pub fn run() {
         log::warn!("another Elecom Huge Custom instance is already running — exiting");
         // Best-effort: focus the existing app if present.
         let _ = std::process::Command::new("open")
-            .args(["-b", "com.kwagdaeho.elecom-huge"])
+            .args(["-b", BUNDLE_ID])
             .status();
         return;
     };
@@ -62,7 +63,7 @@ pub fn run() {
             commands::list_installed_apps,
             commands::get_app_icon,
         ])
-        .setup(|app| tray::setup_tray(app))
+        .setup(|app| setup::setup_app(app))
         .on_window_event(|window, event| {
             if let WindowEvent::CloseRequested { api, .. } = event {
                 // Keep running in tray.

@@ -1,14 +1,15 @@
 use std::fs;
 use std::path::PathBuf;
 
+use crate::constants::{APP_CONFIG_DIR, PROFILE_FILENAME};
 use crate::domain::profile::Profile;
 
 pub fn profile_path() -> Result<PathBuf, String> {
     let dir = dirs::config_dir()
         .ok_or_else(|| "Could not resolve config directory".to_string())?
-        .join("elecom-huge");
+        .join(APP_CONFIG_DIR);
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    Ok(dir.join("profile.json"))
+    Ok(dir.join(PROFILE_FILENAME))
 }
 
 pub fn load_profile() -> Profile {

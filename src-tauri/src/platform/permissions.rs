@@ -78,14 +78,12 @@ mod macos {
         Ok(())
     }
 
-    const BUNDLE_ID: &str = "com.kwagdaeho.elecom-huge";
-
     /// Clear stale TCC rows for this bundle (common after ad-hoc update reinstall).
     /// Settings can still show the toggle ON while AXIsProcessTrusted is false.
     pub fn reset_tcc_permissions() -> Result<(), String> {
         for service in ["Accessibility", "ListenEvent", "PostEvent"] {
             let status = std::process::Command::new("/usr/bin/tccutil")
-                .args(["reset", service, BUNDLE_ID])
+                .args(["reset", service, crate::constants::BUNDLE_ID])
                 .status()
                 .map_err(|e| e.to_string())?;
             if !status.success() {

@@ -6,7 +6,7 @@ use tauri::{
     App, Manager,
 };
 
-pub fn setup_tray(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
+pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     app.state::<AppState>().engine.start();
 
     capture::register_app_handle(app.handle().clone());
