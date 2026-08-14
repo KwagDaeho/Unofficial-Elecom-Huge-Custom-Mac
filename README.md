@@ -1,6 +1,6 @@
 # Unofficial Elecom Huge Custom (Mac)
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.6)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.6/Unofficial-Elecom-Huge-Custom-Mac-1.0.6-aarch64.dmg)
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.7)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.7/Unofficial-Elecom-Huge-Custom-Mac-1.0.7-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
 **Language / 언어:** [한국어](#ko) · [English](#en)
@@ -27,7 +27,7 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 
 ### 요구 사항
 
-- macOS 12+ (v1.0.6은 Apple Silicon / M1 이상)
+- macOS 12+ (v1.0.7은 Apple Silicon / M1 이상)
 - ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 (`M-HT1DRBK`)
 - 소스에서 빌드 시: Node 20+, Rust (stable)
 
@@ -67,7 +67,8 @@ xattr -cr "/Applications/Elecom Huge Custom.app" && open "/Applications/Elecom H
 ### 앱을 연 뒤 — 권한
 
 정보 탭에서 **권한 요청** 한 번만 누르면 됩니다.  
-(내부에서 이전 권한 기록을 지운 뒤 시스템 허용 요청을 띄웁니다.)
+(내부에서 이전 권한 기록을 지운 뒤 시스템 허용 요청을 띄웁니다.)  
+권한이 허용되면 **앱이 자동으로 재시작**됩니다.
 
 ### 업데이트 후 권한이 안 먹을 때
 
@@ -78,7 +79,7 @@ ad-hoc 빌드는 버전마다 서명이 달라, 설정에는 켜져 있는데 �
 tccutil reset Accessibility com.kwagdaeho.elecom-huge
 ```
 
-이후 허용 대화상자에서 다시 켠 뒤, 앱을 완전히 종료하고 재실행하세요.
+이후 허용 대화상자에서 다시 켠 뒤 기다리면 앱이 자동 재시작됩니다.
 
 ### 개발
 
@@ -118,7 +119,7 @@ Source in this repository matches the tagged release so you can audit before ins
 
 ### Requirements
 
-- macOS 12+ (v1.0.6 is Apple Silicon / M1+)
+- macOS 12+ (v1.0.7 is Apple Silicon / M1+)
 - ELECOM HUGE wired (`M-HT1URBK`) or wireless (`M-HT1DRBK`)
 - Building from source: Node 20+, Rust (stable)
 
@@ -157,7 +158,8 @@ This clears the download quarantine flag so Gatekeeper does not block the launch
 ### After the app opens — permissions
 
 On the Info tab, tap **Grant access** once.  
-(It clears stale TCC rows, then shows the system allow prompt.)
+(It clears stale TCC rows, then shows the system allow prompt.)  
+When permission is granted, the app **restarts automatically**.
 
 ### After an update — Settings ON but app still asks
 
@@ -167,7 +169,7 @@ Ad-hoc builds change code signature each release. Tap **Grant access** again, or
 tccutil reset Accessibility com.kwagdaeho.elecom-huge
 ```
 
-Then allow the prompt, fully quit, and relaunch.
+Then allow the prompt — the app restarts automatically.
 
 ### Develop
 

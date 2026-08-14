@@ -98,6 +98,18 @@ fn reset_tcc_permissions() -> Result<(), String> {
     inject::reset_tcc_permissions()
 }
 
+/// Exit after scheduling a delayed relaunch so the instance flock is released first.
+#[tauri::command]
+fn relaunch_app(app: tauri::AppHandle) {
+    let _ = std::process::Command::new("/bin/sh")
+        .args([
+            "-c",
+            "sleep 0.7; /usr/bin/open -b com.kwagdaeho.elecom-huge",
+        ])
+        .spawn();
+    app.exit(0);
+}
+
 #[tauri::command]
 fn button_catalog() -> Vec<serde_json::Value> {
     device::ButtonId::ALL
@@ -147,6 +159,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.show();
@@ -173,6 +186,7 @@ pub fn run() {
             open_accessibility_settings,
             open_privacy_security_settings,
             reset_tcc_permissions,
+            relaunch_app,
             button_catalog,
             set_key_capture,
             list_installed_apps,

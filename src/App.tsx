@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import {
   ACTION_CATALOG,
@@ -213,12 +213,27 @@ export default function App() {
   const [autostartOn, setAutostartOn] = useState(false);
   const [bootError, setBootError] = useState<string>("");
   const [editor, setEditor] = useState<EditorMode | null>(null);
+  const sawUntrusted = useRef(false);
+  const restartScheduled = useRef(false);
 
   const trusted = perms?.ready ?? false;
 
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
+
+  // Accessibility / Input Monitoring only fully apply after a process restart.
+  useEffect(() => {
+    if (!perms) return;
+    if (!perms.ready) {
+      sawUntrusted.current = true;
+      return;
+    }
+    if (sawUntrusted.current && !restartScheduled.current) {
+      restartScheduled.current = true;
+      void invoke("relaunch_app");
+    }
+  }, [perms]);
 
   const refresh = useCallback(async () => {
     try {
