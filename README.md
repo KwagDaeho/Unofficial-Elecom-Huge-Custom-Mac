@@ -1,6 +1,6 @@
 # Unofficial Elecom Huge Custom (Mac)
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.7)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.7/Unofficial-Elecom-Huge-Custom-Mac-1.0.7-aarch64.dmg)
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.8)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.8/Unofficial-Elecom-Huge-Custom-Mac-1.0.8-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
 **Language / 언어:** [한국어](#ko) · [English](#en)
@@ -27,7 +27,7 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 
 ### 요구 사항
 
-- macOS 12+ (v1.0.7은 Apple Silicon / M1 이상)
+- macOS 12+ (v1.0.8은 Apple Silicon / M1 이상)
 - ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 (`M-HT1DRBK`)
 - 소스에서 빌드 시: Node 20+, Rust (stable)
 
@@ -112,7 +112,7 @@ Source in this repository matches the tagged release so you can audit before ins
 
 ### Requirements
 
-- macOS 12+ (v1.0.7 is Apple Silicon / M1+)
+- macOS 12+ (v1.0.8 is Apple Silicon / M1+)
 - ELECOM HUGE wired (`M-HT1URBK`) or wireless (`M-HT1DRBK`)
 - Building from source: Node 20+, Rust (stable)
 
