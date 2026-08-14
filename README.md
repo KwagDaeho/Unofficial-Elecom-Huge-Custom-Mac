@@ -6,7 +6,9 @@
 [![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.9)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.9/Unofficial-Elecom-Huge-Custom-Mac-1.0.9-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
-**Contact:** [E-mail](mailto:1438eogh@gmail.com) (`1438eogh@gmail.com`) · [Kakao](https://open.kakao.com/me/Theo_Kwag) (`open.kakao.com/me/Theo_Kwag`)
+**Contact**  
+E-mail: [1438eogh@gmail.com](mailto:1438eogh@gmail.com)  
+Kakao: [open.kakao.com/me/Theo_Kwag](https://open.kakao.com/me/Theo_Kwag)
 
 <br />
 
