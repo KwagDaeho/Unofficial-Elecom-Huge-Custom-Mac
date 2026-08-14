@@ -603,32 +603,12 @@ export default function App() {
                 <button
                   type="button"
                   onClick={async () => {
-                    // Prompt only — do not also open Settings (that stacked alert + pane).
+                    // Reset stale TCC (common after ad-hoc updates), then prompt.
+                    await invoke("reset_tcc_permissions");
                     await invoke<boolean>("request_accessibility");
                     setPerms(await invoke<PermissionStatus>("permission_status"));
                   }}>
                   {i18n.grantAccess}
-                </button>
-                <button type="button" className="ghost" onClick={() => void invoke("open_accessibility_settings")}>
-                  {i18n.openSettings}
-                </button>
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={() => void invoke("open_privacy_security_settings")}>
-                  {i18n.openPrivacySecurity}
-                </button>
-              </div>
-              <div className="row">
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={async () => {
-                    await invoke("reset_tcc_permissions");
-                    await invoke("open_accessibility_settings");
-                    setPerms(await invoke<PermissionStatus>("permission_status"));
-                  }}>
-                  {i18n.resetPermissions}
                 </button>
               </div>
             </section>
