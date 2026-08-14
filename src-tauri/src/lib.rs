@@ -8,6 +8,8 @@ mod apps;
 
 use engine::Engine;
 use profile::Profile;
+use std::fs::File;
+use std::os::fd::AsRawFd;
 use std::sync::Arc;
 use tauri::{
     menu::{Menu, MenuItem},
@@ -17,6 +19,26 @@ use tauri::{
 
 struct AppState {
     engine: Arc<Engine>,
+    /// Held for process lifetime so a second copy cannot start another HID engine.
+    _instance_lock: File,
+}
+
+/// Non-blocking exclusive lock under Application Support.
+/// Prevents LaunchAgent + "reopen windows" from running two remappers after login.
+fn acquire_instance_lock() -> Option<File> {
+    let dir = dirs::config_dir()?.join("elecom-huge");
+    std::fs::create_dir_all(&dir).ok()?;
+    let file = std::fs::OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(false)
+        .open(dir.join("instance.lock"))
+        .ok()?;
+    let rc = unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) };
+    if rc != 0 {
+        return None;
+    }
+    Some(file)
 }
 
 #[tauri::command]
@@ -99,18 +121,35 @@ fn get_app_icon(path: String) -> Option<String> {
 pub fn run() {
     let _ = env_logger::try_init();
 
+    let Some(instance_lock) = acquire_instance_lock() else {
+        log::warn!("another Elecom Huge Custom instance is already running — exiting");
+        // Best-effort: focus the existing app if present.
+        let _ = std::process::Command::new("open")
+            .args(["-b", "com.kwagdaeho.elecom-huge"])
+            .status();
+        return;
+    };
+
     let profile = profile::load_profile();
     let engine = Arc::new(Engine::new(profile));
-    engine.start();
+    // Start HID remapper only after we own the instance lock (not before),
+    // so a duplicate launch cannot attach a second engine.
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec![]),
         ))
         .manage(AppState {
             engine: Arc::clone(&engine),
+            _instance_lock: instance_lock,
         })
         .invoke_handler(tauri::generate_handler![
             list_devices,
@@ -128,6 +167,8 @@ pub fn run() {
             get_app_icon,
         ])
         .setup(|app| {
+            app.state::<AppState>().engine.start();
+
             capture::register_app_handle(app.handle().clone());
             let show_i = MenuItem::with_id(app, "show", "Open Elecom Huge Custom", true, None::<&str>)?;
             let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
