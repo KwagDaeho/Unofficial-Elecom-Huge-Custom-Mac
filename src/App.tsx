@@ -616,7 +616,6 @@ export default function App() {
                 <li>{i18n.accessibilityStep1}</li>
                 <li>{i18n.accessibilityStep2}</li>
                 <li>{i18n.accessibilityStep3}</li>
-                <li>{i18n.accessibilityStep4}</li>
               </ol>
               <div className="row">
                 <button
@@ -628,12 +627,6 @@ export default function App() {
                     setPerms(await invoke<PermissionStatus>("permission_status"));
                   }}>
                   {i18n.grantAccess}
-                </button>
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={() => void invoke("open_accessibility_settings")}>
-                  {i18n.openSettings}
                 </button>
               </div>
             </section>

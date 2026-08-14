@@ -58,14 +58,13 @@ xattr -cr "/Applications/Elecom Huge Custom.app" && open "/Applications/Elecom H
 앱이 열린 뒤 **정보** 탭에서:
 
 1. **«권한 요청»**을 클릭합니다.
-2. **«시스템 설정 열기»**를 클릭합니다.
-3. **시스템 설정 → 손쉬운 사용**에서 **Elecom Huge Custom**을 허용합니다.
-4. 권한이 허용되면 앱이 **자동으로 재시작**됩니다.
+2. 시스템 대화상자 또는 손쉬운 사용 설정에서 **Elecom Huge Custom**을 허용합니다.
+3. 권한이 허용되면 앱이 **자동으로 재시작**됩니다.
 
 ### 업데이트 후 권한이 안 먹을 때
 
 ad-hoc 빌드는 버전마다 서명이 달라, 설정에는 켜져 있는데 앱만 권한을 요구할 수 있습니다.  
-정보 탭에서 **권한 요청** → **시스템 설정 열기**를 다시 진행하거나:
+정보 탭에서 **권한 요청**을 다시 진행하거나:
 
 ```bash
 tccutil reset Accessibility com.kwagdaeho.elecom-huge
@@ -141,13 +140,12 @@ xattr -cr "/Applications/Elecom Huge Custom.app" && open "/Applications/Elecom H
 In the running app, on the **Info** tab:
 
 1. Click **«Grant access»**.
-2. Click **«Open System Settings»**.
-3. In **System Settings → Accessibility**, allow **Elecom Huge Custom**.
-4. When permission is granted, the app **restarts automatically**.
+2. Allow **Elecom Huge Custom** in the system prompt or Accessibility settings.
+3. When permission is granted, the app **restarts automatically**.
 
 ### After an update — Settings ON but app still asks
 
-Ad-hoc builds change code signature each release. Repeat **Grant access** → **Open System Settings**, or:
+Ad-hoc builds change code signature each release. Tap **Grant access** again, or:
 
 ```bash
 tccutil reset Accessibility com.kwagdaeho.elecom-huge
