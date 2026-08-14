@@ -57,3 +57,7 @@ src-tauri/target/**/*.dmg
 
 # Built DMG install helper
 scripts/macos/dist/
+
+# Tauri icon generator extras (macOS bundle uses root icons/*)
+src-tauri/icons/ios/
+src-tauri/icons/android/
