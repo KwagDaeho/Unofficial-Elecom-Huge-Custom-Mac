@@ -20,8 +20,10 @@ const SCROLL_REPEAT_RATE: Duration = Duration::from_millis(40);
 const KEY_REPEAT_DELAY: Duration = Duration::from_millis(400);
 const KEY_REPEAT_RATE: Duration = Duration::from_millis(50);
 /// HUGE tilt is an AC Pan axis that often sticks until the next HID frame
-/// (or until the wheel is nudged). Gate converts sticky pan into one virtual
+/// (or until the wheel/ball is nudged). Gate converts sticky pan into one virtual
 /// press per gesture; continuous-click ON sustains until pan returns to 0.
+/// Continuous-click OFF: short TTL pulse, then after HID goes quiet allow re-arm
+/// without waiting for pan==0 (so consecutive tilts work).
 const TILT_HOLD_TTL: Duration = Duration::from_millis(70);
 
 struct PendingHold {
@@ -47,7 +49,8 @@ struct ActionRepeat {
 struct TiltHoldGate {
     left_until: Option<Instant>,
     right_until: Option<Instant>,
-    /// Seen pan≠0; cleared only when pan returns to 0.
+    /// Seen pan≠0; for sustain, cleared only when pan returns to 0.
+    /// For pulse (AC off), also cleared after TTL once HID goes idle.
     left_latched: bool,
     right_latched: bool,
     /// Continuous-click / long-press: stay down until pan==0 (no short TTL).
@@ -79,8 +82,7 @@ impl TiltHoldGate {
             self.right_sustain = false;
             self.left_sustain = left_sustain;
             if !self.left_latched {
-                // One press edge per physical tilt until pan==0.
-                // Do not re-arm while pan is sticky — that felt like auto-click ON.
+                // One press edge per physical tilt until re-armed.
                 self.left_latched = true;
                 self.left_until = Some(Self::hold_deadline(now, left_sustain));
             } else if left_sustain && self.left_until.is_none() {
@@ -118,6 +120,19 @@ impl TiltHoldGate {
             if self.right_until.is_some_and(|t| now >= t) {
                 self.right_until = None;
             }
+        }
+    }
+
+    /// Call only on HID idle (`read` timeout). Pulse mode: after the short
+    /// press ends and reports stop, allow the next physical tilt even if pan
+    /// never returned 0 (HUGE sticky pan). Do **not** call this on live pan
+    /// reports — that would re-arm every frame and feel like auto-click.
+    fn clear_pulse_latches_when_idle(&mut self) {
+        if !self.left_sustain && self.left_until.is_none() {
+            self.left_latched = false;
+        }
+        if !self.right_sustain && self.right_until.is_none() {
+            self.right_latched = false;
         }
     }
 
@@ -613,9 +628,21 @@ impl Engine {
                                     &mut key_repeats,
                                 );
                                 prev = state;
-                                // Do not rewrite Live HID probe here — probe shows raw
-                                // last report (sticky pan), not the click-gate TTL.
+                                // Reflect gated tilt release in Live HID probe.
+                                if let Some(rep) = last_report.lock().as_mut() {
+                                    rep.buttons.retain(|b| {
+                                        *b != "wheel_tilt_left" && *b != "wheel_tilt_right"
+                                    });
+                                    if state.tilt_left {
+                                        rep.buttons.push("wheel_tilt_left");
+                                    }
+                                    if state.tilt_right {
+                                        rep.buttons.push("wheel_tilt_right");
+                                    }
+                                }
                             }
+                            // Pulse (AC off): HID quiet → allow next tilt without pan==0.
+                            tilt_gate.clear_pulse_latches_when_idle();
                             suppress::set_suppress_motion(pointer_takeover_active(
                                 &held,
                                 &pending,
@@ -661,10 +688,15 @@ impl Engine {
                             tilt_gate.expire(now);
                             tilt_gate.apply(&mut state);
 
-                            // Probe: raw HID bits / pan (may stick until next frame).
+                            // Probe: show gated tilt (pulse), not sticky raw pan bits.
                             let buttons = ButtonId::ALL
                                 .into_iter()
-                                .filter(|id| parsed.buttons.is_down(*id))
+                                .filter(|id| match id {
+                                    ButtonId::WheelTiltLeft | ButtonId::WheelTiltRight => {
+                                        state.is_down(*id)
+                                    }
+                                    _ => parsed.buttons.is_down(*id),
+                                })
                                 .map(|id| id.id_str())
                                 .collect::<Vec<_>>();
                             *last_report.lock() = Some(LastReport {
