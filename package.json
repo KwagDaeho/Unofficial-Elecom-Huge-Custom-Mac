@@ -1,7 +1,7 @@
 {
   "name": "elecom-huge",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,8 +9,9 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
-    "app:open": "tauri build && open \"src-tauri/target/release/bundle/macos/Elecom Huge Custom.app\""
+    "tauri:build": "tauri build && bash scripts/macos/inject-dmg-installer.sh",
+    "app:open": "npm run tauri:build && open \"src-tauri/target/release/bundle/macos/Elecom Huge Custom.app\"",
+    "dmg:inject-installer": "bash scripts/macos/inject-dmg-installer.sh"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
