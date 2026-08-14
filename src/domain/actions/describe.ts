@@ -1,7 +1,6 @@
-import type { Action, CatalogEntry } from "../../types/index";
-import type { Lang } from "../../i18n/types";
+import type { Action, CatalogEntry, Lang } from "../../types";
+import { entryLabel } from "../../i18n";
 import { ACTION_CATALOG } from "./catalog";
-import { ENTRY_LABELS } from "./categories";
 
 function normalizeKeys(keys: string[]): string[] {
   return keys.map((k) => {
@@ -78,7 +77,7 @@ export function formatKeyChord(keys: string[], lang: Lang): string {
 export function describeAction(action: Action, lang: Lang): string {
   const entry = findCatalogEntry(action);
   if (entry) {
-    return ENTRY_LABELS[lang][entry.id] ?? entry.id;
+    return entryLabel(entry.id, lang);
   }
   if (action.type === "key_stroke") {
     const chord = formatKeyChord(action.keys, lang);

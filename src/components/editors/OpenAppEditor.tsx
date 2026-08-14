@@ -1,20 +1,16 @@
-import type { Dispatch, SetStateAction } from "react";
-import type { Action, ActionSlot, ButtonId, EditorMode } from "../../types";
-import type { Dict } from "../../i18n";
+import { usePrefs } from "../../context/prefs";
+import { useProfileCtx } from "../../context/profile";
+import { useSession } from "../../context/session";
+import { Button } from "../ui/Button";
+import type { EditorMode } from "../../types";
 
 type OpenAppEditorState = Extract<EditorMode, { kind: "open_app" }>;
 
-export function OpenAppEditor({
-  editor,
-  i18n,
-  setEditor,
-  onSave,
-}: {
-  editor: OpenAppEditorState;
-  i18n: Dict;
-  setEditor: Dispatch<SetStateAction<EditorMode | null>>;
-  onSave: (buttonId: ButtonId, slot: ActionSlot, action: Action) => void;
-}) {
+export function OpenAppEditor({ editor }: { editor: OpenAppEditorState }) {
+  const { i18n } = usePrefs();
+  const { actions } = useProfileCtx();
+  const { setEditor } = useSession();
+
   return (
     <div className="modal-backdrop" role="presentation">
       <div className="modal modal-wide" role="dialog" aria-modal="true">
@@ -86,15 +82,14 @@ export function OpenAppEditor({
           </ul>
         )}
         <div className="row">
-          <button type="button" className="ghost" onClick={() => setEditor(null)}>
+          <Button variant="ghost" onClick={() => setEditor(null)}>
             {i18n.cancel}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             disabled={!editor.selected}
             onClick={() => {
               if (!editor.selected) return;
-              onSave(editor.buttonId, editor.slot, {
+              actions.updateButtonSlot(editor.buttonId, editor.slot, {
                 type: "open_app",
                 bundle_id: editor.selected.bundleId,
                 name: editor.selected.name,
@@ -102,7 +97,7 @@ export function OpenAppEditor({
               setEditor(null);
             }}>
             {i18n.save}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

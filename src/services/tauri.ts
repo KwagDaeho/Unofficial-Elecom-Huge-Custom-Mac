@@ -6,16 +6,11 @@ import { invoke } from "@tauri-apps/api/core";
 import type {
   ButtonMeta,
   DeviceInfo,
+  InstalledApp,
   LastReport,
   PermissionStatus,
   Profile,
 } from "../types";
-
-export type InstalledApp = {
-  name: string;
-  bundleId: string;
-  path: string;
-};
 
 export async function getProfile(): Promise<Profile> {
   return invoke<Profile>("get_profile");

@@ -1,10 +1,6 @@
 export { ACTION_CATALOG } from "./catalog";
-export {
-  CATEGORY_ORDER,
-  CATEGORY_LABELS,
-  ENTRY_LABELS,
-} from "./categories";
-export { BUTTON_LABELS, buttonLabel } from "./buttonLabels";
+export { CATEGORY_ORDER } from "./categories";
+export { groupCatalog } from "./groupCatalog";
 export {
   actionsEqual,
   findCatalogEntry,
@@ -13,4 +9,4 @@ export {
   eventToKeyName,
   chordFromEvent,
 } from "./describe";
-export type { ActionCategoryId, CatalogEntry } from "../../types/index";
+export type { ActionCategoryId, CatalogEntry } from "../../types";

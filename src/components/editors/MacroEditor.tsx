@@ -1,23 +1,17 @@
-import type { Dispatch, SetStateAction } from "react";
 import { formatKeyChord } from "../../domain/actions";
-import type { Action, ActionSlot, ButtonId, EditorMode } from "../../types";
-import type { Dict, Lang } from "../../i18n";
+import { usePrefs } from "../../context/prefs";
+import { useProfileCtx } from "../../context/profile";
+import { useSession } from "../../context/session";
+import { Button } from "../ui/Button";
+import type { EditorMode } from "../../types";
 
 type MacroEditorState = Extract<EditorMode, { kind: "macro" }>;
 
-export function MacroEditor({
-  editor,
-  lang,
-  i18n,
-  setEditor,
-  onSave,
-}: {
-  editor: MacroEditorState;
-  lang: Lang;
-  i18n: Dict;
-  setEditor: Dispatch<SetStateAction<EditorMode | null>>;
-  onSave: (buttonId: ButtonId, slot: ActionSlot, action: Action) => void;
-}) {
+export function MacroEditor({ editor }: { editor: MacroEditorState }) {
+  const { lang, i18n } = usePrefs();
+  const { actions } = useProfileCtx();
+  const { setEditor } = useSession();
+
   return (
     <div className="modal-backdrop" role="presentation">
       <div className="modal modal-wide" role="dialog" aria-modal="true">
@@ -33,9 +27,9 @@ export function MacroEditor({
                     ? `${step.ms} ms`
                     : step.button}
               </span>
-              <button
-                type="button"
-                className="ghost tiny-btn"
+              <Button
+                variant="ghost"
+                size="tiny"
                 onClick={() =>
                   setEditor({
                     ...editor,
@@ -43,18 +37,19 @@ export function MacroEditor({
                   })
                 }>
                 {i18n.removeStep}
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
         {editor.capturing && <p className="chord-preview">{i18n.customKeyWaiting}</p>}
         <div className="row wrap">
-          <button type="button" className="ghost" onClick={() => setEditor({ ...editor, capturing: true })}>
+          <Button
+            variant="ghost"
+            onClick={() => setEditor({ ...editor, capturing: true })}>
             {i18n.addKeystroke}
-          </button>
-          <button
-            type="button"
-            className="ghost"
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() =>
               setEditor({
                 ...editor,
@@ -62,7 +57,7 @@ export function MacroEditor({
               })
             }>
             {i18n.addDelay}
-          </button>
+          </Button>
         </div>
         {editor.steps.some((s) => s.type === "delay") && (
           <div className="controls tight">
@@ -88,21 +83,20 @@ export function MacroEditor({
           </div>
         )}
         <div className="row">
-          <button type="button" className="ghost" onClick={() => setEditor(null)}>
+          <Button variant="ghost" onClick={() => setEditor(null)}>
             {i18n.cancel}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             disabled={editor.steps.length === 0}
             onClick={() => {
-              onSave(editor.buttonId, editor.slot, {
+              actions.updateButtonSlot(editor.buttonId, editor.slot, {
                 type: "macro",
                 steps: editor.steps,
               });
               setEditor(null);
             }}>
             {i18n.save}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

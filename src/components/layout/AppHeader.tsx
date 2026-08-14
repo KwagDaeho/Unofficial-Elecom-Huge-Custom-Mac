@@ -1,20 +1,9 @@
 import { MoonIcon, SunIcon } from "../icons/ThemeIcons";
-import type { Dict, Lang } from "../../i18n";
-import type { Theme } from "../../types";
+import { usePrefs } from "../../context/prefs";
 
-export function AppHeader({
-  lang,
-  theme,
-  i18n,
-  onLang,
-  onTheme,
-}: {
-  lang: Lang;
-  theme: Theme;
-  i18n: Dict;
-  onLang: (next: Lang) => void;
-  onTheme: (next: Theme) => void;
-}) {
+export function AppHeader() {
+  const { lang, theme, i18n, setLang, setTheme } = usePrefs();
+
   return (
     <header className="hero">
       <div className="hero-top">
@@ -26,7 +15,7 @@ export function AppHeader({
               className={theme === "light" ? "theme on" : "theme"}
               aria-label={i18n.themeLight}
               title={i18n.themeLight}
-              onClick={() => onTheme("light")}>
+              onClick={() => setTheme("light")}>
               <SunIcon />
             </button>
             <button
@@ -34,15 +23,21 @@ export function AppHeader({
               className={theme === "dark" ? "theme on" : "theme"}
               aria-label={i18n.themeDark}
               title={i18n.themeDark}
-              onClick={() => onTheme("dark")}>
+              onClick={() => setTheme("dark")}>
               <MoonIcon />
             </button>
           </div>
           <div className="lang-switch" role="group" aria-label="Language">
-            <button type="button" className={lang === "ko" ? "lang on" : "lang"} onClick={() => onLang("ko")}>
+            <button
+              type="button"
+              className={lang === "ko" ? "lang on" : "lang"}
+              onClick={() => setLang("ko")}>
               KR
             </button>
-            <button type="button" className={lang === "en" ? "lang on" : "lang"} onClick={() => onLang("en")}>
+            <button
+              type="button"
+              className={lang === "en" ? "lang on" : "lang"}
+              onClick={() => setLang("en")}>
               EN
             </button>
           </div>

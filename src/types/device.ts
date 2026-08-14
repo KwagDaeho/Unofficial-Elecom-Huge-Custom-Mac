@@ -25,3 +25,11 @@ export type LastReport = {
   ignored: boolean;
   tsMs: number;
 };
+
+export type InstalledApp = {
+  name: string;
+  bundleId: string;
+  path: string;
+};
+
+export type InstalledAppWithIcon = InstalledApp & { icon?: string };

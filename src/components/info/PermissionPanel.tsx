@@ -1,12 +1,11 @@
-import type { Dict } from "../../i18n";
+import { usePrefs } from "../../context/prefs";
+import { useSession } from "../../context/session";
+import { Button } from "../ui/Button";
 
-export function PermissionPanel({
-  i18n,
-  onGrant,
-}: {
-  i18n: Dict;
-  onGrant: () => void | Promise<void>;
-}) {
+export function PermissionPanel() {
+  const { i18n } = usePrefs();
+  const { grantAccess } = useSession();
+
   return (
     <section className="panel warn">
       <h2>{i18n.accessibilityTitle}</h2>
@@ -16,9 +15,7 @@ export function PermissionPanel({
         <li>{i18n.accessibilityStep3}</li>
       </ol>
       <div className="row">
-        <button type="button" onClick={() => void onGrant()}>
-          {i18n.grantAccess}
-        </button>
+        <Button onClick={() => void grantAccess()}>{i18n.grantAccess}</Button>
       </div>
     </section>
   );

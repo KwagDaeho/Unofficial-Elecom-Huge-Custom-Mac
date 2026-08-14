@@ -1,49 +1,23 @@
 import { ActionSelect } from "./ActionSelect";
-import { ACTION_CATALOG, buttonLabel } from "../../domain/actions";
+import { buttonLabel } from "../../i18n";
 import { asBinding, longPressMs } from "../../domain/profile/binding";
 import { isTiltButton, tiltForcesAutoClick } from "../../domain/profile/tilt";
-import type {
-  ActionCategoryId,
-  ActionSlot,
-  ButtonBinding,
-  ButtonId,
-  ButtonMeta,
-  Profile,
-} from "../../types";
-import type { Dict, Lang } from "../../i18n";
+import { usePrefs } from "../../context/prefs";
+import { useProfileCtx } from "../../context/profile";
+import { useSession } from "../../context/session";
+import { Toggle } from "../ui/Toggle";
 
-type ActionGroup = {
-  id: ActionCategoryId;
-  label: string;
-  entries: typeof ACTION_CATALOG;
-};
+export function ButtonMappingPanel() {
+  const { lang, i18n } = usePrefs();
+  const { profile, catalog, actions } = useProfileCtx();
+  const { selectCatalogValue } = useSession();
 
-export function ButtonMappingPanel({
-  catalog,
-  profile,
-  lang,
-  i18n,
-  groupedCatalog,
-  onPersist,
-  onActionSelect,
-  onUpdateFlags,
-}: {
-  catalog: ButtonMeta[];
-  profile: Profile;
-  lang: Lang;
-  i18n: Dict;
-  groupedCatalog: ActionGroup[];
-  onPersist: (next: Profile) => void;
-  onActionSelect: (buttonId: ButtonId, slot: ActionSlot, value: string) => void;
-  onUpdateFlags: (
-    id: ButtonId,
-    patch: Partial<Pick<ButtonBinding, "longPressEnabled" | "autoClick">>,
-  ) => void;
-}) {
+  if (!profile) return null;
+
   return (
     <section className="panel">
       <div className="section-head">
-        <h2>{i18n.buttons}</h2>
+        <h2>{i18n.buttonMapping}</h2>
       </div>
       <div className="controls tight map-tools">
         <label>
@@ -55,7 +29,7 @@ export function ButtonMappingPanel({
             step={50}
             value={longPressMs(profile)}
             onChange={(e) =>
-              onPersist({
+              void actions.persist({
                 ...profile,
                 longPressMs: Number(e.target.value),
               })
@@ -84,42 +58,34 @@ export function ButtonMappingPanel({
                 {buttonLabel(btn.id, lang)}
                 {btn.hiddenFromMacos && <em>{i18n.rawHid}</em>}
               </span>
-              <label className="toggle flag-toggle" title={i18n.longPressEnable}>
-                <input
-                  type="checkbox"
-                  checked={lpOn}
-                  disabled={autoOn || forceAcOn}
-                  onChange={(e) =>
-                    onUpdateFlags(btn.id, {
-                      longPressEnabled: e.target.checked,
-                    })
-                  }
-                />
-              </label>
-              <label className="toggle flag-toggle" title={i18n.autoClickEnable}>
-                <input
-                  type="checkbox"
-                  checked={autoOn}
-                  disabled={tiltBtn || lpOn}
-                  onChange={(e) =>
-                    onUpdateFlags(btn.id, {
-                      autoClick: e.target.checked,
-                    })
-                  }
-                />
-              </label>
+              <Toggle
+                variant="flag"
+                title={i18n.longPressEnable}
+                checked={lpOn}
+                disabled={autoOn || forceAcOn}
+                onChange={(longPressEnabled) =>
+                  actions.updateButtonFlags(btn.id, { longPressEnabled })
+                }
+              />
+              <Toggle
+                variant="flag"
+                title={i18n.autoClickEnable}
+                checked={autoOn}
+                disabled={tiltBtn || lpOn}
+                onChange={(autoClick) =>
+                  actions.updateButtonFlags(btn.id, { autoClick })
+                }
+              />
               <ActionSelect
                 action={binding.click}
-                lang={lang}
-                groups={groupedCatalog}
-                onPick={(value) => onActionSelect(btn.id, "click", value)}
+                onPick={(value) => selectCatalogValue(btn.id, "click", value)}
               />
               <ActionSelect
                 action={binding.longPress}
-                lang={lang}
-                groups={groupedCatalog}
                 disabled={!lpOn}
-                onPick={(value) => onActionSelect(btn.id, "long_press", value)}
+                onPick={(value) =>
+                  selectCatalogValue(btn.id, "long_press", value)
+                }
               />
             </div>
           );

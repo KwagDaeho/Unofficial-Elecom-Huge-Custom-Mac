@@ -10,21 +10,18 @@ import {
   scrollSpeedVertical,
 } from "../../domain/profile/pointerSpeeds";
 import { formatSpeedPair } from "../../utils/format";
-import type { Profile } from "../../types";
-import type { Dict } from "../../i18n";
+import { usePrefs } from "../../context/prefs";
+import { useProfileCtx } from "../../context/profile";
+import { Toggle } from "../ui/Toggle";
 
-export function PointerScrollPanel({
-  profile,
-  i18n,
-  onUpdatePointer,
-}: {
-  profile: Profile;
-  i18n: Dict;
-  onUpdatePointer: <K extends keyof Profile["pointer"]>(
-    key: K,
-    value: Profile["pointer"][K],
-  ) => void;
-}) {
+export function PointerScrollPanel() {
+  const { i18n } = usePrefs();
+  const { profile, actions } = useProfileCtx();
+
+  if (!profile) return null;
+
+  const onUpdatePointer = actions.updatePointer;
+
   return (
     <section className="panel">
       <div className="section-head">
@@ -62,7 +59,9 @@ export function PointerScrollPanel({
             max={5}
             step={0.05}
             value={scrollSpeedVertical(profile.pointer)}
-            onChange={(e) => onUpdatePointer("scrollSpeedVertical", Number(e.target.value))}
+            onChange={(e) =>
+              onUpdatePointer("scrollSpeedVertical", Number(e.target.value))
+            }
           />
         </label>
         <label>
@@ -74,33 +73,30 @@ export function PointerScrollPanel({
             max={5}
             step={0.05}
             value={scrollSpeedHorizontal(profile.pointer)}
-            onChange={(e) => onUpdatePointer("scrollSpeedHorizontal", Number(e.target.value))}
+            onChange={(e) =>
+              onUpdatePointer("scrollSpeedHorizontal", Number(e.target.value))
+            }
           />
         </label>
-        <label className="toggle">
-          <input
-            type="checkbox"
-            checked={profile.pointer.acceleration}
-            onChange={(e) => onUpdatePointer("acceleration", e.target.checked)}
-          />
+        <Toggle
+          checked={profile.pointer.acceleration}
+          onChange={(acceleration) => onUpdatePointer("acceleration", acceleration)}>
           {i18n.acceleration}
-        </label>
-        <label className="toggle">
-          <input
-            type="checkbox"
-            checked={profile.pointer.invertVerticalScroll ?? false}
-            onChange={(e) => onUpdatePointer("invertVerticalScroll", e.target.checked)}
-          />
+        </Toggle>
+        <Toggle
+          checked={profile.pointer.invertVerticalScroll ?? false}
+          onChange={(invertVerticalScroll) =>
+            onUpdatePointer("invertVerticalScroll", invertVerticalScroll)
+          }>
           {i18n.invertVertical}
-        </label>
-        <label className="toggle">
-          <input
-            type="checkbox"
-            checked={profile.pointer.invertHorizontalScroll ?? false}
-            onChange={(e) => onUpdatePointer("invertHorizontalScroll", e.target.checked)}
-          />
+        </Toggle>
+        <Toggle
+          checked={profile.pointer.invertHorizontalScroll ?? false}
+          onChange={(invertHorizontalScroll) =>
+            onUpdatePointer("invertHorizontalScroll", invertHorizontalScroll)
+          }>
           {i18n.invertHorizontal}
-        </label>
+        </Toggle>
       </div>
     </section>
   );

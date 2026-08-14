@@ -1,5 +1,4 @@
-import type { Theme } from "../types/index";
-import type { Lang } from "../i18n/types";
+import type { Theme, Lang } from "../types";
 import { LANG_KEY, THEME_KEY } from "../constants/storage";
 
 export function applyTheme(theme: Theme) {

@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { PERMISSION_POLL_MS } from "../constants/polling";
 import * as tauri from "../services/tauri";
 import type { PermissionStatus } from "../types";
-
-const POLL_MS = 1000;
 
 export function usePermissions() {
   const [perms, setPerms] = useState<PermissionStatus | null>(null);
@@ -32,7 +31,7 @@ export function usePermissions() {
     void refresh();
     const id = window.setInterval(() => {
       void tauri.getPermissionStatus().then(setPerms);
-    }, POLL_MS);
+    }, PERMISSION_POLL_MS);
     return () => {
       window.clearInterval(id);
     };

@@ -3,9 +3,9 @@ import {
   CUSTOM_KEY_SENTINEL,
   MACRO_SENTINEL,
   OPEN_APP_SENTINEL,
-} from "../constants/sentinels";
-import { asBinding } from "../domain/profile/binding";
-import * as tauri from "../services/tauri";
+} from "../../constants/sentinels";
+import { asBinding } from "./binding";
+import * as tauri from "../../services/tauri";
 import type {
   Action,
   ActionSlot,
@@ -13,9 +13,9 @@ import type {
   EditorMode,
   MacroStep,
   Profile,
-} from "../types";
+} from "../../types";
 
-export function openActionEditor(
+export function selectCatalogValue(
   buttonId: ButtonId,
   slot: ActionSlot,
   value: string,
@@ -54,11 +54,10 @@ export function openActionEditor(
     void tauri
       .listInstalledApps()
       .then((apps) => {
-        setEditor((prev) =>
-          prev?.kind === "open_app"
-            ? { ...prev, apps, loading: false, error: null }
-            : prev,
-        );
+        setEditor((prev) => {
+          if (!prev || prev.kind !== "open_app") return prev;
+          return { ...prev, apps, loading: false, error: null };
+        });
         const queue = apps.map((a) => a.path);
         const workers = Array.from({ length: 6 }, async () => {
           while (queue.length > 0) {
@@ -68,7 +67,7 @@ export function openActionEditor(
               const icon = await tauri.getAppIcon(path);
               if (!icon) continue;
               setEditor((prev) => {
-                if (prev?.kind !== "open_app") return prev;
+                if (!prev || prev.kind !== "open_app") return prev;
                 return {
                   ...prev,
                   apps: prev.apps.map((a) => (a.path === path ? { ...a, icon } : a)),
@@ -82,11 +81,10 @@ export function openActionEditor(
         void Promise.all(workers);
       })
       .catch((e) => {
-        setEditor((prev) =>
-          prev?.kind === "open_app"
-            ? { ...prev, loading: false, error: String(e) }
-            : prev,
-        );
+        setEditor((prev) => {
+          if (!prev || prev.kind !== "open_app") return prev;
+          return { ...prev, loading: false, error: String(e) };
+        });
       });
     return;
   }

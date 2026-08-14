@@ -7,7 +7,13 @@ export type {
   CatalogEntry,
 } from "./action";
 export type { ButtonId, ButtonBinding, Profile } from "./profile";
-export type { DeviceInfo, ButtonMeta, LastReport } from "./device";
+export type {
+  DeviceInfo,
+  ButtonMeta,
+  LastReport,
+  InstalledApp,
+  InstalledAppWithIcon,
+} from "./device";
 export type {
   PermissionStatus,
   ActionSlot,
@@ -15,3 +21,4 @@ export type {
   TabId,
   Theme,
 } from "./ui";
+export type { Lang, Dict } from "./i18n";

@@ -1,39 +1,36 @@
-import type { DeviceInfo } from "../../types";
-import type { Dict } from "../../i18n";
+import { usePrefs } from "../../context/prefs";
+import { useProfileCtx } from "../../context/profile";
+import { useSession } from "../../context/session";
+import { connectedLabel } from "../../utils/format";
+import { Toggle } from "../ui/Toggle";
 
-export function DeviceStatus({
-  connected,
-  connectedLabel,
-  i18n,
-  enabled,
-  onEnabledChange,
-}: {
-  connected: DeviceInfo | null;
-  connectedLabel: string;
-  i18n: Dict;
-  enabled: boolean;
-  onEnabledChange: (enabled: boolean) => void;
-}) {
+export function DeviceStatus() {
+  const { i18n } = usePrefs();
+  const { profile, actions } = useProfileCtx();
+  const { connected } = useSession();
+
+  if (!profile) return null;
+
+  const label = connectedLabel(connected, i18n);
+
   return (
     <>
       <section className="panel panel-row">
         <div className="status-row">
           <span className={`dot ${connected ? "on" : "off"}`} />
           <strong>{connected ? i18n.connected : i18n.waiting}</strong>
-          <span className="muted status-detail">{connectedLabel}</span>
+          <span className="muted status-detail">{label}</span>
         </div>
       </section>
 
       <section className="panel panel-row">
-        <label className="toggle toggle-inline">
-          <input
-            type="checkbox"
-            checked={enabled}
-            onChange={(e) => onEnabledChange(e.target.checked)}
-          />
-          <span className="toggle-title">{i18n.remappingOn}</span>
-          <span className="toggle-desc">{i18n.remappingDesc}</span>
-        </label>
+        <Toggle
+          variant="inline"
+          checked={profile.enabled}
+          onChange={(enabled) => void actions.persist({ ...profile, enabled })}
+          description={i18n.remappingDesc}>
+          {i18n.remappingOn}
+        </Toggle>
       </section>
     </>
   );

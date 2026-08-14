@@ -1,16 +1,11 @@
-import { buttonLabel } from "../../domain/actions";
-import type { LastReport } from "../../types";
-import type { Dict, Lang } from "../../i18n";
+import { buttonLabel } from "../../i18n";
+import { usePrefs } from "../../context/prefs";
+import { useSession } from "../../context/session";
 
-export function ProbePanel({
-  report,
-  lang,
-  i18n,
-}: {
-  report: LastReport | null;
-  lang: Lang;
-  i18n: Dict;
-}) {
+export function ProbePanel() {
+  const { lang, i18n } = usePrefs();
+  const { report } = useSession();
+
   return (
     <section className="panel">
       <div className="section-head">

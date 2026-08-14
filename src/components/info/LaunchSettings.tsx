@@ -1,36 +1,27 @@
-import type { Dict } from "../../i18n";
+import { usePrefs } from "../../context/prefs";
+import { useProfileCtx } from "../../context/profile";
+import { useSession } from "../../context/session";
+import { Toggle } from "../ui/Toggle";
 
-export function LaunchSettings({
-  i18n,
-  autostartOn,
-  startMinimized,
-  onAutostartChange,
-  onStartMinimizedChange,
-}: {
-  i18n: Dict;
-  autostartOn: boolean;
-  startMinimized: boolean;
-  onAutostartChange: (on: boolean) => void | Promise<void>;
-  onStartMinimizedChange: (on: boolean) => void;
-}) {
+export function LaunchSettings() {
+  const { i18n } = usePrefs();
+  const { profile, actions } = useProfileCtx();
+  const { autostartOn, setAutostartOn } = useSession();
+
+  if (!profile) return null;
+
   return (
     <section className="panel panel-row panel-row-split">
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={autostartOn}
-          onChange={(e) => void onAutostartChange(e.target.checked)}
-        />
+      <Toggle checked={autostartOn} onChange={(on) => void setAutostartOn(on)}>
         {i18n.launchAtLogin}
-      </label>
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={startMinimized}
-          onChange={(e) => onStartMinimizedChange(e.target.checked)}
-        />
+      </Toggle>
+      <Toggle
+        checked={!!profile.startMinimized}
+        onChange={(startMinimized) =>
+          void actions.persist({ ...profile, startMinimized })
+        }>
         {i18n.startMinimized}
-      </label>
+      </Toggle>
     </section>
   );
 }

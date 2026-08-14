@@ -1,19 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
+import {
+  CONNECTED_POLL_MS,
+  REPORT_POLL_MS,
+} from "../constants/polling";
 import * as tauri from "../services/tauri";
 import type { DeviceInfo, LastReport } from "../types";
 
-const REPORT_POLL_MS = 50;
-const CONNECTED_POLL_MS = 1000;
-
-function sameReport(a: LastReport | null, b: LastReport | null): boolean {
+function sameReport(
+  prevReport: LastReport | null,
+  nextReport: LastReport | null,
+): boolean {
   return (
-    a?.tsMs === b?.tsMs &&
-    a?.hex === b?.hex &&
-    a?.dx === b?.dx &&
-    a?.dy === b?.dy &&
-    a?.wheel === b?.wheel &&
-    a?.pan === b?.pan &&
-    a?.buttons.join() === b?.buttons.join()
+    prevReport?.tsMs === nextReport?.tsMs &&
+    prevReport?.hex === nextReport?.hex &&
+    prevReport?.dx === nextReport?.dx &&
+    prevReport?.dy === nextReport?.dy &&
+    prevReport?.wheel === nextReport?.wheel &&
+    prevReport?.pan === nextReport?.pan &&
+    prevReport?.buttons.join() === nextReport?.buttons.join()
   );
 }
 
@@ -33,8 +37,10 @@ export function useDeviceProbe() {
   useEffect(() => {
     void refresh();
     const probe = window.setInterval(() => {
-      void tauri.getLastReport().then((next) => {
-        setReport((prev) => (sameReport(prev, next) ? prev : next));
+      void tauri.getLastReport().then((nextReport) => {
+        setReport((prevReport) =>
+          sameReport(prevReport, nextReport) ? prevReport : nextReport,
+        );
       });
     }, REPORT_POLL_MS);
     const slow = window.setInterval(() => {

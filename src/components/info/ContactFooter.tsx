@@ -1,8 +1,10 @@
 import { CONTACT_EMAIL, CONTACT_URL } from "../../constants/contact";
+import { usePrefs } from "../../context/prefs";
 import * as tauri from "../../services/tauri";
-import type { Dict } from "../../i18n";
 
-export function ContactFooter({ i18n }: { i18n: Dict }) {
+export function ContactFooter() {
+  const { i18n } = usePrefs();
+
   return (
     <footer className="footer">
       <p className="credit">
