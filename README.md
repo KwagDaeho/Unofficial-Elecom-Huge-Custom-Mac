@@ -33,15 +33,14 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 
 ### 앱 실행
 
-1. [Download macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)를 받습니다.
-2. `.dmg`를 엽니다.
+1. [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.0.8-aarch64.dmg)를 다운로드합니다.
+2. `Unofficial-Elecom-Huge-Custom-Mac-x.x.x-aarch64.dmg`를 엽니다.
 3. **Elecom Huge Custom**을 **Applications(응용 프로그램)**으로 드래그합니다.
-4. 메뉴 막대(또는 Finder)에서 DMG를 **추출**합니다.
+4. 데스크톱(또는 Finder 사이드바)에 나타난 마운트된 **Elecom Huge Custom** 디스크 아이콘을 우클릭하고 **추출**합니다.
 5. **응용 프로그램**에서 앱을 엽니다.
 6. 「열지 않음」 경고가 뜨면 **완료**를 누릅니다. (정상입니다. 휴지통으로 보내지 마세요.)
 7. **시스템 설정 → 개인정보 보호 및 보안**으로 이동합니다.
-8. 아래쪽의 차단 안내에서 **확인 없이 열기**를 누른 뒤, 한 번 더 **열기**를 확인합니다.
-9. 암호 또는 Touch ID로 승인합니다.
+8. 아래쪽 차단 안내에서 **그래도 열기**를 누릅니다. 이어지는 확인 팝업에서도 **그래도 열기**를 누른 뒤, 암호 또는 Touch ID로 승인합니다.
 
 > 현재 빌드는 Apple **공증(notarize)이 없습니다.**  
 > macOS Sequoia(15)+에서는 우클릭 → 열기로 Gatekeeper를 우회할 수 없습니다.
@@ -118,15 +117,14 @@ Source in this repository matches the tagged release so you can audit before ins
 
 ### Run the app
 
-1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest).
-2. Open the `.dmg`.
+1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.0.8-aarch64.dmg).
+2. Open `Unofficial-Elecom-Huge-Custom-Mac-x.x.x-aarch64.dmg`.
 3. Drag **Elecom Huge Custom** to **Applications**.
-4. **Eject** the DMG (menu bar or Finder).
+4. On the Desktop (or Finder sidebar), right-click the mounted **Elecom Huge Custom** disk icon and choose **Eject**.
 5. Open the app from **Applications**.
 6. If you see “will not open”, click **Done**. (Expected — do not move it to Trash.)
 7. Open **System Settings → Privacy & Security**.
-8. Under the block notice, click **Open Anyway**, then confirm **Open** again.
-9. Authenticate with password or Touch ID.
+8. Under the block notice, click **Open Anyway**. In the confirmation sheet, click **Open Anyway** again, then authenticate with password or Touch ID.
 
 > This build is **not notarized**. On macOS Sequoia (15)+, right-click → Open no longer bypasses Gatekeeper.
 
