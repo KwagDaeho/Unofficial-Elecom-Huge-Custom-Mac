@@ -31,55 +31,48 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 - ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 (`M-HT1DRBK`)
 - 소스에서 빌드 시: Node 20+, Rust (stable)
 
-### 다운로드 및 설치
+### 앱 실행
 
-1. 위 **Download macOS DMG** 또는 [Releases](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)에서 받습니다.
+1. [Download macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)를 받습니다.
 2. `.dmg`를 엽니다.
-3. **Elecom Huge Custom**을 **Applications**로 드래그합니다.
-4. DMG 창을 닫고(추출), **응용 프로그램**에서 앱을 엽니다.
+3. **Elecom Huge Custom**을 **Applications(응용 프로그램)**으로 드래그합니다.
+4. 메뉴 막대(또는 Finder)에서 DMG를 **추출**합니다.
+5. **응용 프로그램**에서 앱을 엽니다.
+6. 「열지 않음」 경고가 뜨면 **완료**를 누릅니다. (정상입니다. 휴지통으로 보내지 마세요.)
+7. **시스템 설정 → 개인정보 보호 및 보안**으로 이동합니다.
+8. 아래쪽의 차단 안내에서 **확인 없이 열기**를 누른 뒤, 한 번 더 **열기**를 확인합니다.
+9. 암호 또는 Touch ID로 승인합니다.
 
-현재 빌드는 Apple **공증(notarize)이 없습니다.**  
-macOS Sequoia(15)+에서는 예전처럼 **우클릭 → 열기**로 Gatekeeper를 우회할 수 없습니다. Apple이 막았습니다.
+> 현재 빌드는 Apple **공증(notarize)이 없습니다.**  
+> macOS Sequoia(15)+에서는 우클릭 → 열기로 Gatekeeper를 우회할 수 없습니다.
 
-### 처음 실행 — Gatekeeper
+#### 대안 (터미널)
 
-앱을 열면 「열지 않음」만 뜨고 **완료** / **휴지통으로 이동**만 있는 것이 정상입니다.
-
-#### 방법 A — 터미널 (단계가 가장 짧음)
-
-응용 프로그램에 넣은 뒤, 터미널에서 한 줄:
+응용 프로그램에 넣은 뒤:
 
 ```bash
 xattr -cr "/Applications/Elecom Huge Custom.app" && open "/Applications/Elecom Huge Custom.app"
 ```
 
-다운로드 격리(quarantine) 표시를 지워 Gatekeeper 차단을 건너뜁니다.
+### 앱 설정 (권한)
 
-#### 방법 B — 시스템 설정 (GUI)
+앱이 열린 뒤 **정보** 탭에서:
 
-1. 앱을 열어 본 뒤 **완료**를 누릅니다.
-2. **시스템 설정 → 개인정보 보호 및 보안**으로 이동합니다.
-3. 아래쪽에 차단 문구가 보이면 **확인 없이 열기** → 한 번 더 **열기**.
-
-> 공증 없이는 「확인 없이 열기」를 앱이 대신 누를 수 없습니다.  
-> 진짜로 이 마찰을 없애려면 Apple Developer 서명·공증이 필요합니다.
-
-### 앱을 연 뒤 — 권한
-
-정보 탭에서 **권한 요청** 한 번만 누르면 됩니다.  
-(내부에서 이전 권한 기록을 지운 뒤 시스템 허용 요청을 띄웁니다.)  
-권한이 허용되면 **앱이 자동으로 재시작**됩니다.
+1. **«권한 요청»**을 클릭합니다.
+2. **«시스템 설정 열기»**를 클릭합니다.
+3. **시스템 설정 → 손쉬운 사용**에서 **Elecom Huge Custom**을 허용합니다.
+4. 권한이 허용되면 앱이 **자동으로 재시작**됩니다.
 
 ### 업데이트 후 권한이 안 먹을 때
 
 ad-hoc 빌드는 버전마다 서명이 달라, 설정에는 켜져 있는데 앱만 권한을 요구할 수 있습니다.  
-정보 탭 **권한 요청**을 다시 누르거나:
+정보 탭에서 **권한 요청** → **시스템 설정 열기**를 다시 진행하거나:
 
 ```bash
 tccutil reset Accessibility com.kwagdaeho.elecom-huge
 ```
 
-이후 허용 대화상자에서 다시 켠 뒤 기다리면 앱이 자동 재시작됩니다.
+허용 후 앱이 자동 재시작됩니다.
 
 ### 개발
 
@@ -123,20 +116,21 @@ Source in this repository matches the tagged release so you can audit before ins
 - ELECOM HUGE wired (`M-HT1URBK`) or wireless (`M-HT1DRBK`)
 - Building from source: Node 20+, Rust (stable)
 
-### Download & install
+### Run the app
 
-1. Click **Download macOS DMG** (or open [Releases](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)).
+1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest).
 2. Open the `.dmg`.
 3. Drag **Elecom Huge Custom** to **Applications**.
-4. Eject the DMG, then open the app from Applications.
+4. **Eject** the DMG (menu bar or Finder).
+5. Open the app from **Applications**.
+6. If you see “will not open”, click **Done**. (Expected — do not move it to Trash.)
+7. Open **System Settings → Privacy & Security**.
+8. Under the block notice, click **Open Anyway**, then confirm **Open** again.
+9. Authenticate with password or Touch ID.
 
-This build is **not notarized**. On **macOS Sequoia (15)+**, the old **right-click → Open** Gatekeeper bypass no longer works (Apple removed it).
+> This build is **not notarized**. On macOS Sequoia (15)+, right-click → Open no longer bypasses Gatekeeper.
 
-### First open — Gatekeeper
-
-Opening the app shows “will not open” with only **Done** / **Move to Trash**. That is expected.
-
-#### Method A — Terminal (fewest steps)
+#### Alternative (Terminal)
 
 After copying to Applications:
 
@@ -144,32 +138,24 @@ After copying to Applications:
 xattr -cr "/Applications/Elecom Huge Custom.app" && open "/Applications/Elecom Huge Custom.app"
 ```
 
-This clears the download quarantine flag so Gatekeeper does not block the launch.
+### App setup (permissions)
 
-#### Method B — System Settings (GUI)
+In the running app, on the **Info** tab:
 
-1. Try to open the app, then click **Done**.
-2. Open **System Settings → Privacy & Security**.
-3. Click **Open Anyway**, then confirm **Open** if asked again.
-
-> Without Apple notarization, nothing can click **Open Anyway** for you.  
-> Notarization is the only way to remove this friction entirely.
-
-### After the app opens — permissions
-
-On the Info tab, tap **Grant access** once.  
-(It clears stale TCC rows, then shows the system allow prompt.)  
-When permission is granted, the app **restarts automatically**.
+1. Click **«Grant access»**.
+2. Click **«Open System Settings»**.
+3. In **System Settings → Accessibility**, allow **Elecom Huge Custom**.
+4. When permission is granted, the app **restarts automatically**.
 
 ### After an update — Settings ON but app still asks
 
-Ad-hoc builds change code signature each release. Tap **Grant access** again, or:
+Ad-hoc builds change code signature each release. Repeat **Grant access** → **Open System Settings**, or:
 
 ```bash
 tccutil reset Accessibility com.kwagdaeho.elecom-huge
 ```
 
-Then allow the prompt — the app restarts automatically.
+Allow again — the app restarts automatically.
 
 ### Develop
 
