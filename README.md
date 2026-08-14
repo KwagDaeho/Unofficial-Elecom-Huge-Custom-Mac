@@ -1,14 +1,22 @@
 # Unofficial Elecom Huge Custom (Mac)
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.9)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.9/Unofficial-Elecom-Huge-Custom-Mac-1.0.9-aarch64.dmg)
-[![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
-
-**Language / 언어:** [한국어](#ko) · [English](#en)
-
 > **Unofficial / 비공식.** Not ELECOM software · ELECOM 공식 소프트웨어가 아닙니다.  
 > Not affiliated with ELECOM Co., Ltd. · ELECOM과 무관한 개인 제작물입니다.
 
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.9)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.9/Unofficial-Elecom-Huge-Custom-Mac-1.0.9-aarch64.dmg)
+[![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
+
+**Contact:** [E-mail](mailto:1438eogh@gmail.com) (`1438eogh@gmail.com`) · [Kakao](https://open.kakao.com/me/Theo_Kwag) (`open.kakao.com/me/Theo_Kwag`)
+
+<br />
+
 ---
+
+<br />
+
+**Supported languages / 지원 언어:** Korean (한국어) · English
+
+**Jump to docs / 문서 바로가기:** [한국어](#ko) · [English](#en)
 
 <a id="ko"></a>
 
