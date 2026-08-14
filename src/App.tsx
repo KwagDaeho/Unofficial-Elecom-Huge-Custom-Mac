@@ -553,7 +553,6 @@ export default function App() {
           </div>
         </div>
         <h1>HUGE</h1>
-        <p className="disclaimer">{i18n.disclaimer}</p>
       </header>
 
       <nav className="tabs" aria-label="Sections">

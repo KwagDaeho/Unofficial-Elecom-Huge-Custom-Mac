@@ -2,7 +2,6 @@ export type Lang = "ko" | "en";
 
 const STRINGS = {
   ko: {
-    disclaimer: "이 앱은 ELECOM 공식 소프트웨어가 아니며 개인이 만들어 배포한 비공식 앱입니다.",
     tabInfo: "정보",
     tabCustom: "커스텀",
     connected: "연결됨",
@@ -70,7 +69,6 @@ const STRINGS = {
     clear: "지우기",
   },
   en: {
-    disclaimer: "This is not official ELECOM software. It is an unofficial app made and distributed by an individual.",
     tabInfo: "Info",
     tabCustom: "Custom",
     connected: "Connected",
