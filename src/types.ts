@@ -76,18 +76,26 @@ export function tiltForcesAutoClick(id: ButtonId, click: Action): boolean {
   return isTiltButton(id) && isTiltPanStreamAction(click);
 }
 
-/** Ensure tilt OS-default / L-R scroll bindings persist autoClick=true. */
+/**
+ * Tilt continuous-click is never user-editable:
+ * - OS default / L-R scroll → locked ON (pan stream)
+ * - any other click action → locked OFF
+ */
 export function normalizeTiltPanStreamFlags(profile: Profile): Profile {
   let changed = false;
   const buttons = { ...profile.buttons };
   for (const id of ["wheel_tilt_left", "wheel_tilt_right"] as ButtonId[]) {
     const current = asBinding(buttons[id]);
-    if (!tiltForcesAutoClick(id, current.click)) continue;
-    if (current.autoClick && !current.longPressEnabled) continue;
+    const forceOn = tiltForcesAutoClick(id, current.click);
+    const wantAuto = forceOn;
+    const wantLp = forceOn ? false : !!current.longPressEnabled;
+    if (!!current.autoClick === wantAuto && !!current.longPressEnabled === wantLp) {
+      continue;
+    }
     buttons[id] = {
       ...current,
-      autoClick: true,
-      longPressEnabled: false,
+      autoClick: wantAuto,
+      longPressEnabled: wantLp,
     };
     changed = true;
   }

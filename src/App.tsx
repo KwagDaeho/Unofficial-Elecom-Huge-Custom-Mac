@@ -28,6 +28,7 @@ import {
   scrollSpeedHorizontal,
   scrollSpeedVertical,
   tiltForcesAutoClick,
+  isTiltButton,
   type Action,
   type ButtonBinding,
   type ButtonId,
@@ -401,9 +402,13 @@ export default function App() {
       slot === "click"
         ? { ...current, click: action }
         : { ...current, longPress: action };
-    if (slot === "click" && tiltForcesAutoClick(id, action)) {
-      // Pan-stream tilt is always continuous — mirror that in the AC toggle.
-      next = { ...next, autoClick: true, longPressEnabled: false };
+    if (slot === "click" && isTiltButton(id)) {
+      // Tilt AC is locked: ON for L-R scroll / OS default, OFF for everything else.
+      if (tiltForcesAutoClick(id, action)) {
+        next = { ...next, autoClick: true, longPressEnabled: false };
+      } else {
+        next = { ...next, autoClick: false };
+      }
     }
     void persist({
       ...profile,
@@ -417,8 +422,11 @@ export default function App() {
   ) {
     if (!profile) return;
     const current = asBinding(profile.buttons[id]);
+    // Tilt continuous-click is never toggled by the user (locked ON/OFF by action).
+    if (isTiltButton(id) && patch.autoClick !== undefined) {
+      return;
+    }
     if (tiltForcesAutoClick(id, current.click)) {
-      // Locked on while OS-default / L-R scroll is bound to tilt.
       return;
     }
     let longPressEnabled = patch.longPressEnabled ?? !!current.longPressEnabled;
@@ -610,14 +618,6 @@ export default function App() {
                 <li>{i18n.accessibilityStep3}</li>
                 <li>{i18n.accessibilityStep4}</li>
               </ol>
-              <ul className="perm-list">
-                <li>
-                  {i18n.accessibility}: {perms?.accessibility || perms?.postEvent ? "ON" : "OFF"}
-                </li>
-                <li>
-                  {i18n.inputMonitoring}: {perms?.inputMonitoring ? "ON" : "OFF"}
-                </li>
-              </ul>
               <div className="row">
                 <button
                   type="button"
@@ -722,9 +722,11 @@ export default function App() {
               </div>
               {catalog.map((btn) => {
                 const binding = asBinding(profile.buttons[btn.id]);
-                const forceAc = tiltForcesAutoClick(btn.id, binding.click);
-                const autoOn = forceAc || !!binding.autoClick;
-                const lpOn = forceAc ? false : !!binding.longPressEnabled;
+                const tiltBtn = isTiltButton(btn.id);
+                const forceAcOn = tiltForcesAutoClick(btn.id, binding.click);
+                // Tilt: AC locked ON for L-R scroll / default, locked OFF otherwise.
+                const autoOn = tiltBtn ? forceAcOn : !!binding.autoClick;
+                const lpOn = forceAcOn ? false : !!binding.longPressEnabled;
                 return (
                   <div key={btn.id} className="button-card">
                     <span className="btn-name" title={buttonLabel(btn.id, lang)}>
@@ -735,7 +737,7 @@ export default function App() {
                       <input
                         type="checkbox"
                         checked={lpOn}
-                        disabled={autoOn || forceAc}
+                        disabled={autoOn || forceAcOn}
                         onChange={(e) =>
                           updateButtonFlags(btn.id, {
                             longPressEnabled: e.target.checked,
@@ -747,7 +749,7 @@ export default function App() {
                       <input
                         type="checkbox"
                         checked={autoOn}
-                        disabled={lpOn || forceAc}
+                        disabled={tiltBtn || lpOn}
                         onChange={(e) =>
                           updateButtonFlags(btn.id, {
                             autoClick: e.target.checked,
