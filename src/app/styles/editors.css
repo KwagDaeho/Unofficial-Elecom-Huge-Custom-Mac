@@ -1,0 +1,167 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(20, 12, 24, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  width: min(100%, 400px);
+  padding: 14px 16px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--panel-solid);
+  box-shadow: 0 14px 36px var(--shadow);
+  display: grid;
+  gap: 10px;
+}
+
+.modal-wide {
+  width: min(100%, 480px);
+}
+
+.modal h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.modal .muted {
+  font-size: 0.8rem;
+}
+
+.chord-preview {
+  min-height: 2.2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px dashed var(--line);
+  background: var(--accent-soft);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+
+.macro-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.macro-steps li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: var(--accent-soft);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.tiny-btn {
+  padding: 0.18rem 0.45rem !important;
+  font-size: 0.74rem !important;
+}
+
+.app-search {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.app-search input {
+  width: 100%;
+}
+
+.app-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  max-height: 280px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--accent-soft);
+}
+
+.app-list > .muted {
+  padding: 12px;
+  margin: 0;
+}
+
+.app-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+  padding: 7px 10px;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.app-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--panel-solid) 80%, transparent);
+}
+
+.app-icon-fallback {
+  display: inline-block;
+  background: color-mix(in srgb, var(--muted) 28%, transparent);
+}
+
+.app-meta {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.app-meta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-meta span {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-row:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.app-row.on {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.app-row.on .app-meta span {
+  color: color-mix(in srgb, var(--accent-ink) 75%, transparent);
+}

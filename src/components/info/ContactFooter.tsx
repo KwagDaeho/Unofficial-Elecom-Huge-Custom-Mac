@@ -1,0 +1,41 @@
+import { CONTACT_EMAIL, CONTACT_URL } from "../../constants/contact";
+import * as tauri from "../../services/tauri";
+import type { Dict } from "../../i18n";
+
+export function ContactFooter({ i18n }: { i18n: Dict }) {
+  return (
+    <footer className="footer">
+      <p className="credit">
+        <span className="credit-by">{i18n.creditBy}</span> {i18n.credit}
+      </p>
+      <p className="muted">{i18n.version}</p>
+      <div className="contact-block">
+        <strong>{i18n.contactLabel}</strong>
+        <p>
+          {i18n.kakaoLabel}{" "}
+          <a
+            href={CONTACT_URL}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => {
+              e.preventDefault();
+              void tauri.openUrl(CONTACT_URL);
+            }}>
+            open.kakao.com/me/Theo_Kwag
+          </a>
+        </p>
+        <p>
+          {i18n.emailLabel}{" "}
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            onClick={(e) => {
+              e.preventDefault();
+              void tauri.openUrl(`mailto:${CONTACT_EMAIL}`);
+            }}>
+            {CONTACT_EMAIL}
+          </a>
+        </p>
+      </div>
+    </footer>
+  );
+}
