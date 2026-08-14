@@ -1,12 +1,26 @@
 Elecom Huge Custom — 설치 / Install
-================================
+====================================
 
-【권장】 가운데 「Install · 설치하기」 아이콘을 더블클릭하세요.
-  → 응용 프로그램으로 복사 · 권한 정리 · 개인정보 보호 및 보안 열기 · 앱 실행
+【중요】 Install 아이콘을 더블클릭하면 「열지 않음」이 뜹니다.
+        (도우미도 Apple 공증이 없어서 그렇습니다.)
 
-【드래그】 앱을 Applications로 끌어도 됩니다.
-  다만 Gatekeeper(「열지 않음」)와 권한은 직접 처리해야 합니다.
-  완료 → 시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기
+  → Install 아이콘을 **우클릭(또는 Control-클릭) → 열기 → 열기**
+     더블클릭이 아니라 우클릭 열기가 핵심입니다.
 
-Recommended: double-click the middle “Install · 설치하기” icon.
-Dragging the app to Applications also works, but you must handle Gatekeeper / permissions yourself.
+  그다음 도우미가:
+  응용 프로그램 복사 · 권한 정리 · 개인정보 보호 및 보안 열기 · 앱 실행
+
+【대안 A】 터미널 (Install이 계속 막힐 때)
+
+  bash "/Volumes/Elecom Huge Custom/install.sh"
+
+【대안 B】 드래그
+  앱 → Applications 로 드래그한 뒤
+  앱 우클릭 → 열기  또는  설정 → 개인정보 보호 및 보안 → 확인 없이 열기
+
+
+IMPORTANT: Double-clicking Install shows “will not open” (helper is not notarized).
+Right-click Install → Open → Open.
+
+Or in Terminal:
+  bash "/Volumes/Elecom Huge Custom/install.sh"

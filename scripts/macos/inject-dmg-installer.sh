@@ -42,9 +42,11 @@ MOUNT_POINT="$(echo "$ATTACH_OUT" | awk -F'\t' '/\/Volumes\//{print $NF; exit}')
 [[ -d "$MOUNT_POINT" ]] || { echo "Failed to resolve mount point"; exit 1; }
 
 echo "Mounted at: $MOUNT_POINT"
-rm -rf "$MOUNT_POINT/Install.app" "$MOUNT_POINT/설치하기.app" "$MOUNT_POINT/설치방법.txt"
+rm -rf "$MOUNT_POINT/Install.app" "$MOUNT_POINT/설치하기.app" "$MOUNT_POINT/설치방법.txt" "$MOUNT_POINT/install.sh"
 cp -R "$INSTALL_APP" "$MOUNT_POINT/Install.app"
 cp "$MACOS_SCRIPTS/설치방법.txt" "$MOUNT_POINT/설치방법.txt"
+cp "$MACOS_SCRIPTS/install.sh" "$MOUNT_POINT/install.sh"
+chmod +x "$MOUNT_POINT/install.sh"
 
 # Volume name as Finder sees it (may differ from mount path basename on remount)
 VOL_NAME="$(/usr/bin/basename "$MOUNT_POINT")"

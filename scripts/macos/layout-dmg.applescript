@@ -37,7 +37,10 @@ on run argv
 				set position of item "Applications" to {560, 180}
 			end try
 			try
-				set position of item "설치방법.txt" to {340, 340}
+				set position of item "설치방법.txt" to {220, 340}
+			end try
+			try
+				set position of item "install.sh" to {460, 340}
 			end try
 
 			update without registering applications

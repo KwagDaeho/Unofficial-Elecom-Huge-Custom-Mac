@@ -1,6 +1,6 @@
 # Unofficial Elecom Huge Custom (Mac)
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.4)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.4/Unofficial-Elecom-Huge-Custom-Mac-1.0.4-aarch64.dmg)
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.5)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.5/Unofficial-Elecom-Huge-Custom-Mac-1.0.5-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
 **Language / 언어:** [한국어](#ko) · [English](#en)
@@ -27,7 +27,7 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 
 ### 요구 사항
 
-- macOS 12+ (v1.0.4은 Apple Silicon / M1 이상)
+- macOS 12+ (v1.0.5은 Apple Silicon / M1 이상)
 - ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 (`M-HT1DRBK`)
 - 소스에서 빌드 시: Node 20+, Rust (stable)
 
@@ -36,16 +36,21 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 1. 위 **Download macOS DMG** 버튼을 누르거나 [Releases](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)에서 받습니다.
 2. `.dmg`를 엽니다.
 3. DMG 창에 **앱**, **Install · 설치하기**, **Applications** 아이콘이 보입니다.  
-   가운데 **Install · 설치하기**를 **더블클릭**하세요. (웹 버튼이 아니라 DMG 안의 앱 아이콘입니다.)  
+   **Install · 설치하기**를 **우클릭 → 열기 → 열기** 하세요.  
+   (더블클릭만 하면 「열지 않음」만 뜹니다. 도우미도 아직 공증되지 않아서입니다.)  
    → 응용 프로그램으로 복사 · 이전 권한 정리 · **개인정보 보호 및 보안** 열기 · 앱 실행  
-   (원하면 앱을 **Applications**로 드래그해도 됩니다. 다만 Gatekeeper·권한은 직접 처리해야 합니다.)
+   Install이 계속 막히면 터미널에서:  
+   `bash "/Volumes/Elecom Huge Custom/install.sh"`  
+   (원하면 앱을 **Applications**로 드래그해도 됩니다.)
 4. 디스크 이미지가 남아 있으면 직접 꺼내도 됩니다.
 
 현재 빌드는 Apple **공증(notarize)이 되어 있지 않아**, 처음 실행 시 macOS가 의도적으로 막을 수 있습니다. 아래 방법 중 하나를 따르세요.
 
 ### 처음 실행 — 「열지 않음」이 나올 때
 
-다음과 비슷한 창이 뜰 수 있습니다.
+**Install** 아이콘에서도 같은 창이 뜰 수 있습니다. 그때는 **우클릭 → 열기**를 쓰세요 (더블클릭 X).
+
+메인 앱에서도 다음과 비슷한 창이 뜰 수 있습니다.
 
 > “‘Elecom Huge Custom’을(를) 열지 않음”  
 > Apple이 … 악성 코드가 없음을 확인할 수 없습니다.
@@ -139,7 +144,7 @@ Source in this repository matches the tagged release so you can audit before ins
 
 ### Requirements
 
-- macOS 12+ (v1.0.4 is Apple Silicon / M1+)
+- macOS 12+ (v1.0.5 is Apple Silicon / M1+)
 - ELECOM HUGE wired (`M-HT1URBK`) or wireless (`M-HT1DRBK`)
 - Building from source: Node 20+, Rust (stable)
 
@@ -147,17 +152,21 @@ Source in this repository matches the tagged release so you can audit before ins
 
 1. Click **Download macOS DMG** above (or open [Releases](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)).
 2. Open the `.dmg`.
-3. Double-click the middle **Install · 설치하기** icon in the DMG window  
-   (it is an app icon on the disk image, not a web button).  
+3. In the DMG window, **right-click** the middle **Install · 설치하기** icon → **Open** → **Open**.  
+   (A plain double-click only shows “will not open” — the helper is not notarized yet.)  
    It copies the app to **Applications**, clears stale permission records, opens **Privacy & Security**, ejects the DMG, and launches the app.  
-   (Dragging the app to Applications still works, but you must handle Gatekeeper / permissions yourself.)
+   If Install stays blocked, in Terminal run:  
+   `bash "/Volumes/Elecom Huge Custom/install.sh"`  
+   (Dragging the app to Applications still works, but Gatekeeper / permissions are then manual.)
 4. If the disk image is still mounted, eject it yourself.
 
 This build is **not notarized by Apple** yet, so the first launch may be blocked. Use one of the methods below.
 
 ### First open — when macOS says it “will not open”
 
-You may see a dialog like:
+The **Install** helper can show the same dialog — use **right-click → Open** (not double-click).
+
+For the main app you may also see:
 
 > “Elecom Huge Custom” cannot be opened  
 > Apple could not verify … free of malware …
