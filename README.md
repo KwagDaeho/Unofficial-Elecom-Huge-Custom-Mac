@@ -3,7 +3,7 @@
 > **Unofficial / 비공식.** Not ELECOM software · ELECOM 공식 소프트웨어가 아닙니다.  
 > Not affiliated with ELECOM Co., Ltd. · ELECOM과 무관한 개인 제작물입니다.
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.0.9)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.0.9/Unofficial-Elecom-Huge-Custom-Mac-1.0.9-aarch64.dmg)
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.1.0)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.1.0/Unofficial-Elecom-Huge-Custom-Mac-1.1.0-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
 **Contact**  
@@ -37,13 +37,13 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 
 ### 요구 사항
 
-- macOS 12+ (v1.0.9은 Apple Silicon / M1 이상)
+- macOS 12+ (v1.1.0은 Apple Silicon / M1 이상)
 - ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 (`M-HT1DRBK`)
 - 소스에서 빌드 시: Node 20+, Rust (stable)
 
 ### 앱 실행
 
-1. [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.0.9-aarch64.dmg)를 다운로드합니다.
+1. [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.1.0-aarch64.dmg)를 다운로드합니다.
 2. `Unofficial-Elecom-Huge-Custom-Mac-x.x.x-aarch64.dmg`를 엽니다.
 3. **Elecom Huge Custom**을 **Applications(응용 프로그램)**으로 드래그합니다.
 4. 데스크톱(또는 Finder 사이드바)에 나타난 마운트된 **Elecom Huge Custom** 디스크 아이콘을 우클릭하고 **추출**합니다.
@@ -120,13 +120,13 @@ Source in this repository matches the tagged release so you can audit before ins
 
 ### Requirements
 
-- macOS 12+ (v1.0.9 is Apple Silicon / M1+)
+- macOS 12+ (v1.1.0 is Apple Silicon / M1+)
 - ELECOM HUGE wired (`M-HT1URBK`) or wireless (`M-HT1DRBK`)
 - Building from source: Node 20+, Rust (stable)
 
 ### Run the app
 
-1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.0.9-aarch64.dmg).
+1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.1.0-aarch64.dmg).
 2. Open `Unofficial-Elecom-Huge-Custom-Mac-x.x.x-aarch64.dmg`.
 3. Drag **Elecom Huge Custom** to **Applications**.
 4. On the Desktop (or Finder sidebar), right-click the mounted **Elecom Huge Custom** disk icon and choose **Eject**.
