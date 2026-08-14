@@ -1,0 +1,122 @@
+//! Shared macOS inject state and helpers used across pointer / mouse / action.
+
+mod action;
+mod keyboard;
+mod mouse;
+mod pointer;
+
+pub use action::{default_mouse_button, press_action, release_action};
+pub use mouse::synthetic_buttons_held;
+// mouse_down / mouse_up stay crate-visible via mouse::* for action; also re-export for API parity.
+#[allow(unused_imports)]
+pub use mouse::{mouse_down, mouse_up};
+pub use pointer::{
+    move_by, scroll_by_units_ex, scroll_notches_ex, set_shared_pointer_mode, shared_pointer_mode,
+    sync_cursor_from_system,
+};
+// Extra scroll helpers kept public for API parity with the former monolith.
+#[allow(unused_imports)]
+pub use pointer::{
+    scroll, scroll_by_units, scroll_notches, scroll_pixels, SCROLL_BASE_HORIZONTAL_PX,
+    SCROLL_BASE_VERTICAL_PX,
+};
+
+use core_graphics::event::CGEvent;
+use core_graphics::event_source::{CGEventSource, CGEventSourceStateID};
+use core_graphics::geometry::CGPoint;
+use parking_lot::Mutex;
+use std::sync::OnceLock;
+
+use crate::domain::profile::MouseClickButton;
+
+fn source() -> CGEventSource {
+    CGEventSource::new(CGEventSourceStateID::CombinedSessionState).expect("CGEventSource")
+}
+
+/// Hardware-like source — middle / other buttons are more reliable with this.
+fn hid_source() -> CGEventSource {
+    CGEventSource::new(CGEventSourceStateID::HIDSystemState).unwrap_or_else(|_| source())
+}
+
+fn cursor_pos() -> CGPoint {
+    CGEvent::new(source())
+        .map(|e| e.location())
+        .unwrap_or(CGPoint::new(0.0, 0.0))
+}
+
+static CURSOR: OnceLock<Mutex<CGPoint>> = OnceLock::new();
+static BUTTONS_DOWN: OnceLock<Mutex<ButtonsDown>> = OnceLock::new();
+
+#[derive(Default, Clone, Copy)]
+struct ButtonsDown {
+    left: bool,
+    right: bool,
+    middle: bool,
+    back: bool,
+    forward: bool,
+}
+
+impl ButtonsDown {
+    fn set(&mut self, button: &MouseClickButton, down: bool) {
+        match button {
+            MouseClickButton::Left => self.left = down,
+            MouseClickButton::Right => self.right = down,
+            MouseClickButton::Middle => self.middle = down,
+            MouseClickButton::Back => self.back = down,
+            MouseClickButton::Forward => self.forward = down,
+        }
+    }
+
+    fn any(&self) -> bool {
+        self.left || self.right || self.middle || self.back || self.forward
+    }
+
+    /// Which drag event to emit while moving with a button held.
+    fn drag_kind(
+        self,
+    ) -> Option<(
+        core_graphics::event::CGEventType,
+        core_graphics::event::CGMouseButton,
+        Option<i64>,
+    )> {
+        use core_graphics::event::{CGEventType, CGMouseButton};
+        if self.left {
+            Some((CGEventType::LeftMouseDragged, CGMouseButton::Left, None))
+        } else if self.right {
+            Some((CGEventType::RightMouseDragged, CGMouseButton::Right, None))
+        } else if self.middle {
+            Some((
+                CGEventType::OtherMouseDragged,
+                CGMouseButton::Center,
+                Some(2),
+            ))
+        } else if self.back {
+            Some((
+                CGEventType::OtherMouseDragged,
+                CGMouseButton::Left,
+                Some(3),
+            ))
+        } else if self.forward {
+            Some((
+                CGEventType::OtherMouseDragged,
+                CGMouseButton::Left,
+                Some(4),
+            ))
+        } else {
+            None
+        }
+    }
+}
+
+fn cursor_state() -> &'static Mutex<CGPoint> {
+    CURSOR.get_or_init(|| Mutex::new(cursor_pos()))
+}
+
+fn buttons_down() -> &'static Mutex<ButtonsDown> {
+    BUTTONS_DOWN.get_or_init(|| Mutex::new(ButtonsDown::default()))
+}
+
+fn sync_motion_suppress() {
+    let held = buttons_down().lock().any();
+    crate::platform::suppress::set_suppress_motion(held);
+}

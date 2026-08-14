@@ -1,0 +1,456 @@
+//! Button / timing policy helpers used by the HID worker.
+
+use std::collections::HashMap;
+use std::thread;
+use std::time::{Duration, Instant};
+
+use crate::domain::device::{ButtonId, ButtonState};
+use crate::domain::profile::{Action, ButtonBinding, Profile};
+use crate::domain::remap;
+use crate::platform::inject;
+
+/// First hold tick is immediate; then pause before auto-repeat (key-repeat style).
+const SCROLL_REPEAT_DELAY: Duration = Duration::from_millis(220);
+const SCROLL_REPEAT_RATE: Duration = Duration::from_millis(40);
+const KEY_REPEAT_DELAY: Duration = Duration::from_millis(400);
+const KEY_REPEAT_RATE: Duration = Duration::from_millis(50);
+/// HUGE tilt is an AC Pan axis that often sticks until the next HID frame
+/// (or until the wheel/ball is nudged). Gate converts sticky pan into one virtual
+/// press per gesture; continuous-click ON sustains until pan returns to 0.
+/// Continuous-click OFF: short TTL pulse, then after HID goes quiet allow re-arm
+/// without waiting for pan==0 (so consecutive tilts work).
+const TILT_HOLD_TTL: Duration = Duration::from_millis(70);
+
+pub(crate) struct PendingHold {
+    pub started: Instant,
+    pub click: Action,
+    pub long_press: Action,
+    pub long_fired: bool,
+}
+
+pub(crate) struct ScrollRepeat {
+    pub dx: i32,
+    pub dy: i32,
+    pub next_at: Instant,
+}
+
+pub(crate) struct ActionRepeat {
+    pub action: Action,
+    pub next_at: Instant,
+}
+
+/// Debounced tilt-down derived from sticky pan reports.
+#[derive(Debug, Default, Clone, Copy)]
+pub(crate) struct TiltHoldGate {
+    left_until: Option<Instant>,
+    right_until: Option<Instant>,
+    /// Seen pan≠0; for sustain, cleared only when pan returns to 0.
+    /// For pulse (AC off), also cleared after TTL once HID goes idle.
+    left_latched: bool,
+    right_latched: bool,
+    /// Continuous-click / long-press: stay down until pan==0 (no short TTL).
+    left_sustain: bool,
+    right_sustain: bool,
+}
+
+impl TiltHoldGate {
+    pub fn note_pan(
+        &mut self,
+        pan: i8,
+        now: Instant,
+        left_sustain: bool,
+        right_sustain: bool,
+    ) {
+        if pan == 0 {
+            self.left_until = None;
+            self.right_until = None;
+            self.left_latched = false;
+            self.right_latched = false;
+            self.left_sustain = false;
+            self.right_sustain = false;
+            return;
+        }
+
+        if pan < 0 {
+            self.right_until = None;
+            self.right_latched = false;
+            self.right_sustain = false;
+            self.left_sustain = left_sustain;
+            if !self.left_latched {
+                // One press edge per physical tilt until re-armed.
+                self.left_latched = true;
+                self.left_until = Some(Self::hold_deadline(now, left_sustain));
+            } else if left_sustain && self.left_until.is_none() {
+                self.left_until = Some(Self::hold_deadline(now, true));
+            }
+        } else {
+            self.left_until = None;
+            self.left_latched = false;
+            self.left_sustain = false;
+            self.right_sustain = right_sustain;
+            if !self.right_latched {
+                self.right_latched = true;
+                self.right_until = Some(Self::hold_deadline(now, right_sustain));
+            } else if right_sustain && self.right_until.is_none() {
+                self.right_until = Some(Self::hold_deadline(now, true));
+            }
+        }
+    }
+
+    fn hold_deadline(now: Instant, sustain: bool) -> Instant {
+        if sustain {
+            now + Duration::from_secs(60 * 60)
+        } else {
+            now + TILT_HOLD_TTL
+        }
+    }
+
+    pub fn expire(&mut self, now: Instant) {
+        if !self.left_sustain {
+            if self.left_until.is_some_and(|t| now >= t) {
+                self.left_until = None;
+            }
+        }
+        if !self.right_sustain {
+            if self.right_until.is_some_and(|t| now >= t) {
+                self.right_until = None;
+            }
+        }
+    }
+
+    /// Call only on HID idle (`read` timeout). Pulse mode: after the short
+    /// press ends and reports stop, allow the next physical tilt even if pan
+    /// never returned 0 (HUGE sticky pan). Do **not** call this on live pan
+    /// reports — that would re-arm every frame and feel like auto-click.
+    pub fn clear_pulse_latches_when_idle(&mut self) {
+        if !self.left_sustain && self.left_until.is_none() {
+            self.left_latched = false;
+        }
+        if !self.right_sustain && self.right_until.is_none() {
+            self.right_latched = false;
+        }
+    }
+
+    pub fn apply(self, state: &mut ButtonState) {
+        state.tilt_left = self.left_until.is_some();
+        state.tilt_right = self.right_until.is_some();
+    }
+}
+
+pub(crate) fn is_scroll_action(action: &Action) -> bool {
+    matches!(action, Action::Scroll { .. })
+}
+
+fn is_physical_mouse_button(id: ButtonId) -> bool {
+    matches!(
+        id,
+        ButtonId::Left
+            | ButtonId::Right
+            | ButtonId::Middle
+            | ButtonId::Back
+            | ButtonId::Forward
+    )
+}
+
+/// Actions that leave a mouse button held until release_action.
+fn action_needs_held_release(action: &Action) -> bool {
+    matches!(action, Action::MouseClick { .. } | Action::Default)
+}
+
+/// One complete activation (tap). Mouse/Default get down→up; others are already pulses.
+fn fire_action_pulse(
+    id: ButtonId,
+    action: &Action,
+    pointer: &crate::domain::profile::PointerSettings,
+) {
+    inject::press_action(id, action, pointer);
+    if action_needs_held_release(action) {
+        thread::sleep(Duration::from_millis(12));
+        inject::release_action(id, action);
+    }
+}
+
+fn action_needs_pointer_takeover(id: ButtonId, action: &Action) -> bool {
+    if is_physical_mouse_button(id) {
+        return !remap::action_is_native_for(id, action);
+    }
+    matches!(
+        action,
+        Action::MouseClick { .. } | Action::DoubleClick | Action::Scroll { .. }
+    )
+}
+
+fn physical_button_needs_takeover(id: ButtonId, profile: &Profile) -> bool {
+    let b = binding_of(profile, id);
+    b.uses_auto_click()
+        || b.uses_long_press()
+        || !remap::action_is_native_for(id, &b.click)
+}
+
+pub(crate) fn pointer_takeover_active(
+    held: &HashMap<ButtonId, Action>,
+    pending: &HashMap<ButtonId, PendingHold>,
+    down: &ButtonState,
+    profile: &Profile,
+) -> bool {
+    if inject::synthetic_buttons_held() {
+        return true;
+    }
+    if held
+        .iter()
+        .any(|(id, a)| action_needs_pointer_takeover(*id, a))
+    {
+        return true;
+    }
+    if pending.iter().any(|(id, h)| {
+        // While waiting for long-press we suppress OS *Dragged — move ourselves.
+        is_physical_mouse_button(*id)
+            || action_needs_pointer_takeover(*id, &h.click)
+            || (h.long_fired && action_needs_pointer_takeover(*id, &h.long_press))
+    }) {
+        return true;
+    }
+    // Auto-click / remapped physical buttons: OS *Dragged is suppressed while held.
+    [
+        ButtonId::Left,
+        ButtonId::Right,
+        ButtonId::Middle,
+        ButtonId::Back,
+        ButtonId::Forward,
+    ]
+    .into_iter()
+    .any(|id| down.is_down(id) && physical_button_needs_takeover(id, profile))
+}
+
+pub(crate) fn fire_due_long_presses(
+    pending: &mut HashMap<ButtonId, PendingHold>,
+    held: &mut HashMap<ButtonId, Action>,
+    pointer: &crate::domain::profile::PointerSettings,
+    threshold: Duration,
+) {
+    let now = Instant::now();
+    for (id, hold) in pending.iter_mut() {
+        if hold.long_fired || now.duration_since(hold.started) < threshold {
+            continue;
+        }
+        hold.long_fired = true;
+        inject::press_action(*id, &hold.long_press, pointer);
+        held.insert(*id, hold.long_press.clone());
+    }
+}
+
+pub(crate) fn fire_due_key_repeats(
+    repeats: &mut HashMap<ButtonId, ActionRepeat>,
+    pointer: &crate::domain::profile::PointerSettings,
+) {
+    let now = Instant::now();
+    for (id, rep) in repeats.iter_mut() {
+        if now < rep.next_at {
+            continue;
+        }
+        fire_action_pulse(*id, &rep.action, pointer);
+        rep.next_at = now + KEY_REPEAT_RATE;
+    }
+}
+
+fn start_key_repeat(repeats: &mut HashMap<ButtonId, ActionRepeat>, id: ButtonId, action: &Action) {
+    // Default is "noop" for long-press binding checks, but auto-click on OS-default
+    // must still repeat (resolve to the native mouse button when possible).
+    if matches!(action, Action::Disabled) || is_scroll_action(action) {
+        return;
+    }
+    let action = match action {
+        Action::Default => {
+            if let Some(btn) = inject::default_mouse_button(id) {
+                Action::MouseClick { button: btn }
+            } else {
+                return;
+            }
+        }
+        other => other.clone(),
+    };
+    repeats.insert(
+        id,
+        ActionRepeat {
+            action,
+            next_at: Instant::now() + KEY_REPEAT_DELAY,
+        },
+    );
+}
+
+pub(crate) fn fire_due_scroll_repeats(
+    repeats: &mut HashMap<ButtonId, ScrollRepeat>,
+    pointer: &crate::domain::profile::PointerSettings,
+) {
+    let (dx, dy) = take_due_scroll_repeats(repeats);
+    if dx != 0 || dy != 0 {
+        // Continuous so hold-to-scroll isn't dropped beside trackpad/other vertical scrolls.
+        inject::scroll_by_units_ex(dx, dy, pointer, true);
+    }
+}
+
+/// Accumulate due hold-repeat ticks (may be multiple buttons) without injecting yet,
+/// so the engine can merge them with the same report's wheel/pan into one gesture.
+pub(crate) fn take_due_scroll_repeats(repeats: &mut HashMap<ButtonId, ScrollRepeat>) -> (i32, i32) {
+    let now = Instant::now();
+    let mut dx = 0i32;
+    let mut dy = 0i32;
+    for rep in repeats.values_mut() {
+        if now < rep.next_at {
+            continue;
+        }
+        dx += rep.dx;
+        dy += rep.dy;
+        rep.next_at = now + SCROLL_REPEAT_RATE;
+    }
+    (dx, dy)
+}
+
+fn start_scroll_repeat(repeats: &mut HashMap<ButtonId, ScrollRepeat>, id: ButtonId, action: &Action) {
+    if let Action::Scroll { dx, dy } = action {
+        if *dx != 0 || *dy != 0 {
+            repeats.insert(
+                id,
+                ScrollRepeat {
+                    dx: *dx,
+                    dy: *dy,
+                    next_at: Instant::now() + SCROLL_REPEAT_DELAY,
+                },
+            );
+        }
+    }
+}
+
+pub(crate) fn binding_of(profile: &Profile, id: ButtonId) -> ButtonBinding {
+    profile
+        .buttons
+        .get(&id)
+        .cloned()
+        .unwrap_or_else(|| ButtonBinding::from_click(Action::Default))
+}
+
+/// OS-default and catalog "Scroll left/right" on tilt share one path: stream
+/// horizontal scroll from sticky HID pan while held (same feel either way).
+pub(crate) fn tilt_uses_pan_stream(b: &ButtonBinding) -> bool {
+    if b.uses_long_press() {
+        return false;
+    }
+    match &b.click {
+        Action::Default => true,
+        Action::Scroll { dx, dy } if *dy == 0 && *dx != 0 => true,
+        _ => false,
+    }
+}
+
+pub(crate) fn tilt_pan_stream_dx_notches(b: &ButtonBinding, pan: i8) -> f64 {
+    match &b.click {
+        Action::Default => pan as f64,
+        Action::Scroll { dx, .. } => {
+            let sign = if *dx > 0 { 1.0 } else { -1.0 };
+            sign * (pan.unsigned_abs() as f64)
+        }
+        _ => 0.0,
+    }
+}
+
+pub(crate) fn tilt_side_sustain(_profile: &Profile, _id: ButtonId) -> bool {
+    // Never sustain tilt on sticky pan. Remapped tilt is pulse + re-arm on HID
+    // idle (UI still shows continuous-click ON). Pan-stream scroll ignores this.
+    false
+}
+
+pub(crate) fn handle_button_transitions(
+    prev: ButtonState,
+    state: ButtonState,
+    profile: &Profile,
+    pending: &mut HashMap<ButtonId, PendingHold>,
+    held: &mut HashMap<ButtonId, Action>,
+    scroll_repeats: &mut HashMap<ButtonId, ScrollRepeat>,
+    key_repeats: &mut HashMap<ButtonId, ActionRepeat>,
+) {
+    for id in state.released_edges(prev) {
+        scroll_repeats.remove(&id);
+        key_repeats.remove(&id);
+        if let Some(hold) = pending.remove(&id) {
+            if hold.long_fired {
+                if let Some(action) = held.remove(&id) {
+                    inject::release_action(id, &action);
+                }
+            } else {
+                // Released before LP threshold → normal click once.
+                fire_action_pulse(id, &hold.click, &profile.pointer);
+            }
+        } else if let Some(action) = held.remove(&id) {
+            inject::release_action(id, &action);
+        }
+    }
+    for id in state.pressed_edges(prev) {
+        let binding = binding_of(profile, id);
+        let is_tilt = matches!(
+            id,
+            ButtonId::WheelTiltLeft | ButtonId::WheelTiltRight
+        );
+        if is_tilt && tilt_uses_pan_stream(&binding) {
+            // OS default / horizontal scroll → HID pan stream only.
+            continue;
+        }
+        if is_tilt {
+            // Remapped tilt: one pulse per press edge (AC profile flag is UI-only;
+            // do not enter key-repeat / sustain paths).
+            if inject::shared_pointer_mode()
+                && remap::action_is_native_for(id, &binding.click)
+            {
+                // OS-native already handled elsewhere.
+            } else if is_scroll_action(&binding.click) {
+                inject::press_action(id, &binding.click, &profile.pointer);
+            } else {
+                fire_action_pulse(id, &binding.click, &profile.pointer);
+            }
+            continue;
+        }
+
+        if binding.uses_long_press() {
+            pending.insert(
+                id,
+                PendingHold {
+                    started: Instant::now(),
+                    click: binding.click,
+                    long_press: binding.long_press,
+                    long_fired: false,
+                },
+            );
+        } else if binding.uses_auto_click() {
+            if is_scroll_action(&binding.click) {
+                held.insert(id, binding.click.clone());
+                inject::press_action(id, &binding.click, &profile.pointer);
+                start_scroll_repeat(scroll_repeats, id, &binding.click);
+            } else {
+                // Prefer concrete MouseClick so pulses/repeats always synthesize
+                // while OS clicks are suppressed.
+                let pulse = match &binding.click {
+                    Action::Default => {
+                        if let Some(btn) = inject::default_mouse_button(id) {
+                            Action::MouseClick { button: btn }
+                        } else {
+                            binding.click.clone()
+                        }
+                    }
+                    other => other.clone(),
+                };
+                fire_action_pulse(id, &pulse, &profile.pointer);
+                start_key_repeat(key_repeats, id, &pulse);
+            }
+        } else if inject::shared_pointer_mode()
+            && remap::action_is_native_for(id, &binding.click)
+        {
+            // Both off + OS-native → OS owns hold/drag.
+        } else if is_scroll_action(&binding.click) {
+            // Both off + scroll → one notch (no hold-repeat).
+            inject::press_action(id, &binding.click, &profile.pointer);
+        } else {
+            // Both off → sustained hold until release.
+            held.insert(id, binding.click.clone());
+            inject::press_action(id, &binding.click, &profile.pointer);
+        }
+    }
+}

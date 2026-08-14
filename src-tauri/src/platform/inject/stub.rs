@@ -1,0 +1,54 @@
+//! Non-macOS inject stubs (permissions live in `platform::permissions`).
+
+use crate::domain::device::ButtonId;
+use crate::domain::profile::Action;
+
+pub fn sync_cursor_from_system() {}
+pub fn move_by(_dx: f64, _dy: f64) {}
+pub fn scroll(_dx_lines: i32, _dy_lines: i32) {}
+pub fn scroll_pixels(_dx: i32, _dy: i32) {}
+pub fn scroll_notches(
+    _dx_notches: f64,
+    _dy_notches: f64,
+    _pointer: &crate::domain::profile::PointerSettings,
+) {
+}
+pub fn scroll_notches_ex(
+    _dx_notches: f64,
+    _dy_notches: f64,
+    _pointer: &crate::domain::profile::PointerSettings,
+    _continuous: bool,
+) {
+}
+pub fn scroll_by_units(
+    _dx_units: i32,
+    _dy_units: i32,
+    _pointer: &crate::domain::profile::PointerSettings,
+) {
+}
+pub fn scroll_by_units_ex(
+    _dx_units: i32,
+    _dy_units: i32,
+    _pointer: &crate::domain::profile::PointerSettings,
+    _continuous: bool,
+) {
+}
+pub fn set_shared_pointer_mode(_shared: bool) {}
+pub fn shared_pointer_mode() -> bool {
+    false
+}
+pub fn synthetic_buttons_held() -> bool {
+    false
+}
+pub fn press_action(
+    _id: ButtonId,
+    _action: &Action,
+    _pointer: &crate::domain::profile::PointerSettings,
+) {
+}
+pub fn release_action(_id: ButtonId, _action: &Action) {}
+pub fn default_mouse_button(
+    _id: ButtonId,
+) -> Option<crate::domain::profile::MouseClickButton> {
+    None
+}

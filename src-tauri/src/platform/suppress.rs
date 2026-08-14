@@ -17,11 +17,7 @@ use core_foundation::runloop::{kCFRunLoopCommonModes, CFRunLoop};
 use core_graphics::event::EventField;
 use parking_lot::Mutex;
 
-const BIT_LEFT: u8 = 1 << 0;
-const BIT_RIGHT: u8 = 1 << 1;
-const BIT_MIDDLE: u8 = 1 << 2;
-const BIT_BACK: u8 = 1 << 3;
-const BIT_FORWARD: u8 = 1 << 4;
+use crate::domain::remap::{BIT_BACK, BIT_FORWARD, BIT_LEFT, BIT_MIDDLE, BIT_RIGHT};
 
 static SUPPRESS_MASK: AtomicU8 = AtomicU8::new(0);
 /// When we synthesize mouse-down, OS still posts plain MouseMoved — suppress it
@@ -54,8 +50,8 @@ pub fn set_suppress_motion(suppress: bool) {
 }
 
 /// True while our tap is dropping OS events for this physical HUGE button.
-pub fn os_button_suppressed(id: crate::device::ButtonId) -> bool {
-    use crate::device::ButtonId;
+pub fn os_button_suppressed(id: crate::domain::device::ButtonId) -> bool {
+    use crate::domain::device::ButtonId;
     let mask = SUPPRESS_MASK.load(Ordering::SeqCst);
     let bit = match id {
         ButtonId::Left => BIT_LEFT,
@@ -69,8 +65,8 @@ pub fn os_button_suppressed(id: crate::device::ButtonId) -> bool {
 }
 
 /// True while our tap is dropping OS events for this synthetic mouse button.
-pub fn os_mouse_button_suppressed(button: &crate::profile::MouseClickButton) -> bool {
-    use crate::profile::MouseClickButton;
+pub fn os_mouse_button_suppressed(button: &crate::domain::profile::MouseClickButton) -> bool {
+    use crate::domain::profile::MouseClickButton;
     let mask = SUPPRESS_MASK.load(Ordering::SeqCst);
     let bit = match button {
         MouseClickButton::Left => BIT_LEFT,
@@ -134,92 +130,6 @@ fn should_drop_scroll_echo(event: *mut std::ffi::c_void) -> bool {
         return false;
     }
     true
-}
-
-pub fn mask_for(
-    left: bool,
-    right: bool,
-    middle: bool,
-    back: bool,
-    forward: bool,
-    left_remap: bool,
-    right_remap: bool,
-    middle_remap: bool,
-    back_remap: bool,
-    forward_remap: bool,
-) -> u8 {
-    let mut m = 0u8;
-    if left && left_remap {
-        m |= BIT_LEFT;
-    }
-    if right && right_remap {
-        m |= BIT_RIGHT;
-    }
-    if middle && middle_remap {
-        m |= BIT_MIDDLE;
-    }
-    if back && back_remap {
-        m |= BIT_BACK;
-    }
-    if forward && forward_remap {
-        m |= BIT_FORWARD;
-    }
-    m
-}
-
-pub fn action_is_native_for(id: crate::device::ButtonId, action: &crate::profile::Action) -> bool {
-    use crate::device::ButtonId;
-    use crate::profile::{Action, MouseClickButton};
-    match action {
-        Action::Default => true,
-        Action::MouseClick { button } => matches!(
-            (id, button),
-            (ButtonId::Left, MouseClickButton::Left)
-                | (ButtonId::Right, MouseClickButton::Right)
-                | (ButtonId::Middle, MouseClickButton::Middle)
-                | (ButtonId::Back, MouseClickButton::Back)
-                | (ButtonId::Forward, MouseClickButton::Forward)
-        ),
-        _ => false,
-    }
-}
-
-pub fn is_remapped(
-    id: crate::device::ButtonId,
-    action: &crate::profile::Action,
-    long_press: &crate::profile::Action,
-) -> bool {
-    use crate::profile::Action;
-    let click_remap = !action_is_native_for(id, action);
-    let lp_remap = !matches!(long_press, Action::Disabled | Action::Default)
-        && !action_is_native_for(id, long_press);
-    click_remap || lp_remap
-}
-
-pub fn remap_flags(profile: &crate::profile::Profile) -> (bool, bool, bool, bool, bool) {
-    use crate::device::ButtonId;
-    let flag = |id: ButtonId| {
-        let b = profile.buttons.get(&id).cloned().unwrap_or_else(|| {
-            crate::profile::ButtonBinding::from_click(crate::profile::Action::Default)
-        });
-        let lp = if b.uses_long_press() {
-            &b.long_press
-        } else {
-            &crate::profile::Action::Disabled
-        };
-        // Auto-click / remapped hold always needs suppress even if click looks native.
-        let click_remap = !action_is_native_for(id, &b.click) || b.uses_auto_click();
-        let lp_remap = !matches!(lp, crate::profile::Action::Disabled | crate::profile::Action::Default)
-            && !action_is_native_for(id, lp);
-        click_remap || lp_remap || b.uses_long_press()
-    };
-    (
-        flag(ButtonId::Left),
-        flag(ButtonId::Right),
-        flag(ButtonId::Middle),
-        flag(ButtonId::Back),
-        flag(ButtonId::Forward),
-    )
 }
 
 #[link(name = "CoreGraphics", kind = "framework")]
