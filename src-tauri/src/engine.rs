@@ -358,10 +358,10 @@ fn tilt_pan_stream_dx_notches(b: &ButtonBinding, pan: i8) -> f64 {
     }
 }
 
-fn tilt_side_sustain(profile: &Profile, id: ButtonId) -> bool {
-    let b = binding_of(profile, id);
-    // Pan-stream tilt (OS default / L-R scroll) ignores AC; other remaps sustain.
-    !tilt_uses_pan_stream(&b) && (b.uses_auto_click() || b.uses_long_press())
+fn tilt_side_sustain(_profile: &Profile, _id: ButtonId) -> bool {
+    // Never sustain tilt on sticky pan. Remapped tilt is pulse + re-arm on HID
+    // idle (UI still shows continuous-click ON). Pan-stream scroll ignores this.
+    false
 }
 
 fn handle_button_transitions(
@@ -391,12 +391,26 @@ fn handle_button_transitions(
     }
     for id in state.pressed_edges(prev) {
         let binding = binding_of(profile, id);
-        if matches!(
+        let is_tilt = matches!(
             id,
             ButtonId::WheelTiltLeft | ButtonId::WheelTiltRight
-        ) && tilt_uses_pan_stream(&binding)
-        {
+        );
+        if is_tilt && tilt_uses_pan_stream(&binding) {
             // OS default / horizontal scroll → HID pan stream only.
+            continue;
+        }
+        if is_tilt {
+            // Remapped tilt: one pulse per press edge (AC profile flag is UI-only;
+            // do not enter key-repeat / sustain paths).
+            if inject::shared_pointer_mode()
+                && suppress::action_is_native_for(id, &binding.click)
+            {
+                // OS-native already handled elsewhere.
+            } else if is_scroll_action(&binding.click) {
+                inject::press_action(id, &binding.click, &profile.pointer);
+            } else {
+                fire_action_pulse(id, &binding.click, &profile.pointer);
+            }
             continue;
         }
 
@@ -430,20 +444,6 @@ fn handle_button_transitions(
                 };
                 fire_action_pulse(id, &pulse, &profile.pointer);
                 start_key_repeat(key_repeats, id, &pulse);
-            }
-        } else if matches!(
-            id,
-            ButtonId::WheelTiltLeft | ButtonId::WheelTiltRight
-        ) {
-            // Tilt is a pan notch, not a sustained button — one click per press edge.
-            if inject::shared_pointer_mode()
-                && suppress::action_is_native_for(id, &binding.click)
-            {
-                // OS-native / default already handled elsewhere.
-            } else if is_scroll_action(&binding.click) {
-                inject::press_action(id, &binding.click, &profile.pointer);
-            } else {
-                fire_action_pulse(id, &binding.click, &profile.pointer);
             }
         } else if inject::shared_pointer_mode()
             && suppress::action_is_native_for(id, &binding.click)

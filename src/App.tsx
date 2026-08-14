@@ -403,12 +403,8 @@ export default function App() {
         ? { ...current, click: action }
         : { ...current, longPress: action };
     if (slot === "click" && isTiltButton(id)) {
-      // Tilt AC is locked: ON for L-R scroll / OS default, OFF for everything else.
-      if (tiltForcesAutoClick(id, action)) {
-        next = { ...next, autoClick: true, longPressEnabled: false };
-      } else {
-        next = { ...next, autoClick: false };
-      }
+      // Tilt AC is always locked ON (LP off). Engine pulses remaps; scroll uses pan-stream.
+      next = { ...next, autoClick: true, longPressEnabled: false };
     }
     void persist({
       ...profile,
@@ -422,11 +418,8 @@ export default function App() {
   ) {
     if (!profile) return;
     const current = asBinding(profile.buttons[id]);
-    // Tilt continuous-click is never toggled by the user (locked ON/OFF by action).
-    if (isTiltButton(id) && patch.autoClick !== undefined) {
-      return;
-    }
-    if (tiltForcesAutoClick(id, current.click)) {
+    // Tilt flags are locked (AC on, LP off).
+    if (isTiltButton(id)) {
       return;
     }
     let longPressEnabled = patch.longPressEnabled ?? !!current.longPressEnabled;
