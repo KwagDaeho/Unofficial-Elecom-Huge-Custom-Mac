@@ -604,7 +604,12 @@ export default function App() {
           {!trusted && (
             <section className="panel warn">
               <h2>{i18n.accessibilityTitle}</h2>
-              <p>{i18n.accessibilityBody}</p>
+              <ol className="perm-steps">
+                <li>{i18n.accessibilityStep1}</li>
+                <li>{i18n.accessibilityStep2}</li>
+                <li>{i18n.accessibilityStep3}</li>
+                <li>{i18n.accessibilityStep4}</li>
+              </ol>
               <ul className="perm-list">
                 <li>
                   {i18n.accessibility}: {perms?.accessibility || perms?.postEvent ? "ON" : "OFF"}
@@ -623,6 +628,12 @@ export default function App() {
                     setPerms(await invoke<PermissionStatus>("permission_status"));
                   }}>
                   {i18n.grantAccess}
+                </button>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => void invoke("open_accessibility_settings")}>
+                  {i18n.openSettings}
                 </button>
               </div>
             </section>
