@@ -1,0 +1,12 @@
+Elecom Huge Custom — 설치 / Install
+================================
+
+【권장】 가운데 「Install · 설치하기」 아이콘을 더블클릭하세요.
+  → 응용 프로그램으로 복사 · 권한 정리 · 개인정보 보호 및 보안 열기 · 앱 실행
+
+【드래그】 앱을 Applications로 끌어도 됩니다.
+  다만 Gatekeeper(「열지 않음」)와 권한은 직접 처리해야 합니다.
+  완료 → 시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기
+
+Recommended: double-click the middle “Install · 설치하기” icon.
+Dragging the app to Applications also works, but you must handle Gatekeeper / permissions yourself.

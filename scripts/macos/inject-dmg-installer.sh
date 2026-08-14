@@ -42,10 +42,19 @@ MOUNT_POINT="$(echo "$ATTACH_OUT" | awk -F'\t' '/\/Volumes\//{print $NF; exit}')
 [[ -d "$MOUNT_POINT" ]] || { echo "Failed to resolve mount point"; exit 1; }
 
 echo "Mounted at: $MOUNT_POINT"
-rm -rf "$MOUNT_POINT/Install.app" "$MOUNT_POINT/설치하기.app"
+rm -rf "$MOUNT_POINT/Install.app" "$MOUNT_POINT/설치하기.app" "$MOUNT_POINT/설치방법.txt"
 cp -R "$INSTALL_APP" "$MOUNT_POINT/Install.app"
+cp "$MACOS_SCRIPTS/설치방법.txt" "$MOUNT_POINT/설치방법.txt"
 
-# Optional: hide extension / set Korean name via .localized — Finder shows CFBundleDisplayName
+# Volume name as Finder sees it (may differ from mount path basename on remount)
+VOL_NAME="$(/usr/bin/basename "$MOUNT_POINT")"
+# Re-layout icons so Install is inside the visible window (Tauri only placed app + Applications)
+if /usr/bin/osascript "$MACOS_SCRIPTS/layout-dmg.applescript" "$VOL_NAME"; then
+  echo "Finder layout updated for: $VOL_NAME"
+else
+  echo "Warning: could not set Finder layout (Install.app is still on the volume)" >&2
+fi
+
 sync
 hdiutil detach "$MOUNT_POINT" -quiet
 MOUNT_POINT=""
