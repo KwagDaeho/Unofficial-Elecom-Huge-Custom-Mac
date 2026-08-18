@@ -245,10 +245,60 @@ pub fn default_mouse_button(id: ButtonId) -> Option<MouseClickButton> {
     }
 }
 
+/// True when WindowServer already owns this physical button's native click.
+/// `force_synth` is for deferred pulses after we already ate the OS down
+/// (long-press wait): suppress is off on release, but we still must inject.
+fn os_owns_native_click(id: ButtonId, force_synth: bool) -> bool {
+    if force_synth {
+        return false;
+    }
+    shared_pointer_mode()
+        && !id.is_hidden_from_macos()
+        && !crate::platform::suppress::os_button_suppressed(id)
+}
+
+fn skip_native_mouse_click(
+    id: ButtonId,
+    button: &MouseClickButton,
+    force_synth: bool,
+) -> bool {
+    if force_synth {
+        return false;
+    }
+    if !shared_pointer_mode() {
+        return false;
+    }
+    match default_mouse_button(id) {
+        Some(native)
+            if &native == button && !crate::platform::suppress::os_button_suppressed(id) =>
+        {
+            true
+        }
+        _ => false,
+    }
+}
+
 pub fn press_action(
     id: ButtonId,
     action: &Action,
     pointer: &crate::domain::profile::PointerSettings,
+) {
+    press_action_with(id, action, pointer, false);
+}
+
+pub fn press_action_forced(
+    id: ButtonId,
+    action: &Action,
+    pointer: &crate::domain::profile::PointerSettings,
+) {
+    press_action_with(id, action, pointer, true);
+}
+
+fn press_action_with(
+    id: ButtonId,
+    action: &Action,
+    pointer: &crate::domain::profile::PointerSettings,
+    force_synth: bool,
 ) {
     match action {
         Action::Disabled => {}
@@ -256,23 +306,15 @@ pub fn press_action(
             // Shared: OS delivers L/R/M/… unless we suppress that button
             // (auto-click / long-press / remap) — then we must synthesize.
             if let Some(btn) = default_mouse_button(id) {
-                let os_owns = shared_pointer_mode()
-                    && !id.is_hidden_from_macos()
-                    && !crate::platform::suppress::os_button_suppressed(id);
-                if !os_owns {
+                if !os_owns_native_click(id, force_synth) {
                     mouse_down(&btn);
                 }
             }
         }
         Action::MouseClick { button } => {
             // Same-as-native on L/R/…: OS owns it unless that stream is suppressed.
-            if shared_pointer_mode() {
-                if let Some(native) = default_mouse_button(id) {
-                    if &native == button && !crate::platform::suppress::os_button_suppressed(id)
-                    {
-                        return;
-                    }
-                }
+            if skip_native_mouse_click(id, button, force_synth) {
+                return;
             }
             mouse_down(button);
         }
@@ -286,6 +328,14 @@ pub fn press_action(
 }
 
 pub fn release_action(id: ButtonId, action: &Action) {
+    release_action_with(id, action, false);
+}
+
+pub fn release_action_forced(id: ButtonId, action: &Action) {
+    release_action_with(id, action, true);
+}
+
+fn release_action_with(id: ButtonId, action: &Action, force_synth: bool) {
     match action {
         Action::Disabled
         | Action::KeyStroke { .. }
@@ -296,22 +346,14 @@ pub fn release_action(id: ButtonId, action: &Action) {
         | Action::Macro { .. } => {}
         Action::Default => {
             if let Some(btn) = default_mouse_button(id) {
-                let os_owns = shared_pointer_mode()
-                    && !id.is_hidden_from_macos()
-                    && !crate::platform::suppress::os_button_suppressed(id);
-                if !os_owns {
+                if !os_owns_native_click(id, force_synth) {
                     mouse_up(&btn);
                 }
             }
         }
         Action::MouseClick { button } => {
-            if shared_pointer_mode() {
-                if let Some(native) = default_mouse_button(id) {
-                    if &native == button && !crate::platform::suppress::os_button_suppressed(id)
-                    {
-                        return;
-                    }
-                }
+            if skip_native_mouse_click(id, button, force_synth) {
+                return;
             }
             mouse_up(button);
         }

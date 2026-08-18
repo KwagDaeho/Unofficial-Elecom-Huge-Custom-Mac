@@ -163,10 +163,37 @@ fn fire_action_pulse(
     action: &Action,
     pointer: &crate::domain::profile::PointerSettings,
 ) {
-    inject::press_action(id, action, pointer);
+    fire_action_pulse_with(id, action, pointer, false);
+}
+
+/// Click after a long-press wait: OS down was already swallowed, and the
+/// suppress bit is off because the physical button is up — still inject.
+fn fire_deferred_click_pulse(
+    id: ButtonId,
+    action: &Action,
+    pointer: &crate::domain::profile::PointerSettings,
+) {
+    fire_action_pulse_with(id, action, pointer, true);
+}
+
+fn fire_action_pulse_with(
+    id: ButtonId,
+    action: &Action,
+    pointer: &crate::domain::profile::PointerSettings,
+    force_synth: bool,
+) {
+    if force_synth {
+        inject::press_action_forced(id, action, pointer);
+    } else {
+        inject::press_action(id, action, pointer);
+    }
     if action_needs_held_release(action) {
         thread::sleep(Duration::from_millis(12));
-        inject::release_action(id, action);
+        if force_synth {
+            inject::release_action_forced(id, action);
+        } else {
+            inject::release_action(id, action);
+        }
     }
 }
 
@@ -377,8 +404,9 @@ pub(crate) fn handle_button_transitions(
                     inject::release_action(id, &action);
                 }
             } else {
-                // Released before LP threshold → normal click once.
-                fire_action_pulse(id, &hold.click, &profile.pointer);
+                // Released before LP threshold → one click. Native L/R/… must
+                // be synthesized: suppress already dropped the OS down.
+                fire_deferred_click_pulse(id, &hold.click, &profile.pointer);
             }
         } else if let Some(action) = held.remove(&id) {
             inject::release_action(id, &action);

@@ -46,7 +46,17 @@ pub fn press_action(
     _pointer: &crate::domain::profile::PointerSettings,
 ) {
 }
+pub fn press_action_forced(
+    id: ButtonId,
+    action: &Action,
+    pointer: &crate::domain::profile::PointerSettings,
+) {
+    press_action(id, action, pointer);
+}
 pub fn release_action(_id: ButtonId, _action: &Action) {}
+pub fn release_action_forced(id: ButtonId, action: &Action) {
+    release_action(id, action);
+}
 pub fn default_mouse_button(
     _id: ButtonId,
 ) -> Option<crate::domain::profile::MouseClickButton> {

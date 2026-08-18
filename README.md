@@ -3,7 +3,7 @@
 > **Unofficial / 비공식.** Not ELECOM software · ELECOM 공식 소프트웨어가 아닙니다.  
 > Not affiliated with ELECOM Co., Ltd. · ELECOM과 무관한 개인 제작물입니다.
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.1.0)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.1.0/Unofficial-Elecom-Huge-Custom-Mac-1.1.0-aarch64.dmg)
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.1.1)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.1.1/Unofficial-Elecom-Huge-Custom-Mac-1.1.1-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
 **Contact**  
@@ -37,13 +37,37 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 
 ### 요구 사항
 
-- macOS 12+ (v1.1.0은 Apple Silicon / M1 이상)
-- ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 (`M-HT1DRBK`)
+- macOS 12+ (Monterey 이상)
+- ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 동글 (`M-HT1DRBK`)
+- **v1.1.1 GitHub DMG:** Apple Silicon (M1 이상)만. Intel Mac용 파일은 아직 없습니다.
 - 소스에서 빌드 시: Node 20+, Rust (stable)
+
+### 지원 범위 (v1.1.1)
+
+리맵은 M3 전용 API가 아닙니다. **HID + CGEvent**라 Intel/Apple Silicon 모두에서 같은 방식으로 동작합니다.  
+지금 Intel에서 안 열리는 이유는 API가 아니라, 올린 DMG가 **arm64 전용**이기 때문입니다. 유니버설(arm64+x86_64) 또는 Intel 전용 빌드를 추가로 릴리즈하면 Intel Mac도 쓸 수 있습니다.
+
+| | v1.1.1 DMG | 소스 빌드 / 이후 릴리즈 |
+|---|---|---|
+| Apple Silicon (M1–M4), macOS 12–26 | 지원 | 지원 |
+| Intel Mac, macOS 12–15 | 불가 (아키텍처) | 가능 (`x86_64` 또는 universal) |
+| macOS 11 이하 | 불가 (`minimumSystemVersion` 12.0) | 불가 |
+| HUGE Plus, Bluetooth HUGE | 불가 | 목록에 넣기 전엔 불가 |
+
+버전별로 갈리는 것은 클릭 합성이 아니라 **설치·권한**입니다.
+
+- **12–14:** 미공증 앱은 우클릭 → 열기로 실행 가능한 경우가 많음
+- **15 Sequoia 이상:** 우클릭 → 열기 불가. **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**
+- **손쉬운 사용**은 필수. 15+에서는 **입력 모니터링**도 같이 필요할 수 있음
+- 실제 기기에서 확인한 환경은 아래와 같습니다. 12–15는 API상 동일 계열로 기대하지만 QA 매트릭스는 아닙니다.
+
+**개발·테스트에 쓴 맥 (v1.1.1)**  
+Apple Silicon · M3 Pro · macOS 26.5.2 (25F84) · arm64.  
+다른 Mac에서의 동작은 위 표 기준의 기대치이며, 이 한 대에서만 확인했습니다.
 
 ### 앱 실행
 
-1. [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.1.0-aarch64.dmg)를 다운로드합니다.
+1. [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.1.1-aarch64.dmg)를 다운로드합니다.
 2. `Unofficial-Elecom-Huge-Custom-Mac-x.x.x-aarch64.dmg`를 엽니다.
 3. **Elecom Huge Custom**을 **Applications(응용 프로그램)**으로 드래그합니다.
 4. 데스크톱(또는 Finder 사이드바)에 나타난 마운트된 **Elecom Huge Custom** 디스크 아이콘을 우클릭하고 **추출**합니다.
@@ -96,6 +120,7 @@ npm run tauri:dev
 - 본체 DPI 스위치와 앱 안 속도 설정은 별개입니다.
 - Huge Plus (`M-HT1MRBK`)는 초기 지원 목록에 없습니다.
 - Apple Developer 서명·공증이 되면 Gatekeeper 마찰이 줄어든 빌드를 올릴 수 있습니다.
+- Intel용은 별도 `x86_64` / universal 빌드가 필요합니다. 코어 API는 칩과 무관합니다.
 
 ### 라이선스
 
@@ -120,13 +145,37 @@ Source in this repository matches the tagged release so you can audit before ins
 
 ### Requirements
 
-- macOS 12+ (v1.1.0 is Apple Silicon / M1+)
-- ELECOM HUGE wired (`M-HT1URBK`) or wireless (`M-HT1DRBK`)
+- macOS 12+ (Monterey or later)
+- ELECOM HUGE wired (`M-HT1URBK`) or wireless dongle (`M-HT1DRBK`)
+- **v1.1.1 GitHub DMG:** Apple Silicon (M1+) only. No Intel build is published yet.
 - Building from source: Node 20+, Rust (stable)
+
+### Coverage (v1.1.1)
+
+Remapping does not use M3-only APIs. It is **HID + CGEvent**, which works the same on Intel and Apple Silicon.  
+Intel Macs cannot run the current DMG because that file is **arm64-only**, not because the OS APIs are Apple Silicon-only. A later **universal** (arm64+x86_64) or Intel-only release would cover Intel.
+
+| | v1.1.1 DMG | From source / a later release |
+|---|---|---|
+| Apple Silicon (M1–M4), macOS 12–26 | Supported | Supported |
+| Intel Mac, macOS 12–15 | No (architecture) | Yes (`x86_64` or universal) |
+| macOS 11 and older | No (`minimumSystemVersion` 12.0) | No |
+| HUGE Plus, Bluetooth HUGE | No | Not until they are allow-listed |
+
+What actually changes by macOS version is **install and TCC**, not the click pipeline.
+
+- **12–14:** unsigned apps can often be opened via right-click → Open
+- **15 Sequoia+:** that bypass is gone. Use **System Settings → Privacy & Security → Open Anyway**
+- **Accessibility** is required; **15+** may also need **Input Monitoring**
+- The only machine this has been run on is listed below. 12–15 are expected to work as the same API family, not a tested QA matrix.
+
+**Development / test Mac (v1.1.1)**  
+Apple Silicon · M3 Pro · macOS 26.5.2 (25F84) · arm64.  
+Behavior on other Macs is inferred from the table above; it has not been verified on a device farm.
 
 ### Run the app
 
-1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.1.0-aarch64.dmg).
+1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.1.1-aarch64.dmg).
 2. Open `Unofficial-Elecom-Huge-Custom-Mac-x.x.x-aarch64.dmg`.
 3. Drag **Elecom Huge Custom** to **Applications**.
 4. On the Desktop (or Finder sidebar), right-click the mounted **Elecom Huge Custom** disk icon and choose **Eject**.
@@ -177,6 +226,7 @@ npm run tauri:dev
 - Hardware DPI switch is independent of in-app speed.
 - Huge Plus (`M-HT1MRBK`) is not in the first device allow-list.
 - Notarized builds (less Gatekeeper friction) may come later if Apple Developer signing is set up.
+- Intel needs a separate `x86_64` / universal build. The core APIs are chip-agnostic.
 
 ### License
 

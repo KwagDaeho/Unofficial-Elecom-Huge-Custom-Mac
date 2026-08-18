@@ -5,7 +5,9 @@ mod keyboard;
 mod mouse;
 mod pointer;
 
-pub use action::{default_mouse_button, press_action, release_action};
+pub use action::{
+    default_mouse_button, press_action, press_action_forced, release_action, release_action_forced,
+};
 pub use mouse::synthetic_buttons_held;
 // mouse_down / mouse_up stay crate-visible via mouse::* for action; also re-export for API parity.
 #[allow(unused_imports)]
