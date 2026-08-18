@@ -79,6 +79,42 @@ Apple Silicon · M3 Pro · macOS 26.5.2 (25F84) · arm64.
 > 현재 빌드는 Apple **공증(notarize)이 없습니다.**  
 > macOS Sequoia(15)+에서는 우클릭 → 열기로 Gatekeeper를 우회할 수 없습니다.
 
+미리 빌드된 DMG를 신뢰하기 어렵다면 **소스를 받아 직접 빌드**하면 됩니다. 릴리즈 태그와 이 저장소 내용이 같습니다.
+
+#### 소스에서 직접 빌드 (DMG 없이)
+
+필요한 것: [Xcode Command Line Tools](https://developer.apple.com/download/all/?q=command%20line%20tools), [Node 20+](https://nodejs.org/), [Rust](https://rustup.rs/).
+
+```bash
+git clone https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac.git
+cd Unofficial-Elecom-Huge-Custom-Mac
+git checkout v1.1.1
+
+export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"
+npm install
+npm run tauri:build
+```
+
+앱은 여기에 생깁니다.
+
+`src-tauri/target/release/bundle/macos/Elecom Huge Custom.app`
+
+Applications로 복사한 뒤, 아래 **앱 설정 (권한)** 을 진행합니다.
+
+```bash
+cp -R "src-tauri/target/release/bundle/macos/Elecom Huge Custom.app" /Applications/
+open "/Applications/Elecom Huge Custom.app"
+```
+
+Intel Mac이면 타깃을 추가한 뒤 같은 명령을 씁니다.
+
+```bash
+rustup target add x86_64-apple-darwin
+npx tauri build --target x86_64-apple-darwin
+```
+
+직접 빌드한 앱도 Apple 공증은 없습니다. 다만 바이너리를 직접 만들었으므로 릴리즈 DMG를 받을 필요는 없습니다.
+
 #### 대안 (터미널)
 
 응용 프로그램에 넣은 뒤:
@@ -106,7 +142,9 @@ tccutil reset Accessibility com.kwagdaeho.elecom-huge
 
 허용 후 앱이 자동 재시작됩니다.
 
-### 개발
+### 개발 (일일 작업)
+
+릴리즈용 `.app`이 아니라 개발 서버로 띄울 때:
 
 ```bash
 export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"
@@ -186,6 +224,42 @@ Behavior on other Macs is inferred from the table above; it has not been verifie
 
 > This build is **not notarized**. On macOS Sequoia (15)+, right-click → Open no longer bypasses Gatekeeper.
 
+If you do not want to trust the prebuilt DMG, **clone and build from source**. The tagged commit matches this repository.
+
+#### Build from source (no DMG)
+
+You need [Xcode Command Line Tools](https://developer.apple.com/download/all/?q=command%20line%20tools), [Node 20+](https://nodejs.org/), and [Rust](https://rustup.rs/).
+
+```bash
+git clone https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac.git
+cd Unofficial-Elecom-Huge-Custom-Mac
+git checkout v1.1.1
+
+export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"
+npm install
+npm run tauri:build
+```
+
+The app is written here:
+
+`src-tauri/target/release/bundle/macos/Elecom Huge Custom.app`
+
+Copy it to Applications, then continue with **App setup (permissions)** below.
+
+```bash
+cp -R "src-tauri/target/release/bundle/macos/Elecom Huge Custom.app" /Applications/
+open "/Applications/Elecom Huge Custom.app"
+```
+
+On Intel Macs, add the target first:
+
+```bash
+rustup target add x86_64-apple-darwin
+npx tauri build --target x86_64-apple-darwin
+```
+
+A local build is still not notarized. You do not have to download the GitHub DMG.
+
 #### Alternative (Terminal)
 
 After copying to Applications:
@@ -212,7 +286,9 @@ tccutil reset Accessibility com.kwagdaeho.elecom-huge
 
 Allow again — the app restarts automatically.
 
-### Develop
+### Develop (day-to-day)
+
+For a live dev server instead of a release `.app`:
 
 ```bash
 export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"
