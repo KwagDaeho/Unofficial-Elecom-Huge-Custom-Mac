@@ -1,10 +1,10 @@
-import type { Action, ButtonBinding, Profile } from "../../types/index";
-import { DEFAULT_LONG_PRESS_MS } from "../../constants/pointer";
+import type { Action, ButtonBinding } from "@/types";
+import { resolveBindingFlags } from "./fields";
 
 export function asBinding(
   value: Action | ButtonBinding | undefined,
 ): ButtonBinding {
-  if (!value) {
+  if (value === undefined) {
     return {
       click: { type: "default" },
       longPress: { type: "disabled" },
@@ -13,14 +13,25 @@ export function asBinding(
     };
   }
   if ("click" in value) {
-    let longPressEnabled = value.longPressEnabled ?? false;
-    let autoClick = value.autoClick ?? false;
-    if (longPressEnabled && autoClick) autoClick = false;
+    const flags = resolveBindingFlags(
+      {
+        click: value.click,
+        longPress:
+          value.longPress !== undefined
+            ? value.longPress
+            : { type: "disabled" },
+        longPressEnabled: value.longPressEnabled,
+        autoClick: value.autoClick,
+      },
+      {},
+    );
     return {
       click: value.click,
-      longPress: value.longPress ?? { type: "disabled" },
-      longPressEnabled,
-      autoClick,
+      longPress:
+        value.longPress !== undefined
+          ? value.longPress
+          : { type: "disabled" },
+      ...flags,
     };
   }
   return {
@@ -31,7 +42,4 @@ export function asBinding(
   };
 }
 
-export function longPressMs(p: Profile): number {
-  const n = p.longPressMs ?? DEFAULT_LONG_PRESS_MS;
-  return Math.min(2000, Math.max(150, n));
-}
+export { longPressMs } from "./pointerSpeeds";

@@ -5,12 +5,13 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
   ButtonMeta,
+  CaptureSession,
   DeviceInfo,
   InstalledApp,
   LastReport,
   PermissionStatus,
   Profile,
-} from "../types";
+} from "@/types";
 
 export async function getProfile(): Promise<Profile> {
   return invoke<Profile>("get_profile");
@@ -84,13 +85,6 @@ export async function openUrl(url: string): Promise<void> {
 export async function buttonCatalog(): Promise<ButtonMeta[]> {
   return invoke<ButtonMeta[]>("button_catalog");
 }
-
-export type CaptureSession = {
-  keyCapture: boolean;
-  comboTrigger: boolean;
-  activatorCapture: boolean;
-  uiModal: boolean;
-};
 
 export const CAPTURE_SESSION_OFF: CaptureSession = {
   keyCapture: false,

@@ -39,6 +39,16 @@ export type BallScrollSettings = {
   speed?: number;
 };
 
+export type ResolvedBallScrollSettings = {
+  toggleEnabled: boolean;
+  toggleActivator: Activator | null;
+  holdEnabled: boolean;
+  holdActivator: Activator | null;
+  invertVertical: boolean;
+  invertHorizontal: boolean;
+  speed: number;
+};
+
 export type ComboActivator = {
   modifiers: string[];
   keys: string[];

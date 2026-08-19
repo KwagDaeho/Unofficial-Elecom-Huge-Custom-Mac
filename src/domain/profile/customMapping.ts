@@ -1,7 +1,17 @@
-import type { ComboActivator, CustomMappingEntry, Profile } from "../../types";
+import type { ComboActivator, CustomMappingEntry, Profile } from "@/types";
 
 export function customMappingsOf(profile: Profile): CustomMappingEntry[] {
-  return profile.customMappings ?? [];
+  if (profile.customMappings === undefined) {
+    return [];
+  }
+  return profile.customMappings;
+}
+
+export function findCustomMapping(
+  profile: Profile,
+  entryId: string,
+): CustomMappingEntry | undefined {
+  return customMappingsOf(profile).find((entry) => entry.id === entryId);
 }
 
 export function newCustomMappingEntry(): CustomMappingEntry {

@@ -1,4 +1,4 @@
-import type { Action, ButtonId, Profile } from "../../types/index";
+import type { Action, ButtonId, Profile } from "@/types";
 import { asBinding } from "./binding";
 
 /** Tilt sides whose OS-default / L-R scroll use continuous HID pan streaming. */

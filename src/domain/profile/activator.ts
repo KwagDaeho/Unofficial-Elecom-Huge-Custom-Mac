@@ -1,9 +1,14 @@
-import { formatKeyChord } from "../actions";
-import { hugeButtonLabel, mouseClickLabel } from "../../i18n/names";
-import { splitChord } from "./chordCapture";
-import type { Activator, BallScrollSettings, ComboActivator, ButtonId, Lang } from "../../types";
+import { splitChord } from "./chord/capture";
+import type {
+  Activator,
+  BallScrollSettings,
+  BallScrollSlot,
+  ButtonId,
+  ComboActivator,
+  ResolvedBallScrollSettings,
+} from "@/types";
 
-export const DEFAULT_BALL_SCROLL: BallScrollSettings = {
+export const DEFAULT_BALL_SCROLL: ResolvedBallScrollSettings = {
   toggleEnabled: false,
   toggleActivator: null,
   holdEnabled: false,
@@ -15,41 +20,40 @@ export const DEFAULT_BALL_SCROLL: BallScrollSettings = {
 
 export function ballScrollOf(
   value: BallScrollSettings | undefined,
-): BallScrollSettings {
-  return { ...DEFAULT_BALL_SCROLL, ...value };
+): ResolvedBallScrollSettings {
+  const merged: BallScrollSettings =
+    value !== undefined ? { ...DEFAULT_BALL_SCROLL, ...value } : DEFAULT_BALL_SCROLL;
+  return {
+    toggleEnabled: merged.toggleEnabled,
+    toggleActivator: merged.toggleActivator,
+    holdEnabled: merged.holdEnabled,
+    holdActivator: merged.holdActivator,
+    invertVertical: merged.invertVertical === true,
+    invertHorizontal: merged.invertHorizontal === true,
+    speed: merged.speed !== undefined ? merged.speed : DEFAULT_BALL_SCROLL.speed,
+  };
 }
 
-export function activatorsEqual(a: Activator | null, b: Activator | null): boolean {
-  if (!a || !b) return false;
-  if (a.type !== b.type) return false;
-  if (a.type === "key" && b.type === "key") return a.name === b.name;
-  if (a.type === "mouse" && b.type === "mouse") return a.button === b.button;
-  if (a.type === "huge" && b.type === "huge") return a.button === b.button;
+export function activatorsEqual(
+  left: Activator | null,
+  right: Activator | null,
+): boolean {
+  if (left === null || right === null) {
+    return false;
+  }
+  if (left.type !== right.type) {
+    return false;
+  }
+  if (left.type === "key" && right.type === "key") {
+    return left.name === right.name;
+  }
+  if (left.type === "mouse" && right.type === "mouse") {
+    return left.button === right.button;
+  }
+  if (left.type === "huge" && right.type === "huge") {
+    return left.button === right.button;
+  }
   return false;
-}
-
-export function formatActivator(activator: Activator, lang: Lang): string {
-  if (activator.type === "key") {
-    return formatKeyChord([activator.name], lang);
-  }
-  if (activator.type === "mouse") {
-    return mouseClickLabel(activator.button, lang);
-  }
-  return hugeButtonLabel(activator.button, lang);
-}
-
-export function formatComboActivator(combo: ComboActivator, lang: Lang): string {
-  const parts: string[] = [];
-  for (const mod of ["Control", "Option", "Shift", "Meta"]) {
-    if (combo.modifiers.includes(mod)) {
-      parts.push(formatKeyChord([mod], lang).replace(/\s+/g, ""));
-    }
-  }
-  for (const key of combo.keys) {
-    parts.push(formatKeyChord([key], lang));
-  }
-  parts.push(hugeButtonLabel(combo.button, lang));
-  return parts.join(" + ");
 }
 
 export function comboFromDraft(
@@ -57,6 +61,15 @@ export function comboFromDraft(
   button: ButtonId,
 ): ComboActivator | null {
   const { modifiers, keys } = splitChord(chord);
-  if (modifiers.length === 0 && keys.length === 0) return null;
+  if (modifiers.length === 0 && keys.length === 0) {
+    return null;
+  }
   return { modifiers, keys, button };
+}
+
+export function ballScrollActivatorForSlot(
+  ball: ResolvedBallScrollSettings,
+  slot: BallScrollSlot,
+): Activator | null {
+  return slot === "toggle" ? ball.toggleActivator : ball.holdActivator;
 }

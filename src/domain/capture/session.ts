@@ -1,0 +1,55 @@
+import type { EditorMode, CaptureMode, CaptureSession } from "@/types";
+import { CAPTURE_SESSION_OFF } from "@/services/tauri";
+
+export function captureModeOf(editor: EditorMode | null): CaptureMode {
+  if (!editor) return "off";
+  if (editor.kind === "custom_key") return "custom_key";
+  if (editor.kind === "custom_combo_activator") {
+    return editor.phase === "capture" ? "combo_capture" : "combo_confirm";
+  }
+  if (editor.kind === "macro" && editor.capturing) return "macro";
+  if (editor.kind === "ball_scroll_activator") return "ball_scroll";
+  return "off";
+}
+
+export function captureSessionFor(mode: CaptureMode): CaptureSession {
+  switch (mode) {
+    case "custom_key":
+      return {
+        keyCapture: true,
+        comboTrigger: false,
+        activatorCapture: false,
+        uiModal: true,
+      };
+    case "combo_capture":
+      return {
+        keyCapture: false,
+        comboTrigger: true,
+        activatorCapture: false,
+        uiModal: true,
+      };
+    case "combo_confirm":
+      return {
+        keyCapture: false,
+        comboTrigger: false,
+        activatorCapture: false,
+        uiModal: true,
+      };
+    case "macro":
+      return {
+        keyCapture: true,
+        comboTrigger: false,
+        activatorCapture: false,
+        uiModal: true,
+      };
+    case "ball_scroll":
+      return {
+        keyCapture: false,
+        comboTrigger: false,
+        activatorCapture: true,
+        uiModal: true,
+      };
+    default:
+      return CAPTURE_SESSION_OFF;
+  }
+}

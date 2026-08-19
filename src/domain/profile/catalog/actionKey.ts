@@ -1,4 +1,4 @@
-import type { Action } from "../../types/index";
+import type { Action } from "@/types";
 
 export function actionKey(action: Action | undefined): string {
   if (!action) return JSON.stringify({ type: "default" });

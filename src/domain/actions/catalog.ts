@@ -1,4 +1,4 @@
-import type { CatalogEntry } from "../../types/index";
+import type { CatalogEntry } from "@/types";
 
 export const ACTION_CATALOG: CatalogEntry[] = [
   { id: "default", category: "basic", action: { type: "default" } },
