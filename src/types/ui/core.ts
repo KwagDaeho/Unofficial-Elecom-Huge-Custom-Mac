@@ -27,7 +27,7 @@ export type EditorMode =
       target: MappingTarget;
       slot: ActionSlot;
       steps: MacroStep[];
-      capturing: boolean;
+      keyPrompt: { mode: "add" } | { mode: "edit"; index: number } | null;
     }
   | {
       kind: "open_app";

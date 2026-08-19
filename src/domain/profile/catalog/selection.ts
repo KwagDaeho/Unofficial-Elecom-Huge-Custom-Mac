@@ -43,7 +43,7 @@ export const resolveCatalogSelection = (
     const steps = currentAction.type === "macro" ? currentAction.steps : [];
     return {
       kind: "editor",
-      editor: { kind: "macro", target, slot, steps, capturing: false },
+      editor: { kind: "macro", target, slot, steps, keyPrompt: null },
     };
   }
   if (value === OPEN_APP_SENTINEL) {

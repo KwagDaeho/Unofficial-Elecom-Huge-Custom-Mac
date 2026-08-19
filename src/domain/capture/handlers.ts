@@ -17,14 +17,24 @@ export const applyKeyCapture = (
     const hasMain = keys.some((k) => !CHORD_MODIFIERS.has(k));
     return hasMain ? { ...editor, draft: keys } : editor;
   }
-  if (captureMode === "macro" && editor.kind === "macro" && editor.capturing) {
-    if (escape) return { ...editor, capturing: false };
+  if (captureMode === "macro" && editor.kind === "macro" && editor.keyPrompt) {
+    if (escape) return { ...editor, keyPrompt: null };
     const hasMain = keys.some((k) => !CHORD_MODIFIERS.has(k));
     if (!hasMain) return editor;
+    const step = { type: "key_stroke" as const, keys };
+    if (editor.keyPrompt.mode === "add") {
+      return {
+        ...editor,
+        keyPrompt: null,
+        steps: [...editor.steps, step],
+      };
+    }
+    const nextSteps = editor.steps.slice();
+    nextSteps[editor.keyPrompt.index] = step;
     return {
       ...editor,
-      capturing: false,
-      steps: [...editor.steps, { type: "key_stroke", keys }],
+      keyPrompt: null,
+      steps: nextSteps,
     };
   }
   if (

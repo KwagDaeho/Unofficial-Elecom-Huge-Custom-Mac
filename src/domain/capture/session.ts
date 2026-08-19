@@ -6,7 +6,7 @@ export const captureModeOf = (editor: EditorMode | null): CaptureMode => {
   if (editor.kind === "custom_combo_activator") {
     return editor.phase === "capture" ? "combo_capture" : "combo_confirm";
   }
-  if (editor.kind === "macro" && editor.capturing) return "macro";
+  if (editor.kind === "macro" && editor.keyPrompt) return "macro";
   if (editor.kind === "ball_scroll_activator") return "ball_scroll";
   return "off";
 };

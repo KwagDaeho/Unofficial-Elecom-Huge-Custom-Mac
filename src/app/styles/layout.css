@@ -1,3 +1,18 @@
+.overlay-scroll-area {
+  position: relative;
+}
+
+.overlay-scroll-area-viewport {
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.overlay-scroll-area-viewport::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 .overlay-scrollbar {
   position: fixed;
   top: 0;
@@ -8,6 +23,11 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--overlay-scrollbar-fade-out, 640ms) ease;
+}
+
+.overlay-scrollbar-embedded {
+  position: absolute;
+  z-index: 2;
 }
 
 .overlay-scrollbar.on {
