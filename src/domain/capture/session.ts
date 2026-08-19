@@ -8,6 +8,8 @@ export const captureModeOf = (editor: EditorMode | null): CaptureMode => {
   }
   if (editor.kind === "macro" && editor.keyPrompt) return "macro";
   if (editor.kind === "ball_scroll_activator") return "ball_scroll";
+  if (editor.kind === "gesture_hold_activator") return "ball_scroll";
+  if (editor.kind === "gesture_path_recorder") return "gesture_record";
   return "off";
 };
 export const captureSessionFor = (mode: CaptureMode): CaptureSession => {
@@ -18,6 +20,7 @@ export const captureSessionFor = (mode: CaptureMode): CaptureSession => {
         comboTrigger: false,
         activatorCapture: false,
         uiModal: true,
+        gestureRecord: false,
       };
     case "combo_capture":
       return {
@@ -25,6 +28,7 @@ export const captureSessionFor = (mode: CaptureMode): CaptureSession => {
         comboTrigger: true,
         activatorCapture: false,
         uiModal: true,
+        gestureRecord: false,
       };
     case "combo_confirm":
       return {
@@ -32,6 +36,7 @@ export const captureSessionFor = (mode: CaptureMode): CaptureSession => {
         comboTrigger: false,
         activatorCapture: false,
         uiModal: true,
+        gestureRecord: false,
       };
     case "macro":
       return {
@@ -39,6 +44,7 @@ export const captureSessionFor = (mode: CaptureMode): CaptureSession => {
         comboTrigger: false,
         activatorCapture: false,
         uiModal: true,
+        gestureRecord: false,
       };
     case "ball_scroll":
       return {
@@ -46,6 +52,15 @@ export const captureSessionFor = (mode: CaptureMode): CaptureSession => {
         comboTrigger: false,
         activatorCapture: true,
         uiModal: true,
+        gestureRecord: false,
+      };
+    case "gesture_record":
+      return {
+        keyCapture: false,
+        comboTrigger: false,
+        activatorCapture: false,
+        uiModal: true,
+        gestureRecord: true,
       };
     default:
       return CAPTURE_SESSION_OFF;

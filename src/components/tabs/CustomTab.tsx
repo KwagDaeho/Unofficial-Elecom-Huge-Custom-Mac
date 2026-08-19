@@ -4,6 +4,7 @@ import {
   BallScrollPanel,
   ButtonMappingPanel,
   CustomButtonMappingPanel,
+  GestureMappingPanel,
   PointerScrollPanel,
 } from "@/components/mapping";
 export const CustomTab = () => {
@@ -14,6 +15,7 @@ export const CustomTab = () => {
       <ButtonMappingPanel />
       <PointerScrollPanel />
       <CustomButtonMappingPanel />
+      <GestureMappingPanel />
       <BallScrollPanel />
     </>
   );

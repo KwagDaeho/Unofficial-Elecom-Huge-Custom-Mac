@@ -7,6 +7,14 @@ export type ActivatorEditorState = Extract<
   EditorMode,
   { kind: "ball_scroll_activator" }
 >;
+export type GestureHoldActivatorState = Extract<
+  EditorMode,
+  { kind: "gesture_hold_activator" }
+>;
+export type GesturePathRecorderState = Extract<
+  EditorMode,
+  { kind: "gesture_path_recorder" }
+>;
 export type ComboEditorState = Extract<
   EditorMode,
   { kind: "custom_combo_activator" }

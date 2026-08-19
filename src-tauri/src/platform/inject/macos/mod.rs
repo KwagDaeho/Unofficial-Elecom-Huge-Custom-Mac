@@ -12,6 +12,7 @@ pub use action::{
 pub use keyboard::{keystroke_isolated, release_chord_hold};
 pub use mouse::synthetic_buttons_held;
 pub use mouse::click_at_cursor;
+pub use mouse::{left_down_at_cursor, left_drag_at_cursor, left_up_at_cursor};
 // mouse_down / mouse_up stay crate-visible via mouse::* for action; also re-export for API parity.
 #[allow(unused_imports)]
 pub use mouse::{mouse_down, mouse_up};

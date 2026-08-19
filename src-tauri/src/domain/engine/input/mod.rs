@@ -560,3 +560,11 @@ pub(crate) fn handle_button_transitions(
         );
     }
 }
+
+/// Fire a gesture-matched click action (no physical HUGE button context).
+pub fn fire_gesture_action(
+    action: &Action,
+    pointer: &crate::domain::profile::PointerSettings,
+) {
+    fire_action_pulse_with(ButtonId::Fn3, action, pointer, true);
+}

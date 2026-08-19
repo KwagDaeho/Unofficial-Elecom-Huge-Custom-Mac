@@ -163,3 +163,48 @@ pub fn click_at_cursor() {
         up.post(CGEventTapLocation::Session);
     }
 }
+
+/// Hold left button at cursor (gesture canvas drag start).
+pub fn left_down_at_cursor() {
+    let pos = cursor_pos();
+    let src = source();
+    if let Ok(down) = CGEvent::new_mouse_event(
+        src,
+        CGEventType::LeftMouseDown,
+        pos,
+        CGMouseButton::Left,
+    ) {
+        down.set_integer_value_field(EventField::MOUSE_EVENT_CLICK_STATE, 1);
+        down.post(CGEventTapLocation::Session);
+    }
+}
+
+/// Release left button at cursor (gesture canvas drag end).
+pub fn left_up_at_cursor() {
+    let pos = cursor_pos();
+    let src = source();
+    if let Ok(up) = CGEvent::new_mouse_event(
+        src,
+        CGEventType::LeftMouseUp,
+        pos,
+        CGMouseButton::Left,
+    ) {
+        up.set_integer_value_field(EventField::MOUSE_EVENT_CLICK_STATE, 1);
+        up.post(CGEventTapLocation::Session);
+    }
+}
+
+/// Notify webview of drag while left is held (ball moved during gesture record).
+pub fn left_drag_at_cursor() {
+    let pos = cursor_pos();
+    let src = source();
+    if let Ok(drag) = CGEvent::new_mouse_event(
+        src,
+        CGEventType::LeftMouseDragged,
+        pos,
+        CGMouseButton::Left,
+    ) {
+        drag.set_integer_value_field(EventField::MOUSE_EVENT_CLICK_STATE, 1);
+        drag.post(CGEventTapLocation::Session);
+    }
+}

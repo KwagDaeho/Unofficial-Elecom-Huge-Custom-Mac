@@ -8,6 +8,7 @@ use super::action::{Action, MouseClickButton};
 use super::activator::CustomMappingEntry;
 use super::ball_scroll::BallScrollSettings;
 use super::binding::ButtonBinding;
+use super::gesture::GestureMappingEntry;
 use super::pointer::PointerSettings;
 
 fn default_long_press_ms() -> u64 {
@@ -26,6 +27,9 @@ pub struct Profile {
     /// Modifier/key + HUGE button combos with their own bindings.
     #[serde(default)]
     pub custom_mappings: Vec<CustomMappingEntry>,
+    /// Hold key + drawn path gestures with their own bindings.
+    #[serde(default)]
+    pub gesture_mappings: Vec<GestureMappingEntry>,
     /// When true, remap engine is active.
     pub enabled: bool,
     /// Launch with the main window hidden (menu bar / tray only).
@@ -61,6 +65,7 @@ impl Default for Profile {
             pointer: PointerSettings::default(),
             ball_scroll: BallScrollSettings::default(),
             custom_mappings: Vec::new(),
+            gesture_mappings: Vec::new(),
             enabled: true,
             start_minimized: false,
             long_press_ms: default_long_press_ms(),

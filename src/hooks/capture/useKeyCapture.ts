@@ -5,6 +5,7 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { ensureGestureCanvasChannel } from "@/domain/gesture/gestureCanvasChannel";
 import {
   applyComboTriggerCapture,
   applyKeyCapture,
@@ -20,6 +21,7 @@ import type {
   ComboTriggerCapturePayload,
   EditorMode,
 } from "@/types";
+
 const blockBrowserKeyEvent = (event: Event) => {
   event.preventDefault();
   event.stopPropagation();
@@ -30,15 +32,22 @@ const blockBrowserKeyEvent = (event: Event) => {
     event.stopImmediatePropagation();
   }
 };
+
 export const useKeyCapture = (
   editor: EditorMode | null,
   setEditor: Dispatch<SetStateAction<EditorMode | null>>,
-  onActivatorAssigned: (slot: BallScrollSlot, activator: Activator) => void,
+  onActivatorAssigned: (slot: BallScrollSlot, activator: Activator) => boolean,
+  onGestureActivatorAssigned: (
+    entryId: string,
+    activator: Activator,
+  ) => boolean,
 ) => {
   const editorRef = useRef(editor);
   editorRef.current = editor;
   const onActivatorAssignedRef = useRef(onActivatorAssigned);
   onActivatorAssignedRef.current = onActivatorAssigned;
+  const onGestureActivatorAssignedRef = useRef(onGestureActivatorAssigned);
+  onGestureActivatorAssignedRef.current = onGestureActivatorAssigned;
   const captureMode = captureModeOf(editor);
   const captureSession = useMemo(
     () => captureSessionFor(captureMode),
@@ -46,10 +55,13 @@ export const useKeyCapture = (
   );
   useEffect(() => {
     void tauri.applyCaptureSession(captureSession);
+    if (captureMode === "gesture_record") {
+      void ensureGestureCanvasChannel();
+    }
     return () => {
       void tauri.applyCaptureSession(tauri.CAPTURE_SESSION_OFF);
     };
-  }, [captureSession]);
+  }, [captureSession, captureMode]);
   useEffect(() => {
     if (captureMode === "off") {
       return;
@@ -137,7 +149,8 @@ export const useKeyCapture = (
                 setEditor((previousEditor) => {
                   if (
                     previousEditor === null ||
-                    previousEditor.kind !== "ball_scroll_activator"
+                    (previousEditor.kind !== "ball_scroll_activator" &&
+                      previousEditor.kind !== "gesture_hold_activator")
                   ) {
                     return previousEditor;
                   }
@@ -145,8 +158,23 @@ export const useKeyCapture = (
                 });
                 return;
               }
-              onActivatorAssignedRef.current(result.slot, result.activator);
-              setEditor(null);
+              if (result.kind === "assign_gesture") {
+                const accepted = onGestureActivatorAssignedRef.current(
+                  result.entryId,
+                  result.activator,
+                );
+                if (accepted) {
+                  setEditor(null);
+                }
+                return;
+              }
+              const accepted = onActivatorAssignedRef.current(
+                result.slot,
+                result.activator,
+              );
+              if (accepted) {
+                setEditor(null);
+              }
             },
           );
           unsubs.push(unAct);

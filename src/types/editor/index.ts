@@ -3,5 +3,7 @@ export type {
   MacroEditorState,
   OpenAppEditorState,
   ActivatorEditorState,
+  GestureHoldActivatorState,
+  GesturePathRecorderState,
   ComboEditorState,
 } from "./modes";

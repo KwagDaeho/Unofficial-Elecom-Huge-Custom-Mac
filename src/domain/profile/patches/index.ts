@@ -7,6 +7,14 @@ export {
   withCustomMappingActivator,
 } from "./mappings";
 export {
+  withGestureMappingAdded,
+  withGestureMappingFlags,
+  withGestureMappingHoldActivator,
+  withGestureMappingRemoved,
+  withGestureMappingSlot,
+  withGestureMappingTemplate,
+} from "./gestures";
+export {
   withPointerPatch,
   withBallScrollPatch,
   withLongPressMs,

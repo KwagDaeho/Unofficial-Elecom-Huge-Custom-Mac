@@ -5,6 +5,14 @@ export {
   comboIsValid,
 } from "./customMapping";
 export {
+  gestureEntryIsValid,
+  gestureHoldLabel,
+  gestureHoldConflictsWithBallScroll,
+  ballScrollHoldConflictsWithGesture,
+  gestureMappingsOf,
+  newGestureMappingEntry,
+} from "./gestureMapping";
+export {
   resolveBindingFlags,
   bindingLongPressEnabled,
   bindingAutoClickEnabled,

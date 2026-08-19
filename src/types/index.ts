@@ -16,6 +16,9 @@ export type {
   ResolvedBallScrollSettings,
   ComboActivator,
   CustomMappingEntry,
+  GestureMappingEntry,
+  GesturePoint,
+  ProfileGestureMappingMutations,
   ProfileState,
   ProfileLifecycle,
   ProfileLoader,
@@ -62,6 +65,8 @@ export type {
   MacroEditorState,
   OpenAppEditorState,
   ActivatorEditorState,
+  GestureHoldActivatorState,
+  GesturePathRecorderState,
   ComboEditorState,
 } from "./editor";
 export type {

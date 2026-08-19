@@ -9,6 +9,9 @@ static ACTIVATOR_CAPTURE_WANTED: AtomicBool = AtomicBool::new(false);
 static COMBO_ACTIVATOR_CAPTURE: AtomicBool = AtomicBool::new(false);
 static COMBO_TRIGGER_CAPTURE: AtomicBool = AtomicBool::new(false);
 static UI_MODAL_ACTIVE: AtomicBool = AtomicBool::new(false);
+static GESTURE_RECORD_ACTIVE: AtomicBool = AtomicBool::new(false);
+static GESTURE_RECORD_STROKE_MOVED: AtomicBool = AtomicBool::new(false);
+static GESTURE_CANVAS_DRAWING: AtomicBool = AtomicBool::new(false);
 pub(crate) static TAP_STARTED: AtomicBool = AtomicBool::new(false);
 
 fn refresh_capture_active() {
@@ -35,6 +38,7 @@ pub fn apply_capture_session(session: CaptureSession) {
     ACTIVATOR_CAPTURE_WANTED.store(session.activator_capture, Ordering::SeqCst);
     COMBO_TRIGGER_CAPTURE.store(session.combo_trigger, Ordering::SeqCst);
     UI_MODAL_ACTIVE.store(session.ui_modal, Ordering::SeqCst);
+    GESTURE_RECORD_ACTIVE.store(session.gesture_record, Ordering::SeqCst);
 
     if session.combo_trigger != combo_was {
         #[cfg(target_os = "macos")]
@@ -77,6 +81,26 @@ pub fn set_combo_trigger_capture(active: bool) {
 
 pub fn set_ui_modal(active: bool) {
     UI_MODAL_ACTIVE.store(active, Ordering::SeqCst);
+}
+
+pub fn gesture_record_active() -> bool {
+    GESTURE_RECORD_ACTIVE.load(Ordering::SeqCst)
+}
+
+pub fn set_gesture_record_stroke_moved(moved: bool) {
+    GESTURE_RECORD_STROKE_MOVED.store(moved, Ordering::SeqCst);
+}
+
+pub fn gesture_record_stroke_moved() -> bool {
+    GESTURE_RECORD_STROKE_MOVED.load(Ordering::SeqCst)
+}
+
+pub fn set_gesture_canvas_drawing(active: bool) {
+    GESTURE_CANVAS_DRAWING.store(active, Ordering::SeqCst);
+}
+
+pub fn gesture_canvas_drawing() -> bool {
+    GESTURE_CANVAS_DRAWING.load(Ordering::SeqCst)
 }
 
 pub fn combo_trigger_capture_active() -> bool {

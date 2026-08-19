@@ -73,6 +73,15 @@ export const resolveActivatorCapture = (
   editor: EditorMode,
   payload: ActivatorCapturePayload,
 ): ActivatorCaptureResult | null => {
+  if (editor.kind === "gesture_hold_activator") {
+    const { escape, rejected, activator } = payload;
+    if (escape) return { kind: "close" };
+    if (rejected !== null) return { kind: "reject", rejected };
+    if (activator !== null) {
+      return { kind: "assign_gesture", entryId: editor.entryId, activator };
+    }
+    return null;
+  }
   if (editor.kind !== "ball_scroll_activator") return null;
   const { escape, rejected, activator } = payload;
   if (escape) return { kind: "close" };

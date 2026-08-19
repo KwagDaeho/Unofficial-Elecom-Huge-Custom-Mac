@@ -55,6 +55,15 @@ export type ComboActivator = {
   button: ButtonId;
 };
 
+export type GesturePoint = { x: number; y: number };
+
+export type GestureMappingEntry = {
+  id: string;
+  holdActivator: Activator | null;
+  template: GesturePoint[];
+  minScore?: number;
+} & ButtonBinding;
+
 export type CustomMappingEntry = {
   id: string;
   activator: ComboActivator;
@@ -77,6 +86,7 @@ export type Profile = {
   };
   ballScroll?: BallScrollSettings;
   customMappings?: CustomMappingEntry[];
+  gestureMappings?: GestureMappingEntry[];
   enabled: boolean;
   /** Launch with window closed; stay in menu bar (like Cmd+W). */
   startMinimized?: boolean;

@@ -8,6 +8,8 @@ export type {
   ResolvedBallScrollSettings,
   ComboActivator,
   CustomMappingEntry,
+  GestureMappingEntry,
+  GesturePoint,
 } from "./model";
 export type {
   ProfileState,
@@ -17,6 +19,7 @@ export type {
   ProfileMutations,
   ProfileMappingMutations,
   ProfileCustomMappingMutations,
+  ProfileGestureMappingMutations,
   ProfilePointerMutations,
   ProfileBallScrollMutations,
   ProfileCatalogMutations,

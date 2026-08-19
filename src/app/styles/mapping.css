@@ -132,6 +132,29 @@
   justify-self: end;
 }
 
+.gesture-mapping-grid .button-head,
+.gesture-mapping-row {
+  grid-template-columns:
+    minmax(6.5rem, 9rem) minmax(6.5rem, 9rem) 5.5rem 7rem minmax(0, 1fr)
+    minmax(0, 1fr) 3.5rem;
+}
+
+.gesture-record-canvas {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 8px;
+  border: 2px solid #c07bc4;
+  background: #ffffff;
+  touch-action: none;
+  cursor: crosshair;
+  display: block;
+}
+
+.gesture-record-status {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
 .ball-scroll-badge {
   font-size: 0.75rem;
   font-weight: 600;

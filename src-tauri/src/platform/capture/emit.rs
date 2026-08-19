@@ -1,6 +1,7 @@
 use crate::domain::device::ButtonId;
 use crate::domain::profile::{Activator, ComboActivator};
 use crate::platform::app_bus;
+use serde::Serialize;
 
 use super::session;
 use super::types::{ActivatorCapture, CaptureChord, ComboTriggerCapture};
@@ -54,6 +55,42 @@ pub fn emit_activator_from_hid(activator: Activator) {
     emit_activator_choice(activator);
 }
 
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GestureCanvasDelta {
+    dx: f64,
+    dy: f64,
+}
+
+pub fn emit_gesture_canvas_delta(dx: f64, dy: f64) {
+    if !session::gesture_record_active() {
+        return;
+    }
+    session::set_gesture_record_stroke_moved(true);
+    app_bus::emit(
+        "gesture-canvas-delta",
+        GestureCanvasDelta { dx, dy },
+    );
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GestureCanvasPhase {
+    phase: String,
+}
+
+pub fn emit_gesture_canvas_phase(phase: &str) {
+    if !session::gesture_record_active() {
+        return;
+    }
+    app_bus::emit(
+        "gesture-canvas-phase",
+        GestureCanvasPhase {
+            phase: phase.to_string(),
+        },
+    );
+}
+
 pub fn emit_combo_trigger_huge(button: ButtonId) {
     if !session::combo_trigger_capture_active() {
         return;
@@ -62,7 +99,10 @@ pub fn emit_combo_trigger_huge(button: ButtonId) {
     {
         let (modifiers, keys) = super::macos::combo_held_parts();
         if modifiers.is_empty() && keys.is_empty() {
-            if session::ui_modal_active() && button == ButtonId::Left {
+            if session::ui_modal_active()
+                && !session::gesture_record_active()
+                && button == ButtonId::Left
+            {
                 crate::platform::inject::click_at_cursor();
             }
             return;

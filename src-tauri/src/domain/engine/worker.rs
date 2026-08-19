@@ -10,6 +10,7 @@ use parking_lot::Mutex;
 
 use crate::domain::ball_scroll;
 use crate::domain::custom_mapping::{self, CustomMaps};
+use crate::domain::gesture_mapping;
 use crate::domain::device::{ButtonId, ButtonState, DeviceInfo, ParsedReport};
 use crate::domain::engine::input::{
     binding_of, fire_due_key_repeats, fire_due_long_presses, fire_due_scroll_repeats,
@@ -30,6 +31,7 @@ pub(crate) fn run(
     connected: Arc<Mutex<Option<DeviceInfo>>>,
 ) {
     let mut prev = ButtonState::default();
+    let mut prev_raw = ButtonState::default();
     let mut held: HashMap<ButtonId, Action> = HashMap::new();
     let mut pending: HashMap<ButtonId, PendingHold> = HashMap::new();
     let mut scroll_repeats: HashMap<ButtonId, ScrollRepeat> = HashMap::new();
@@ -53,7 +55,11 @@ pub(crate) fn run(
         let profile_snap = profile.lock().clone();
         ball_scroll::sync_from_profile(&profile_snap);
         custom_mapping::sync_from_profile(&profile_snap);
-        if ball_scroll::needs_event_watch(&profile_snap) || custom_mapping::uses_os_watch() {
+        gesture_mapping::sync_from_profile(&profile_snap);
+        if ball_scroll::needs_event_watch(&profile_snap)
+            || custom_mapping::uses_os_watch()
+            || gesture_mapping::needs_event_watch(&profile_snap)
+        {
             capture::ensure_watch_tap();
         }
         if !profile_snap.enabled {
@@ -224,8 +230,28 @@ pub(crate) fn run(
                         continue;
                     };
 
+                    let raw_buttons = parsed.buttons;
+
+                    if capture::gesture_record_active() {
+                        if !capture::gesture_canvas_drawing() {
+                            for id in raw_buttons.pressed_edges(prev_raw) {
+                                if id == ButtonId::Left {
+                                    capture::set_gesture_record_stroke_moved(false);
+                                    capture::emit_gesture_canvas_phase("start");
+                                }
+                            }
+                        }
+                        for id in raw_buttons.released_edges(prev_raw) {
+                            if id == ButtonId::Left {
+                                capture::emit_gesture_canvas_phase("end");
+                                capture::set_gesture_record_stroke_moved(false);
+                                capture::set_gesture_canvas_drawing(false);
+                            }
+                        }
+                    }
+
                     let now = Instant::now();
-                    let mut state = parsed.buttons;
+                    let mut state = raw_buttons;
                     let left_sustain =
                         tilt_side_sustain(&profile_snap, ButtonId::WheelTiltLeft);
                     let right_sustain =
@@ -260,6 +286,17 @@ pub(crate) fn run(
                             .map(|d| d.as_millis())
                             .unwrap_or(0),
                     });
+
+                    if capture::gesture_record_active()
+                        && !capture::gesture_canvas_drawing()
+                        && state.left
+                        && (parsed.dx != 0 || parsed.dy != 0)
+                    {
+                        capture::emit_gesture_canvas_delta(
+                            parsed.dx as f64,
+                            parsed.dy as f64,
+                        );
+                    }
 
                     let shared = inject::shared_pointer_mode();
 
@@ -296,9 +333,10 @@ pub(crate) fn run(
                     ));
 
                     ball_scroll::tick();
-                    let ball_scroll_on = ball_scroll::is_active();
+                        let ball_scroll_on = ball_scroll::is_active();
+                        let gesture_on = gesture_mapping::session_active();
 
-                    // Shared: OS moves cursor (Dock). Speed ≥ 1 — extras only when
+                        // Shared: OS moves cursor (Dock). Speed ≥ 1 — extras only when
                     // faster than 1× (dx-raw). Skip extras on wheel/pan reports.
                     {
                         let ignore_ball = ball_scroll::ignore_ball_pointer_motion();
@@ -349,8 +387,16 @@ pub(crate) fn run(
                             &state,
                             &profile_snap,
                         );
-                        suppress::set_suppress_motion(takeover || ball_scroll_on);
-                        let (out_x, out_y) = if ball_scroll_on {
+                        suppress::set_suppress_motion(takeover || ball_scroll_on || gesture_on);
+                        let gesture_canvas_draw = capture::gesture_record_active()
+                            && state.left
+                            && !capture::gesture_canvas_drawing();
+                        let (out_x, out_y) = if gesture_canvas_draw {
+                            (0.0, 0.0)
+                        } else if ball_scroll_on || gesture_on {
+                            if gesture_on {
+                                gesture_mapping::record_motion(raw_x, raw_y);
+                            }
                             (0.0, 0.0)
                         } else if shared && !takeover {
                             if scrolling {
@@ -451,6 +497,7 @@ pub(crate) fn run(
                     );
 
                     prev = state;
+                    prev_raw = raw_buttons;
                     suppress::set_suppress_motion(
                         pointer_takeover_active(
                             &held,
@@ -481,6 +528,7 @@ pub(crate) fn run(
         key_repeats.clear();
         tilt_gate = TiltHoldGate::default();
         prev = ButtonState::default();
+        prev_raw = ButtonState::default();
         suppress::sync_scroll_transform(false);
         suppress::clear_suppress();
         // Drop device → release exclusive claim so OS can take it if remap off.
@@ -545,7 +593,10 @@ fn note_huge_activators(prev: ButtonState, state: ButtonState) {
         }
         return;
     }
-    // HUGE L → synthetic webview click (Cancel / Save). Other buttons fall through.
+    // Gesture record L edges are handled on raw HID buttons in the worker loop.
+    if capture::gesture_record_active() {
+        return;
+    }
     if capture::ui_modal_active() {
         for id in state.pressed_edges(prev) {
             if id == ButtonId::Left {
@@ -562,5 +613,6 @@ fn note_huge_activators(prev: ButtonState, state: ButtonState) {
         }
         return;
     }
+    gesture_mapping::note_huge_edges(prev, state);
     ball_scroll::note_huge_edges(prev, state);
 }

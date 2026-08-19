@@ -2,6 +2,7 @@ use std::ffi::c_void;
 
 use crate::domain::ball_scroll;
 use crate::domain::custom_mapping;
+use crate::domain::gesture_mapping;
 use crate::domain::profile::Activator;
 use crate::platform::app_bus;
 use crate::platform::inject;
@@ -162,11 +163,17 @@ fn handle_watch(etype: u32, event: CGEventRef) -> CGEventRef {
                     return std::ptr::null_mut();
                 }
                 if custom_mapping::should_swallow_os_key(name) {
+                    if gesture_mapping::on_os_down(&activator, autorepeat) {
+                        return std::ptr::null_mut();
+                    }
                     if ball_scroll::on_os_down(&activator, autorepeat) {
                         return std::ptr::null_mut();
                     }
                     return std::ptr::null_mut();
                 }
+            }
+            if gesture_mapping::on_os_down(&activator, autorepeat) {
+                return std::ptr::null_mut();
             }
             if ball_scroll::on_os_down(&activator, autorepeat) {
                 return std::ptr::null_mut();
@@ -184,11 +191,17 @@ fn handle_watch(etype: u32, event: CGEventRef) -> CGEventRef {
                     return std::ptr::null_mut();
                 }
                 if custom_mapping::should_swallow_os_key(name) {
+                    if gesture_mapping::on_os_up(&activator, autorepeat) {
+                        return std::ptr::null_mut();
+                    }
                     if ball_scroll::on_os_up(&activator, autorepeat) {
                         return std::ptr::null_mut();
                     }
                     return std::ptr::null_mut();
                 }
+            }
+            if gesture_mapping::on_os_up(&activator, autorepeat) {
+                return std::ptr::null_mut();
             }
             if ball_scroll::on_os_up(&activator, autorepeat) {
                 return std::ptr::null_mut();
@@ -209,9 +222,11 @@ fn handle_watch(etype: u32, event: CGEventRef) -> CGEventRef {
                 custom_mapping::note_os_up(&activator, false);
             }
             let handled = if down {
-                ball_scroll::on_os_down(&activator, false)
+                gesture_mapping::on_os_down(&activator, false)
+                    || ball_scroll::on_os_down(&activator, false)
             } else {
-                ball_scroll::on_os_up(&activator, false)
+                gesture_mapping::on_os_up(&activator, false)
+                    || ball_scroll::on_os_up(&activator, false)
             };
             if handled {
                 return std::ptr::null_mut();
@@ -224,9 +239,11 @@ fn handle_watch(etype: u32, event: CGEventRef) -> CGEventRef {
         unsafe { CGEventGetIntegerValueField(event, MOUSE_EVENT_BUTTON_NUMBER) },
     ) {
         let handled = if down {
-            ball_scroll::on_os_down(&activator, false)
+            gesture_mapping::on_os_down(&activator, false)
+                || ball_scroll::on_os_down(&activator, false)
         } else {
-            ball_scroll::on_os_up(&activator, false)
+            gesture_mapping::on_os_up(&activator, false)
+                || ball_scroll::on_os_up(&activator, false)
         };
         if handled {
             return std::ptr::null_mut();

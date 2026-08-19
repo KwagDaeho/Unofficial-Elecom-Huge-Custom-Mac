@@ -29,3 +29,8 @@ pub fn set_combo_trigger_capture(active: bool) {
 pub fn set_ui_modal(active: bool) {
     capture::set_ui_modal(active);
 }
+
+#[tauri::command]
+pub fn set_gesture_canvas_drawing(active: bool) {
+    capture::set_gesture_canvas_drawing(active);
+}

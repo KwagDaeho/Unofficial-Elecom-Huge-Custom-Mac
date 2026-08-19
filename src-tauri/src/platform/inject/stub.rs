@@ -4,6 +4,9 @@ use crate::domain::device::ButtonId;
 use crate::domain::profile::Action;
 
 pub fn click_at_cursor() {}
+pub fn left_down_at_cursor() {}
+pub fn left_up_at_cursor() {}
+pub fn left_drag_at_cursor() {}
 pub fn pin_cursor() {}
 pub fn restore_pinned_cursor() {}
 pub fn release_ball_scroll_pin() {}
