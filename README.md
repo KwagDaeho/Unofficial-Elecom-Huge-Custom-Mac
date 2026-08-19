@@ -9,8 +9,13 @@
 [![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.2.1)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.2.1/Unofficial-Elecom-Huge-Custom-Mac-1.2.1-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
-**Contact**  
-Email: [1438eogh@gmail.com](mailto:1438eogh@gmail.com) · Kakao: [open.kakao.com/me/Theo_Kwag](https://open.kakao.com/me/Theo_Kwag) · GitHub: [KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac)
+**Contact**
+
+[Email: 1438eogh@gmail.com](mailto:1438eogh@gmail.com)
+
+[Kakao: open.kakao.com/me/Theo_Kwag](https://open.kakao.com/me/Theo_Kwag)
+
+[GitHub: KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac)
 
 <br />
 
@@ -18,11 +23,13 @@ Email: [1438eogh@gmail.com](mailto:1438eogh@gmail.com) · Kakao: [open.kakao.com
 
 <br />
 
-**Supported languages:** Korean · English  
-**지원 언어:** 한국어 · English
+Supported languages: Korean / English
 
-**Jump to docs:** [English](#en)  
-**문서 바로가기:** [한국어](#ko)
+지원 언어: 한국어 / 영어
+
+[Jump to docs](#en)
+
+[문서 바로가기](#ko)
 
 <a id="en"></a>
 
