@@ -53,7 +53,7 @@ pub(crate) fn run(
         let profile_snap = profile.lock().clone();
         ball_scroll::sync_from_profile(&profile_snap);
         custom_mapping::sync_from_profile(&profile_snap);
-        if profile_snap.ball_scroll.uses_os_watch() || custom_mapping::uses_os_watch() {
+        if ball_scroll::needs_event_watch(&profile_snap) || custom_mapping::uses_os_watch() {
             capture::ensure_watch_tap();
         }
         if !profile_snap.enabled {
@@ -290,8 +290,17 @@ pub(crate) fn run(
                     // Shared: OS moves cursor (Dock). Speed ≥ 1 — extras only when
                     // faster than 1× (dx-raw). Skip extras on wheel/pan reports.
                     {
-                        let raw_x = parsed.dx as f64;
-                        let raw_y = parsed.dy as f64;
+                        let ignore_ball = ball_scroll::ignore_ball_pointer_motion();
+                        let raw_x = if ignore_ball {
+                            0.0
+                        } else {
+                            parsed.dx as f64
+                        };
+                        let raw_y = if ignore_ball {
+                            0.0
+                        } else {
+                            parsed.dy as f64
+                        };
                         let mut dx = raw_x * profile_snap.pointer.speed_x();
                         let mut dy = raw_y * profile_snap.pointer.speed_y();
                         if !profile_snap.pointer.acceleration {
@@ -346,46 +355,51 @@ pub(crate) fn run(
                         }
                     }
 
-                    // HUGE wheel + default tilt-pan: inject from HID (same invert
-                    // path as custom scroll). Drop the OS echo while armed.
-                    // Trackpad never arms → untouched.
+                    // HUGE wheel / tilt-pan — skip inject while ball-as-scroll.
+                    // Shared HID still posts the OS wheel; arm echo drop so it
+                    // does not mix with ball scroll. Trackpad never arms.
                     let mut scroll_dx_notches = 0.0_f64;
                     let mut scroll_dy_notches = 0.0_f64;
                     let mut scroll_continuous = false;
 
-                    if parsed.wheel != 0 {
+                    if ball_scroll_on && (parsed.wheel != 0 || parsed.pan != 0) {
                         suppress::arm_huge_scroll_echo_suppress();
-                        scroll_dy_notches += parsed.wheel as f64;
                     }
-                    if parsed.pan != 0 {
-                        let side = if parsed.pan < 0 {
-                            ButtonId::WheelTiltLeft
-                        } else {
-                            ButtonId::WheelTiltRight
-                        };
-                        let binding = binding_of(&profile_snap, side);
-                        suppress::arm_huge_scroll_echo_suppress();
-                        if tilt_uses_pan_stream(&binding) {
-                            // OS default and Scroll left/right: same pan stream.
-                            scroll_dx_notches +=
-                                tilt_pan_stream_dx_notches(&binding, parsed.pan);
+
+                    if !ball_scroll_on {
+                        if parsed.wheel != 0 {
+                            suppress::arm_huge_scroll_echo_suppress();
+                            scroll_dy_notches += parsed.wheel as f64;
                         }
-                    }
+                        if parsed.pan != 0 {
+                            let side = if parsed.pan < 0 {
+                                ButtonId::WheelTiltLeft
+                            } else {
+                                ButtonId::WheelTiltRight
+                            };
+                            let binding = binding_of(&profile_snap, side);
+                            suppress::arm_huge_scroll_echo_suppress();
+                            if tilt_uses_pan_stream(&binding) {
+                                scroll_dx_notches +=
+                                    tilt_pan_stream_dx_notches(&binding, parsed.pan);
+                            }
+                        }
 
-                    let (rep_dx, rep_dy) = take_due_scroll_repeats(&mut scroll_repeats);
-                    if rep_dx != 0 || rep_dy != 0 {
-                        scroll_dx_notches += rep_dx as f64 / 3.0;
-                        scroll_dy_notches += rep_dy as f64 / 3.0;
-                        scroll_continuous = true;
-                    }
+                        let (rep_dx, rep_dy) = take_due_scroll_repeats(&mut scroll_repeats);
+                        if rep_dx != 0 || rep_dy != 0 {
+                            scroll_dx_notches += rep_dx as f64 / 3.0;
+                            scroll_dy_notches += rep_dy as f64 / 3.0;
+                            scroll_continuous = true;
+                        }
 
-                    if scroll_dx_notches != 0.0 || scroll_dy_notches != 0.0 {
-                        inject::scroll_notches_ex(
-                            scroll_dx_notches,
-                            scroll_dy_notches,
-                            &profile_snap.pointer,
-                            scroll_continuous,
-                        );
+                        if scroll_dx_notches != 0.0 || scroll_dy_notches != 0.0 {
+                            inject::scroll_notches_ex(
+                                scroll_dx_notches,
+                                scroll_dy_notches,
+                                &profile_snap.pointer,
+                                scroll_continuous,
+                            );
+                        }
                     }
 
                     if ball_scroll_on {

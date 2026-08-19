@@ -161,6 +161,8 @@ fn should_suppress(etype: u32, button_number: i64) -> bool {
     }
 }
 
+const FIELD_SCROLL_IS_CONTINUOUS: u32 = 88;
+
 fn should_drop_scroll_echo(event: *mut std::ffi::c_void) -> bool {
     if !scroll_echo_armed() {
         return false;
@@ -170,6 +172,20 @@ fn should_drop_scroll_echo(event: *mut std::ffi::c_void) -> bool {
         return false;
     }
     true
+}
+
+/// HUGE wheel is discrete HID. Trackpad is continuous / momentum — leave it.
+fn should_drop_huge_wheel_during_ball_scroll(event: *mut std::ffi::c_void) -> bool {
+    if !crate::domain::ball_scroll::is_active() {
+        return false;
+    }
+    let momentum = unsafe { CGEventGetIntegerValueField(event, FIELD_SCROLL_MOMENTUM_PHASE) };
+    if momentum != 0 {
+        return false;
+    }
+    let continuous =
+        unsafe { CGEventGetIntegerValueField(event, FIELD_SCROLL_IS_CONTINUOUS) };
+    continuous == 0
 }
 
 #[link(name = "CoreGraphics", kind = "framework")]
@@ -220,6 +236,9 @@ unsafe extern "C" fn tap_callback(
     }
 
     if etype == EVENT_SCROLL_WHEEL {
+        if should_drop_huge_wheel_during_ball_scroll(event) {
+            return std::ptr::null_mut();
+        }
         if let Some((x, y)) = cursor_lock_point() {
             pin_mouse_event(event, x, y);
             return event;
