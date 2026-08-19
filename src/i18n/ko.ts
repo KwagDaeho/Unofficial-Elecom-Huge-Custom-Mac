@@ -12,7 +12,6 @@ export const ko = {
     "시스템 대화상자 또는 손쉬운 사용 설정에서 Elecom Huge Custom 앱을 허용해주세요.",
   accessibilityStep3: "권한이 허용되면 앱이 자동으로 재시작됩니다.",
   grantAccess: "권한 요청",
-  version: "v1.0.9",
   buttonMapping: "버튼 매핑",
   clickAction: "클릭",
   longPressAction: "롱프레스",

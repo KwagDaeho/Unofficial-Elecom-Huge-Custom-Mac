@@ -1,15 +1,16 @@
 {
   "name": "elecom-huge",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "node scripts/sync-app-version.mjs --check && tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
+    "version:sync": "node scripts/sync-app-version.mjs",
     "app:open": "npm run tauri:build && open \"src-tauri/target/release/bundle/macos/Elecom Huge Custom.app\""
   },
   "dependencies": {

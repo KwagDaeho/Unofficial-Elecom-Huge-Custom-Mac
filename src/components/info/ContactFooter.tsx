@@ -1,4 +1,5 @@
 import { CONTACT_EMAIL, CONTACT_URL } from "../../constants/contact";
+import { APP_VERSION_LABEL } from "../../constants/version";
 import { usePrefs } from "../../context/prefs";
 import * as tauri from "../../services/tauri";
 
@@ -10,7 +11,7 @@ export function ContactFooter() {
       <p className="credit">
         <span className="credit-by">{i18n.creditBy}</span> {i18n.credit}
       </p>
-      <p className="muted">{i18n.version}</p>
+      <p className="muted">{APP_VERSION_LABEL}</p>
       <div className="contact-block">
         <strong>{i18n.contactLabel}</strong>
         <p>

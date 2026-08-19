@@ -3,7 +3,7 @@
 > **Unofficial / 비공식.** Not ELECOM software · ELECOM 공식 소프트웨어가 아닙니다.  
 > Not affiliated with ELECOM Co., Ltd. · ELECOM과 무관한 개인 제작물입니다.
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.1.1)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.1.1/Unofficial-Elecom-Huge-Custom-Mac-1.1.1-aarch64.dmg)
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.2.0)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.2.0/Unofficial-Elecom-Huge-Custom-Mac-1.2.0-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
 **Contact**  
@@ -37,12 +37,12 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 
 - macOS 12+ (Monterey 이상)
 - ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 동글 (`M-HT1DRBK`)
-- GitHub DMG (v1.1.1): Apple Silicon (M1 이상)
+- GitHub DMG (v1.2.0): Apple Silicon (M1 이상)
 - 소스 빌드: Node 20+, Rust (stable)
 
-### 지원 범위 (v1.1.1)
+### 지원 범위 (v1.2.0)
 
-| | v1.1.1 DMG | 소스 빌드 |
+| | v1.2.0 DMG | 소스 빌드 |
 |---|---|---|
 | Apple Silicon, macOS 12+ | ✓ | ✓ |
 | Intel Mac, macOS 12+ | — | ✓ |
@@ -53,12 +53,12 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 - **15 Sequoia 이상:** **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**
 - **손쉬운 사용** 필수 · 15+에서는 **입력 모니터링**도 필요할 수 있음
 
-**개발·테스트 환경 (v1.1.1)**  
+**개발·테스트 환경 (v1.2.0)**  
 macOS 26.5.2 (25F84) · M3 Pro · arm64
 
 ### 앱 실행
 
-1. [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.1.1-aarch64.dmg)를 다운로드합니다.
+1. [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.2.0-aarch64.dmg)를 다운로드합니다.
 2. DMG를 열고 **Elecom Huge Custom**을 **Applications(응용 프로그램)**으로 드래그합니다.
 3. 마운트된 디스크 아이콘을 **추출**합니다.
 4. **응용 프로그램**에서 앱을 엽니다.
@@ -74,7 +74,7 @@ macOS 26.5.2 (25F84) · M3 Pro · arm64
 ```bash
 git clone https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac.git
 cd Unofficial-Elecom-Huge-Custom-Mac
-git checkout v1.1.1
+git checkout v1.2.0
 
 export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"
 npm install
@@ -154,12 +154,12 @@ A small always-on menu bar app instead of the official Mouse Assistant.
 
 - macOS 12+ (Monterey or later)
 - ELECOM HUGE wired (`M-HT1URBK`) or wireless dongle (`M-HT1DRBK`)
-- GitHub DMG (v1.1.1): Apple Silicon (M1+)
+- GitHub DMG (v1.2.0): Apple Silicon (M1+)
 - Building from source: Node 20+, Rust (stable)
 
-### Coverage (v1.1.1)
+### Coverage (v1.2.0)
 
-| | v1.1.1 DMG | From source |
+| | v1.2.0 DMG | From source |
 |---|---|---|
 | Apple Silicon, macOS 12+ | ✓ | ✓ |
 | Intel Mac, macOS 12+ | — | ✓ |
@@ -170,12 +170,12 @@ A small always-on menu bar app instead of the official Mouse Assistant.
 - **15 Sequoia+:** **System Settings → Privacy & Security → Open Anyway**
 - **Accessibility** required · **15+** may also need **Input Monitoring**
 
-**Development / test environment (v1.1.1)**  
+**Development / test environment (v1.2.0)**  
 macOS 26.5.2 (25F84) · M3 Pro · arm64
 
 ### Run the app
 
-1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.1.1-aarch64.dmg).
+1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.2.0-aarch64.dmg).
 2. Open the DMG and drag **Elecom Huge Custom** to **Applications**.
 3. **Eject** the mounted disk.
 4. Open the app from **Applications**.
@@ -191,7 +191,7 @@ You need [Xcode Command Line Tools](https://developer.apple.com/download/all/?q=
 ```bash
 git clone https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac.git
 cd Unofficial-Elecom-Huge-Custom-Mac
-git checkout v1.1.1
+git checkout v1.2.0
 
 export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"
 npm install

@@ -11,7 +11,6 @@ export const en = {
   accessibilityStep2: "Allow Elecom Huge Custom in the system prompt or Accessibility settings.",
   accessibilityStep3: "When permission is granted, the app restarts automatically.",
   grantAccess: "Grant access",
-  version: "v1.0.9",
   buttonMapping: "Button mapping",
   clickAction: "Click",
   longPressAction: "Long press",
