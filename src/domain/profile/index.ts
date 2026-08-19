@@ -8,7 +8,7 @@ export {
   resolveBindingFlags,
   bindingLongPressEnabled,
   bindingAutoClickEnabled,
-} from "./fields";
+} from "./binding";
 export {
   ballScrollOf,
   ballScrollActivatorForSlot,
@@ -30,5 +30,5 @@ export {
   scrollSpeedVertical,
 } from "./pointerSpeeds";
 export * from "./catalog";
-export * from "./chord";
+export { CHORD_MODIFIERS, splitChord, chordIsValid } from "./chord";
 export * from "./patches";

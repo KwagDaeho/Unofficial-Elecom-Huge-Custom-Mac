@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from "react";
-import { comboFromDraft } from "@/domain/profile/activator";
+import { comboFromDraft } from "@/domain/profile";
 import { chordIsValid } from "@/domain/profile";
 import {
   buildComboErrorMessage,

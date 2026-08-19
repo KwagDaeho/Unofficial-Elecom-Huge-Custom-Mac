@@ -1,5 +1,5 @@
-import type { Action } from "./action";
-import type { EditorMode } from "./ui";
+import type { Action } from "../action";
+import type { EditorMode } from "../ui";
 
 export type CatalogSelectionResult =
   | { kind: "editor"; editor: EditorMode }

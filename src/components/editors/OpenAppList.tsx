@@ -1,10 +1,10 @@
-import { isOpenAppSelection } from "@/domain/apps/search";
-import type { OpenAppEditorState, OpenAppListItem } from "@/types";
+import { isOpenAppSelection } from "@/domain/apps";
+import type { InstalledAppWithIcon, OpenAppEditorState } from "@/types";
 interface OpenAppListProps {
   editor: OpenAppEditorState;
-  apps: OpenAppListItem[];
+  apps: InstalledAppWithIcon[];
   emptyLabel: string;
-  onSelect: (app: OpenAppListItem) => void;
+  onSelect: (app: InstalledAppWithIcon) => void;
 }
 export const OpenAppList = (props: OpenAppListProps) => {
   if (props.apps.length === 0) {

@@ -1,10 +1,10 @@
-import { filterOpenAppEditorApps } from "@/domain/apps/search";
+import { filterOpenAppEditorApps } from "@/domain/apps";
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
 import { Button } from "@/components/ui/Button";
 import { OpenAppPickerContent } from "./OpenAppPickerContent";
-import type { OpenAppEditorState, OpenAppListItem } from "@/types";
+import type { InstalledAppWithIcon, OpenAppEditorState } from "@/types";
 interface OpenAppEditorProps {
   editor: OpenAppEditorState;
 }
@@ -25,7 +25,7 @@ export const OpenAppEditor = (props: OpenAppEditorProps) => {
     });
     setEditor(null);
   };
-  const handleSelect = (app: OpenAppListItem) => {
+  const handleSelect = (app: InstalledAppWithIcon) => {
     setEditor({
       ...editor,
       selected: { name: app.name, bundleId: app.bundleId },

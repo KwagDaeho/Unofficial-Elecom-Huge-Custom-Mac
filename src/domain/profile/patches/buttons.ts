@@ -5,9 +5,9 @@ import type {
   ButtonId,
   Profile,
 } from "@/types";
-import { asBinding } from "@/domain/profile/binding";
-import { resolveBindingFlags } from "@/domain/profile/fields";
-import { isTiltButton } from "@/domain/profile/tilt";
+import { asBinding } from "@/domain/profile";
+import { resolveBindingFlags } from "@/domain/profile";
+import { isTiltButton } from "@/domain/profile";
 export const withButtonSlot = (
   profile: Profile,
   buttonId: ButtonId,

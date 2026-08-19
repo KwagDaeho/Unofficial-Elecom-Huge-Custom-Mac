@@ -1,4 +1,4 @@
-import { activatorRejectedMessage } from "@/domain/editors/activatorCapture";
+import { activatorRejectedMessage } from "@/domain/editors";
 import { usePrefs } from "@/hooks/prefs";
 import { useEditor } from "@/hooks/editor";
 import { Button } from "../ui/Button";

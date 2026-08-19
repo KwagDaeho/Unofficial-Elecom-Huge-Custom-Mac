@@ -16,6 +16,16 @@ export type {
   ResolvedBallScrollSettings,
   ComboActivator,
   CustomMappingEntry,
+  ProfileState,
+  ProfileLifecycle,
+  ProfileLoader,
+  ProfileMutateFn,
+  ProfileMutations,
+  ProfileMappingMutations,
+  ProfileCustomMappingMutations,
+  ProfilePointerMutations,
+  ProfileBallScrollMutations,
+  ProfileCatalogMutations,
 } from "./profile";
 export type {
   CaptureMode,
@@ -25,7 +35,7 @@ export type {
   ComboTriggerCapturePayload,
   ActivatorCaptureResult,
 } from "./capture";
-export type { CatalogSelectionResult } from "./catalogSelection";
+export type { CatalogSelectionResult } from "./catalog";
 export type {
   DeviceInfo,
   ButtonMeta,
@@ -40,6 +50,11 @@ export type {
   MappingTarget,
   TabId,
   Theme,
+  ButtonVariant,
+  ButtonSize,
+  ToggleVariant,
+  ModalCopy,
+  ModalActionHandlers,
 } from "./ui";
 export type { Lang, Dict } from "./i18n";
 export type {
@@ -52,21 +67,7 @@ export type {
 export type {
   EditorContextValue,
   EditorCatalogSelection,
-} from "./editorContext";
-export type { SessionContextValue, SessionAutostart } from "./sessionContext";
-export type {
-  ProfileState,
-  ProfileLifecycle,
-  ProfileLoader,
-  ProfileMutateFn,
-  ProfileMutations,
-  ProfileMappingMutations,
-  ProfileCustomMappingMutations,
-  ProfilePointerMutations,
-  ProfileBallScrollMutations,
-  ProfileCatalogMutations,
-} from "./profileState";
-export type { OpenAppListItem } from "./openApp";
-export type { ButtonVariant, ButtonSize, ToggleVariant } from "./uiControls";
-export type { ModalCopy, ModalActionHandlers } from "./modal";
-export type { PrefsContextValue } from "./prefsContext";
+  PrefsContextValue,
+  SessionContextValue,
+  SessionAutostart,
+} from "./context";

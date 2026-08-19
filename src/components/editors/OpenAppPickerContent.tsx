@@ -1,12 +1,12 @@
-import type { OpenAppEditorState, OpenAppListItem } from "@/types";
+import type { InstalledAppWithIcon, OpenAppEditorState } from "@/types";
 import { OpenAppList } from "./OpenAppList";
 interface OpenAppPickerContentProps {
   editor: OpenAppEditorState;
-  apps: OpenAppListItem[];
+  apps: InstalledAppWithIcon[];
   loadingLabel: string;
   errorLabel: string;
   emptyLabel: string;
-  onSelect: (app: OpenAppListItem) => void;
+  onSelect: (app: InstalledAppWithIcon) => void;
 }
 export const OpenAppPickerContent = (props: OpenAppPickerContentProps) => {
   if (props.editor.loading) {

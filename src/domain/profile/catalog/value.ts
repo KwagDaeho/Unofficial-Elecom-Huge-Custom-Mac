@@ -1,4 +1,4 @@
-import { findCatalogEntry } from "@/domain/actions/compare";
+import { findCatalogEntry } from "@/domain/actions";
 import { actionKey } from "./actionKey";
 import type { Action } from "@/types";
 export const catalogValueForAction = (action: Action): string => {

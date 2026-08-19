@@ -1,5 +1,5 @@
 import type { BallScrollSettings, Profile } from "@/types";
-import { activatorsEqual, ballScrollOf } from "@/domain/profile/activator";
+import { activatorsEqual, ballScrollOf } from "@/domain/profile";
 export const withPointerPatch = <K extends keyof Profile["pointer"]>(
   profile: Profile,
   key: K,

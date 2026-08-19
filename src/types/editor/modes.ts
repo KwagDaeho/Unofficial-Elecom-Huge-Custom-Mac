@@ -1,4 +1,4 @@
-import type { EditorMode } from "./ui";
+import type { EditorMode } from "../ui";
 
 export type CustomKeyEditorState = Extract<EditorMode, { kind: "custom_key" }>;
 export type MacroEditorState = Extract<EditorMode, { kind: "macro" }>;

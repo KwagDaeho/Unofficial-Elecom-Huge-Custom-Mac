@@ -1,5 +1,5 @@
 import { formatComboActivator } from "./activators";
-import { comboIsValid } from "@/domain/profile/customMapping";
+import { comboIsValid } from "@/domain/profile";
 import type { CustomMappingEntry, Lang } from "@/types";
 export const customMappingTriggerLabel = (
   entry: CustomMappingEntry,

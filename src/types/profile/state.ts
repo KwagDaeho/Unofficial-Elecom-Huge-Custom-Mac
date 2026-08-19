@@ -1,19 +1,17 @@
 import type { Dispatch, SetStateAction } from "react";
+import type { Action } from "../action";
+import type { ButtonMeta } from "../device";
+import type { ActionSlot, EditorMode, MappingTarget } from "../ui";
 import type {
-  Action,
-  ActionSlot,
   Activator,
   BallScrollSettings,
   BallScrollSlot,
   ButtonBinding,
   ButtonId,
-  ButtonMeta,
   ComboActivator,
   CustomMappingEntry,
-  EditorMode,
-  MappingTarget,
   Profile,
-} from "./index";
+} from "./model";
 
 export type ProfileLifecycle = {
   persist: (nextProfile: Profile) => Promise<void>;

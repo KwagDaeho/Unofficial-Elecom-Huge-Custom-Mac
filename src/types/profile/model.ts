@@ -1,4 +1,4 @@
-import type { Action, MouseClickButton } from "./action";
+import type { Action, MouseClickButton } from "../action";
 
 export type ButtonId =
   | "left"

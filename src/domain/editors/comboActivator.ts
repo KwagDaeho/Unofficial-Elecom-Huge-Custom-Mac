@@ -1,4 +1,4 @@
-import { comboIsValid } from "@/domain/profile/customMapping";
+import { comboIsValid } from "@/domain/profile";
 import type { ComboEditorState, CustomMappingEntry } from "@/types";
 export const comboEditorStateFromEntry = (
   entry: CustomMappingEntry,

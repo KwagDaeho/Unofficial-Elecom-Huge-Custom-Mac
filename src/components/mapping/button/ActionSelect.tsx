@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { findCatalogEntry } from "@/domain/actions/compare";
+import { findCatalogEntry } from "@/domain/actions";
 import { catalogValueForAction, actionKey } from "@/domain/profile";
 import { describeAction, entryLabel, groupCatalog } from "@/i18n";
 import {

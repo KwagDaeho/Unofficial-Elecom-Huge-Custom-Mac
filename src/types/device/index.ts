@@ -1,4 +1,4 @@
-import type { ButtonId } from "./profile";
+import type { ButtonId } from "../profile";
 
 export type DeviceInfo = {
   vendorId: number;

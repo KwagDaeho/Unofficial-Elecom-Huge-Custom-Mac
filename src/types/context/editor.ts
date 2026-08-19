@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { ActionSlot, EditorMode } from "./ui";
-import type { ButtonId } from "./profile";
+import type { ActionSlot, EditorMode } from "../ui";
+import type { ButtonId } from "../profile";
 
 export type EditorCatalogSelection = {
   selectButton: (buttonId: ButtonId, slot: ActionSlot, value: string) => void;

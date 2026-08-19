@@ -1,4 +1,4 @@
-import { splitChord } from "./chord/capture";
+import { splitChord } from "./chord";
 import type {
   Activator,
   BallScrollSettings,

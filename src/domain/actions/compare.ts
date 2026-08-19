@@ -1,5 +1,5 @@
 import type { Action, CatalogEntry } from "@/types";
-import { normalizeKeys } from "@/domain/keys/normalize";
+import { normalizeKeys } from "@/domain/keys";
 import { ACTION_CATALOG } from "./catalog";
 export const actionsEqual = (a: Action, b: Action): boolean => {
   if (a.type !== b.type) return false;

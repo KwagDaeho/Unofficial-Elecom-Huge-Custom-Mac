@@ -1,13 +1,4 @@
-export { ActionSelect } from "./ActionSelect";
-export { BallScrollActivatorRow } from "./BallScrollActivatorRow";
-export { BallScrollPanel } from "./BallScrollPanel";
-export { BindingRow } from "./BindingRow";
-export { ButtonMappingCard } from "./ButtonMappingCard";
-export { ButtonMappingPanel } from "./ButtonMappingPanel";
-export { CustomButtonMappingPanel } from "./CustomButtonMappingPanel";
-export { CustomMappingRow } from "./CustomMappingRow";
-export { PointerScrollPanel } from "./PointerScrollPanel";
-export { PointerScrollToggles } from "./PointerScrollToggles";
-export { PointerSpeedControls } from "./PointerSpeedControls";
-export { ScrollSpeedControls } from "./ScrollSpeedControls";
-export { SpeedRangeControl } from "./SpeedRangeControl";
+export * from "./button";
+export * from "./custom";
+export * from "./pointer";
+export * from "./ballScroll";

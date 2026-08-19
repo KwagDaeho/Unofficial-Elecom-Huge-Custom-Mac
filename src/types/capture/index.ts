@@ -1,4 +1,4 @@
-import type { Activator, BallScrollSlot, ComboActivator } from "./profile";
+import type { Activator, BallScrollSlot, ComboActivator } from "../profile";
 
 export type CaptureMode =
   | "off"

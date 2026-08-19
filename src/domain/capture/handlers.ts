@@ -1,4 +1,4 @@
-import { CHORD_MODIFIERS } from "@/domain/profile/chord/capture";
+import { CHORD_MODIFIERS } from "@/domain/profile";
 import type {
   ActivatorCapturePayload,
   ActivatorCaptureResult,

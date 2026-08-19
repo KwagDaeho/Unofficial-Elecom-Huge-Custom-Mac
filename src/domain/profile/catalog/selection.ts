@@ -3,8 +3,8 @@ import {
   MACRO_SENTINEL,
   OPEN_APP_SENTINEL,
 } from "@/constants/sentinels";
-import { asBinding } from "@/domain/profile/binding";
-import { customMappingsOf } from "@/domain/profile/customMapping";
+import { asBinding } from "@/domain/profile";
+import { customMappingsOf } from "@/domain/profile";
 import type {
   Action,
   ActionSlot,

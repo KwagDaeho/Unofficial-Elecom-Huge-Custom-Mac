@@ -1,5 +1,6 @@
-import type { ButtonId } from "./profile";
-import type { MacroStep } from "./action";
+import type { MacroStep } from "../action";
+import type { InstalledAppWithIcon } from "../device";
+import type { ButtonId } from "../profile";
 
 export type PermissionStatus = {
   accessibility: boolean;
@@ -34,7 +35,7 @@ export type EditorMode =
       slot: ActionSlot;
       query: string;
       selected: { name: string; bundleId: string } | null;
-      apps: { name: string; bundleId: string; path: string; icon?: string }[];
+      apps: InstalledAppWithIcon[];
       loading: boolean;
       error: string | null;
     }

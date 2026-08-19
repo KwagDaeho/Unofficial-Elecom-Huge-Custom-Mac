@@ -1,5 +1,5 @@
 import type { ActionCategoryId, CatalogEntry, Lang } from "@/types";
-import { groupCatalogEntries } from "@/domain/actions/groupEntries";
+import { groupCatalogEntries } from "@/domain/actions";
 import { categoryLabel } from "./core";
 export const groupCatalog = (
   lang: Lang,

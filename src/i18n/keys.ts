@@ -1,5 +1,5 @@
 import type { Lang } from "@/types";
-import { normalizeKeys } from "@/domain/keys/normalize";
+import { normalizeKeys } from "@/domain/keys";
 export const formatKeyChord = (keys: string[], lang: Lang): string => {
   const parts = normalizeKeys(keys).map((k) => {
     switch (k) {

@@ -1,4 +1,4 @@
-import type { DeviceInfo, LastReport } from "./device";
+import type { DeviceInfo, LastReport } from "../device";
 
 export type SessionAutostart = {
   enabled: boolean;

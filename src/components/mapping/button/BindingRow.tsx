@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ActionSelect } from "./ActionSelect";
-import { resolveBindingButtonId } from "@/domain/mapping/bindingRow";
+import { resolveBindingButtonId } from "@/domain/mapping";
 import {
   isTiltButton,
   tiltForcesAutoClick,

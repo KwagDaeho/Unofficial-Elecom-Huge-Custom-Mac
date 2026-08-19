@@ -7,9 +7,9 @@ import type {
   MappingTarget,
   Profile,
 } from "@/types";
-import { asBinding } from "@/domain/profile/binding";
-import { customMappingsOf } from "@/domain/profile/customMapping";
-import { resolveBindingFlags } from "@/domain/profile/fields";
+import { asBinding } from "@/domain/profile";
+import { customMappingsOf } from "@/domain/profile";
+import { resolveBindingFlags } from "@/domain/profile";
 import { withButtonSlot } from "./buttons";
 export const withMappingSlot = (
   profile: Profile,

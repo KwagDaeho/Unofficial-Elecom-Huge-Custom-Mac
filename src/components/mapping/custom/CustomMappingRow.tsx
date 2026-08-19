@@ -1,4 +1,4 @@
-import { BindingRow } from "./BindingRow";
+import { BindingRow } from "../button/BindingRow";
 import { asBinding } from "@/domain/profile";
 import { comboEditorStateFromEntry } from "@/domain/editors";
 import { customMappingTriggerLabel } from "@/i18n/customMapping";

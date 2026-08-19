@@ -1,5 +1,5 @@
 import type { Action, Lang } from "@/types";
-import { findCatalogEntry } from "@/domain/actions/compare";
+import { findCatalogEntry } from "@/domain/actions";
 import { entryLabel } from "./core";
 import { formatKeyChord } from "./keys";
 export const describeAction = (action: Action, lang: Lang): string => {

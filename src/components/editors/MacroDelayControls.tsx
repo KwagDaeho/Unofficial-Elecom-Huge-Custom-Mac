@@ -1,4 +1,4 @@
-import { clampMacroDelayMs } from "@/domain/editors/macro";
+import { clampMacroDelayMs } from "@/domain/editors";
 import type { MacroEditorState, MacroStep } from "@/types";
 interface MacroDelayControlsProps {
   editor: MacroEditorState;
