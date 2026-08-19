@@ -4,20 +4,23 @@ import * as tauri from "../services/tauri";
 import type { PermissionStatus } from "../types";
 
 export function usePermissions() {
-  const [perms, setPerms] = useState<PermissionStatus | null>(null);
+  const [permissionStatus, setPermissionStatus] =
+    useState<PermissionStatus | null>(null);
   const sawUntrusted = useRef(false);
   const restartScheduled = useRef(false);
 
-  const trusted = perms?.ready ?? false;
+  const trusted =
+    permissionStatus !== null && permissionStatus.ready;
 
   const refresh = useCallback(async () => {
-    setPerms(await tauri.getPermissionStatus());
+    setPermissionStatus(await tauri.getPermissionStatus());
   }, []);
 
-  // Accessibility / Input Monitoring only fully apply after a process restart.
   useEffect(() => {
-    if (!perms) return;
-    if (!perms.ready) {
+    if (permissionStatus === null) {
+      return;
+    }
+    if (!permissionStatus.ready) {
       sawUntrusted.current = true;
       return;
     }
@@ -25,27 +28,26 @@ export function usePermissions() {
       restartScheduled.current = true;
       void tauri.relaunchApp();
     }
-  }, [perms]);
+  }, [permissionStatus]);
 
   useEffect(() => {
     void refresh();
-    const id = window.setInterval(() => {
-      void tauri.getPermissionStatus().then(setPerms);
+    const intervalId = window.setInterval(() => {
+      void tauri.getPermissionStatus().then(setPermissionStatus);
     }, PERMISSION_POLL_MS);
     return () => {
-      window.clearInterval(id);
+      window.clearInterval(intervalId);
     };
   }, [refresh]);
 
   const grantAccess = useCallback(async () => {
-    // Reset stale TCC (common after ad-hoc updates), then prompt.
     await tauri.resetTccPermissions();
     await tauri.requestPermission("accessibility");
-    setPerms(await tauri.getPermissionStatus());
+    setPermissionStatus(await tauri.getPermissionStatus());
   }, []);
 
   return {
-    perms,
+    permissionStatus,
     trusted,
     refresh,
     grantAccess,

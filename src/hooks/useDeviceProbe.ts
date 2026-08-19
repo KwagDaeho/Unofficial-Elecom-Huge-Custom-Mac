@@ -7,17 +7,20 @@ import * as tauri from "../services/tauri";
 import type { DeviceInfo, LastReport } from "../types";
 
 function sameReport(
-  prevReport: LastReport | null,
+  previousReport: LastReport | null,
   nextReport: LastReport | null,
 ): boolean {
+  if (previousReport === null || nextReport === null) {
+    return previousReport === nextReport;
+  }
   return (
-    prevReport?.tsMs === nextReport?.tsMs &&
-    prevReport?.hex === nextReport?.hex &&
-    prevReport?.dx === nextReport?.dx &&
-    prevReport?.dy === nextReport?.dy &&
-    prevReport?.wheel === nextReport?.wheel &&
-    prevReport?.pan === nextReport?.pan &&
-    prevReport?.buttons.join() === nextReport?.buttons.join()
+    previousReport.tsMs === nextReport.tsMs &&
+    previousReport.hex === nextReport.hex &&
+    previousReport.dx === nextReport.dx &&
+    previousReport.dy === nextReport.dy &&
+    previousReport.wheel === nextReport.wheel &&
+    previousReport.pan === nextReport.pan &&
+    previousReport.buttons.join() === nextReport.buttons.join()
   );
 }
 
@@ -26,29 +29,29 @@ export function useDeviceProbe() {
   const [report, setReport] = useState<LastReport | null>(null);
 
   const refresh = useCallback(async () => {
-    const [conn, last] = await Promise.all([
+    const [deviceInfo, lastReport] = await Promise.all([
       tauri.getDeviceInfo(),
       tauri.getLastReport(),
     ]);
-    setConnected(conn);
-    setReport(last);
+    setConnected(deviceInfo);
+    setReport(lastReport);
   }, []);
 
   useEffect(() => {
     void refresh();
-    const probe = window.setInterval(() => {
+    const reportIntervalId = window.setInterval(() => {
       void tauri.getLastReport().then((nextReport) => {
-        setReport((prevReport) =>
-          sameReport(prevReport, nextReport) ? prevReport : nextReport,
+        setReport((previousReport) =>
+          sameReport(previousReport, nextReport) ? previousReport : nextReport,
         );
       });
     }, REPORT_POLL_MS);
-    const slow = window.setInterval(() => {
+    const connectedIntervalId = window.setInterval(() => {
       void tauri.getDeviceInfo().then(setConnected);
     }, CONNECTED_POLL_MS);
     return () => {
-      window.clearInterval(probe);
-      window.clearInterval(slow);
+      window.clearInterval(reportIntervalId);
+      window.clearInterval(connectedIntervalId);
     };
   }, [refresh]);
 
@@ -56,6 +59,6 @@ export function useDeviceProbe() {
     connected,
     report,
     refresh,
-    isConnected: connected != null,
+    isConnected: connected !== null,
   };
 }
