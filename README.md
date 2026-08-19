@@ -33,57 +33,43 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 - 버튼 리맵, 포인터/스크롤 설정
 - 메뉴 바 + 로그인 시 자동 실행
 
-이 저장소의 소스 코드는 릴리즈 태그와 대응되므로, 설치 전에 코드를 확인할 수 있습니다.
-
 ### 요구 사항
 
 - macOS 12+ (Monterey 이상)
 - ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 동글 (`M-HT1DRBK`)
-- **v1.1.1 GitHub DMG:** Apple Silicon (M1 이상)만. Intel Mac용 파일은 아직 없습니다.
-- 소스에서 빌드 시: Node 20+, Rust (stable)
+- GitHub DMG (v1.1.1): Apple Silicon (M1 이상)
+- 소스 빌드: Node 20+, Rust (stable)
 
 ### 지원 범위 (v1.1.1)
 
-리맵은 M3 전용 API가 아닙니다. **HID + CGEvent**라 Intel/Apple Silicon 모두에서 같은 방식으로 동작합니다.  
-지금 Intel에서 안 열리는 이유는 API가 아니라, 올린 DMG가 **arm64 전용**이기 때문입니다. 유니버설(arm64+x86_64) 또는 Intel 전용 빌드를 추가로 릴리즈하면 Intel Mac도 쓸 수 있습니다.
-
-| | v1.1.1 DMG | 소스 빌드 / 이후 릴리즈 |
+| | v1.1.1 DMG | 소스 빌드 |
 |---|---|---|
-| Apple Silicon (M1–M4), macOS 12–26 | 지원 | 지원 |
-| Intel Mac, macOS 12–15 | 불가 (아키텍처) | 가능 (`x86_64` 또는 universal) |
-| macOS 11 이하 | 불가 (`minimumSystemVersion` 12.0) | 불가 |
-| HUGE Plus, Bluetooth HUGE | 불가 | 목록에 넣기 전엔 불가 |
-
-버전별로 갈리는 것은 클릭 합성이 아니라 **설치·권한**입니다.
+| Apple Silicon, macOS 12+ | ✓ | ✓ |
+| Intel Mac, macOS 12+ | — | ✓ |
+| macOS 11 이하 | — | — |
+| HUGE Plus, Bluetooth HUGE | — | — |
 
 - **12–14:** 미공증 앱은 우클릭 → 열기로 실행 가능한 경우가 많음
-- **15 Sequoia 이상:** 우클릭 → 열기 불가. **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**
-- **손쉬운 사용**은 필수. 15+에서는 **입력 모니터링**도 같이 필요할 수 있음
-- 실제 기기에서 확인한 환경은 아래와 같습니다. 12–15는 API상 동일 계열로 기대하지만 QA 매트릭스는 아닙니다.
+- **15 Sequoia 이상:** **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**
+- **손쉬운 사용** 필수 · 15+에서는 **입력 모니터링**도 필요할 수 있음
 
-**개발·테스트에 쓴 맥 (v1.1.1)**  
-Apple Silicon · M3 Pro · macOS 26.5.2 (25F84) · arm64.  
-다른 Mac에서의 동작은 위 표 기준의 기대치이며, 이 한 대에서만 확인했습니다.
+**개발·테스트 환경 (v1.1.1)**  
+macOS 26.5.2 (25F84) · M3 Pro · arm64
 
 ### 앱 실행
 
 1. [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.1.1-aarch64.dmg)를 다운로드합니다.
-2. `Unofficial-Elecom-Huge-Custom-Mac-x.x.x-aarch64.dmg`를 엽니다.
-3. **Elecom Huge Custom**을 **Applications(응용 프로그램)**으로 드래그합니다.
-4. 데스크톱(또는 Finder 사이드바)에 나타난 마운트된 **Elecom Huge Custom** 디스크 아이콘을 우클릭하고 **추출**합니다.
-5. **응용 프로그램**에서 앱을 엽니다.
-6. 「열지 않음」 경고가 뜨면 **완료**를 누릅니다. (정상입니다. 휴지통으로 보내지 마세요.)
-7. **시스템 설정 → 개인정보 보호 및 보안**으로 이동합니다.
-8. 아래쪽 차단 안내에서 **그래도 열기**를 누릅니다. 이어지는 확인 팝업에서도 **그래도 열기**를 누른 뒤, 암호 또는 Touch ID로 승인합니다.
+2. DMG를 열고 **Elecom Huge Custom**을 **Applications(응용 프로그램)**으로 드래그합니다.
+3. 마운트된 디스크 아이콘을 **추출**합니다.
+4. **응용 프로그램**에서 앱을 엽니다.
+5. 「열지 않음」 경고가 뜨면 **완료**를 누릅니다.
+6. **시스템 설정 → 개인정보 보호 및 보안**에서 **그래도 열기**를 누릅니다.
 
-> 현재 빌드는 Apple **공증(notarize)이 없습니다.**  
-> macOS Sequoia(15)+에서는 우클릭 → 열기로 Gatekeeper를 우회할 수 없습니다.
+> 현재 빌드는 Apple **공증(notarize)이 없습니다.**
 
-미리 빌드된 DMG를 신뢰하기 어렵다면 **소스를 받아 직접 빌드**하면 됩니다. 릴리즈 태그와 이 저장소 내용이 같습니다.
+#### 소스에서 빌드
 
-#### 소스에서 직접 빌드 (DMG 없이)
-
-필요한 것: [Xcode Command Line Tools](https://developer.apple.com/download/all/?q=command%20line%20tools), [Node 20+](https://nodejs.org/), [Rust](https://rustup.rs/).
+[Xcode Command Line Tools](https://developer.apple.com/download/all/?q=command%20line%20tools), [Node 20+](https://nodejs.org/), [Rust](https://rustup.rs/)가 필요합니다.
 
 ```bash
 git clone https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac.git
@@ -95,29 +81,21 @@ npm install
 npm run tauri:build
 ```
 
-앱은 여기에 생깁니다.
-
-`src-tauri/target/release/bundle/macos/Elecom Huge Custom.app`
-
-Applications로 복사한 뒤, 아래 **앱 설정 (권한)** 을 진행합니다.
+빌드 결과: `src-tauri/target/release/bundle/macos/Elecom Huge Custom.app`
 
 ```bash
 cp -R "src-tauri/target/release/bundle/macos/Elecom Huge Custom.app" /Applications/
 open "/Applications/Elecom Huge Custom.app"
 ```
 
-Intel Mac이면 타깃을 추가한 뒤 같은 명령을 씁니다.
+Intel Mac:
 
 ```bash
 rustup target add x86_64-apple-darwin
 npx tauri build --target x86_64-apple-darwin
 ```
 
-직접 빌드한 앱도 Apple 공증은 없습니다. 다만 바이너리를 직접 만들었으므로 릴리즈 DMG를 받을 필요는 없습니다.
-
 #### 대안 (터미널)
-
-응용 프로그램에 넣은 뒤:
 
 ```bash
 xattr -cr "/Applications/Elecom Huge Custom.app" && open "/Applications/Elecom Huge Custom.app"
@@ -125,26 +103,21 @@ xattr -cr "/Applications/Elecom Huge Custom.app" && open "/Applications/Elecom H
 
 ### 앱 설정 (권한)
 
-앱이 열린 뒤 **정보** 탭에서:
+**정보** 탭에서:
 
-1. **«권한 요청»**을 클릭합니다.
-2. 시스템 대화상자 또는 손쉬운 사용 설정에서 **Elecom Huge Custom**을 허용합니다.
-3. 권한이 허용되면 앱이 **자동으로 재시작**됩니다.
+1. **«권한 요청»** 클릭
+2. **Elecom Huge Custom** 허용
+3. 허용 후 앱이 **자동 재시작**
 
 ### 업데이트 후 권한이 안 먹을 때
 
-ad-hoc 빌드는 버전마다 서명이 달라, 설정에는 켜져 있는데 앱만 권한을 요구할 수 있습니다.  
-정보 탭에서 **권한 요청**을 다시 진행하거나:
+**권한 요청**을 다시 진행하거나:
 
 ```bash
 tccutil reset Accessibility com.kwagdaeho.elecom-huge
 ```
 
-허용 후 앱이 자동 재시작됩니다.
-
-### 개발 (일일 작업)
-
-릴리즈용 `.app`이 아니라 개발 서버로 띄울 때:
+### 개발
 
 ```bash
 export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"
@@ -156,13 +129,11 @@ npm run tauri:dev
 
 - 창을 닫아도 메뉴 바에 남아 있는 동안 리맵이 유지됩니다.
 - 본체 DPI 스위치와 앱 안 속도 설정은 별개입니다.
-- Huge Plus (`M-HT1MRBK`)는 초기 지원 목록에 없습니다.
-- Apple Developer 서명·공증이 되면 Gatekeeper 마찰이 줄어든 빌드를 올릴 수 있습니다.
-- Intel용은 별도 `x86_64` / universal 빌드가 필요합니다. 코어 API는 칩과 무관합니다.
+- Huge Plus (`M-HT1MRBK`)는 지원하지 않습니다.
 
 ### 라이선스
 
-MIT — [LICENSE](./LICENSE) 참고.
+MIT — [LICENSE](./LICENSE)
 
 ---
 
@@ -179,54 +150,41 @@ A small always-on menu bar app instead of the official Mouse Assistant.
 - Button remaps, pointer/scroll settings
 - Menu bar + launch at login
 
-Source in this repository matches the tagged release so you can audit before installing.
-
 ### Requirements
 
 - macOS 12+ (Monterey or later)
 - ELECOM HUGE wired (`M-HT1URBK`) or wireless dongle (`M-HT1DRBK`)
-- **v1.1.1 GitHub DMG:** Apple Silicon (M1+) only. No Intel build is published yet.
+- GitHub DMG (v1.1.1): Apple Silicon (M1+)
 - Building from source: Node 20+, Rust (stable)
 
 ### Coverage (v1.1.1)
 
-Remapping does not use M3-only APIs. It is **HID + CGEvent**, which works the same on Intel and Apple Silicon.  
-Intel Macs cannot run the current DMG because that file is **arm64-only**, not because the OS APIs are Apple Silicon-only. A later **universal** (arm64+x86_64) or Intel-only release would cover Intel.
-
-| | v1.1.1 DMG | From source / a later release |
+| | v1.1.1 DMG | From source |
 |---|---|---|
-| Apple Silicon (M1–M4), macOS 12–26 | Supported | Supported |
-| Intel Mac, macOS 12–15 | No (architecture) | Yes (`x86_64` or universal) |
-| macOS 11 and older | No (`minimumSystemVersion` 12.0) | No |
-| HUGE Plus, Bluetooth HUGE | No | Not until they are allow-listed |
-
-What actually changes by macOS version is **install and TCC**, not the click pipeline.
+| Apple Silicon, macOS 12+ | ✓ | ✓ |
+| Intel Mac, macOS 12+ | — | ✓ |
+| macOS 11 and older | — | — |
+| HUGE Plus, Bluetooth HUGE | — | — |
 
 - **12–14:** unsigned apps can often be opened via right-click → Open
-- **15 Sequoia+:** that bypass is gone. Use **System Settings → Privacy & Security → Open Anyway**
-- **Accessibility** is required; **15+** may also need **Input Monitoring**
-- The only machine this has been run on is listed below. 12–15 are expected to work as the same API family, not a tested QA matrix.
+- **15 Sequoia+:** **System Settings → Privacy & Security → Open Anyway**
+- **Accessibility** required · **15+** may also need **Input Monitoring**
 
-**Development / test Mac (v1.1.1)**  
-Apple Silicon · M3 Pro · macOS 26.5.2 (25F84) · arm64.  
-Behavior on other Macs is inferred from the table above; it has not been verified on a device farm.
+**Development / test environment (v1.1.1)**  
+macOS 26.5.2 (25F84) · M3 Pro · arm64
 
 ### Run the app
 
 1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.1.1-aarch64.dmg).
-2. Open `Unofficial-Elecom-Huge-Custom-Mac-x.x.x-aarch64.dmg`.
-3. Drag **Elecom Huge Custom** to **Applications**.
-4. On the Desktop (or Finder sidebar), right-click the mounted **Elecom Huge Custom** disk icon and choose **Eject**.
-5. Open the app from **Applications**.
-6. If you see “will not open”, click **Done**. (Expected — do not move it to Trash.)
-7. Open **System Settings → Privacy & Security**.
-8. Under the block notice, click **Open Anyway**. In the confirmation sheet, click **Open Anyway** again, then authenticate with password or Touch ID.
+2. Open the DMG and drag **Elecom Huge Custom** to **Applications**.
+3. **Eject** the mounted disk.
+4. Open the app from **Applications**.
+5. If you see “will not open”, click **Done**.
+6. In **System Settings → Privacy & Security**, click **Open Anyway**.
 
-> This build is **not notarized**. On macOS Sequoia (15)+, right-click → Open no longer bypasses Gatekeeper.
+> This build is **not notarized**.
 
-If you do not want to trust the prebuilt DMG, **clone and build from source**. The tagged commit matches this repository.
-
-#### Build from source (no DMG)
+#### Build from source
 
 You need [Xcode Command Line Tools](https://developer.apple.com/download/all/?q=command%20line%20tools), [Node 20+](https://nodejs.org/), and [Rust](https://rustup.rs/).
 
@@ -240,29 +198,21 @@ npm install
 npm run tauri:build
 ```
 
-The app is written here:
-
-`src-tauri/target/release/bundle/macos/Elecom Huge Custom.app`
-
-Copy it to Applications, then continue with **App setup (permissions)** below.
+Output: `src-tauri/target/release/bundle/macos/Elecom Huge Custom.app`
 
 ```bash
 cp -R "src-tauri/target/release/bundle/macos/Elecom Huge Custom.app" /Applications/
 open "/Applications/Elecom Huge Custom.app"
 ```
 
-On Intel Macs, add the target first:
+Intel Mac:
 
 ```bash
 rustup target add x86_64-apple-darwin
 npx tauri build --target x86_64-apple-darwin
 ```
 
-A local build is still not notarized. You do not have to download the GitHub DMG.
-
 #### Alternative (Terminal)
-
-After copying to Applications:
 
 ```bash
 xattr -cr "/Applications/Elecom Huge Custom.app" && open "/Applications/Elecom Huge Custom.app"
@@ -270,25 +220,21 @@ xattr -cr "/Applications/Elecom Huge Custom.app" && open "/Applications/Elecom H
 
 ### App setup (permissions)
 
-In the running app, on the **Info** tab:
+On the **Info** tab:
 
-1. Click **«Grant access»**.
-2. Allow **Elecom Huge Custom** in the system prompt or Accessibility settings.
-3. When permission is granted, the app **restarts automatically**.
+1. Click **«Grant access»**
+2. Allow **Elecom Huge Custom**
+3. The app **restarts automatically** when permission is granted
 
-### After an update — Settings ON but app still asks
+### After an update — permission not working
 
-Ad-hoc builds change code signature each release. Tap **Grant access** again, or:
+Tap **Grant access** again, or:
 
 ```bash
 tccutil reset Accessibility com.kwagdaeho.elecom-huge
 ```
 
-Allow again — the app restarts automatically.
-
-### Develop (day-to-day)
-
-For a live dev server instead of a release `.app`:
+### Develop
 
 ```bash
 export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"
@@ -300,9 +246,7 @@ npm run tauri:dev
 
 - Remaps apply while the app is running (close window → stays in menu bar).
 - Hardware DPI switch is independent of in-app speed.
-- Huge Plus (`M-HT1MRBK`) is not in the first device allow-list.
-- Notarized builds (less Gatekeeper friction) may come later if Apple Developer signing is set up.
-- Intel needs a separate `x86_64` / universal build. The core APIs are chip-agnostic.
+- Huge Plus (`M-HT1MRBK`) is not supported.
 
 ### License
 
