@@ -6,6 +6,8 @@ use crate::domain::profile::Action;
 pub fn click_at_cursor() {}
 pub fn pin_cursor() {}
 pub fn restore_pinned_cursor() {}
+pub fn release_ball_scroll_pin() {}
+pub fn release_ball_scroll_pin_for_quit() {}
 pub fn keep_pinned_cursor() {}
 pub fn restore_sync_pin() -> Option<core_graphics::geometry::CGPoint> {
     None

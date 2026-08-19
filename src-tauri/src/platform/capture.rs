@@ -666,6 +666,15 @@ mod macos {
             let autorepeat =
                 unsafe { CGEventGetIntegerValueField(event, KEYBOARD_EVENT_AUTOREPEAT) } != 0;
             if let Some(activator) = key_activator(event) {
+                if !autorepeat {
+                    let flags = unsafe { CGEventGetFlags(event) };
+                    if matches!(&activator, Activator::Key { name } if name == "Q")
+                        && flags & FLAG_COMMAND != 0
+                    {
+                        ball_scroll::arm_app_quit();
+                    }
+                    ball_scroll::yield_modifier_hold_for_chord(&activator);
+                }
                 custom_mapping::note_os_down(&activator, autorepeat);
                 if ball_scroll::on_os_down(&activator, autorepeat) {
                     return std::ptr::null_mut();

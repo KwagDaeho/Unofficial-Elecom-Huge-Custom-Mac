@@ -32,3 +32,12 @@ where
         let _ = app.run_on_main_thread(f);
     }
 }
+
+pub fn request_exit() {
+    if let Some(app) = APP.get() {
+        let handle = app.clone();
+        let _ = app.run_on_main_thread(move || {
+            handle.exit(0);
+        });
+    }
+}

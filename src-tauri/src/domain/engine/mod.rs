@@ -76,7 +76,15 @@ impl Engine {
     }
 
     pub fn stop(&self) {
+        self.request_stop();
+        self.join_worker();
+    }
+
+    pub fn request_stop(&self) {
         self.running.store(false, Ordering::SeqCst);
+    }
+
+    pub fn join_worker(&self) {
         if let Some(handle) = self.worker.lock().take() {
             let _ = handle.join();
         }

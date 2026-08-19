@@ -4,10 +4,13 @@ pub mod state;
 use crate::app::state::AppState;
 use crate::commands;
 use crate::constants::BUNDLE_ID;
+use crate::domain::ball_scroll;
 use crate::domain::engine::Engine;
+use crate::platform::suppress;
 use crate::persistence::{instance_lock, profile_store};
 use crate::platform::capture;
 use std::sync::Arc;
+use std::sync::Once;
 use tauri::{Manager, WindowEvent};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -79,11 +82,19 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app_handle, event| {
-            if let tauri::RunEvent::Exit = event {
-                capture::apply_capture_session(capture::CaptureSession::OFF);
-                if let Some(state) = app_handle.try_state::<AppState>() {
-                    state.engine.stop();
-                }
+            if matches!(event, tauri::RunEvent::ExitRequested { .. } | tauri::RunEvent::Exit) {
+                static ONCE: Once = Once::new();
+                ONCE.call_once(|| {
+                    if let Some(state) = app_handle.try_state::<AppState>() {
+                        state.engine.request_stop();
+                    }
+                    ball_scroll::shutdown();
+                    capture::apply_capture_session(capture::CaptureSession::OFF);
+                    suppress::clear_suppress();
+                    if let Some(state) = app_handle.try_state::<AppState>() {
+                        state.engine.join_worker();
+                    }
+                });
             }
         });
 }

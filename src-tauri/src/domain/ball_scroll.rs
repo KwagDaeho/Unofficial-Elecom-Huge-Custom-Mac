@@ -14,8 +14,15 @@ use crate::platform::{app_bus, inject, suppress};
 static HOLD_DOWN: AtomicBool = AtomicBool::new(false);
 static TOGGLE_LATCH: AtomicBool = AtomicBool::new(false);
 static WAS_ACTIVE: AtomicBool = AtomicBool::new(false);
+/// Unpin on the HID worker only — never from the CGEvent tap (deadlock on ⌘Q).
+static FORCE_DEACTIVATE: AtomicBool = AtomicBool::new(false);
+static SHUTTING_DOWN: AtomicBool = AtomicBool::new(false);
+/// ⌘Q while ball-scroll is on — block worker re-pin until app exit teardown.
+static QUIT_ARMED: AtomicBool = AtomicBool::new(false);
 static LAST_TOGGLE_AT: Mutex<Option<Instant>> = Mutex::new(None);
 static DEACTIVATE_AT: Mutex<Option<Instant>> = Mutex::new(None);
+/// After unpin, ball inertia still arrives as HID dx/dy — drop it briefly.
+static IGNORE_BALL_MOTION_UNTIL: Mutex<Option<Instant>> = Mutex::new(None);
 static SETTINGS: Mutex<BallScrollSettings> = Mutex::new(BallScrollSettings {
     toggle_enabled: false,
     toggle_activator: None,
@@ -30,6 +37,7 @@ static SETTINGS: Mutex<BallScrollSettings> = Mutex::new(BallScrollSettings {
 const TOGGLE_DEBOUNCE: Duration = Duration::from_millis(80);
 /// Absorb contact bounce so we do not unpin the cursor mid-hold.
 const DEACTIVATE_GRACE: Duration = Duration::from_millis(40);
+const BALL_MOTION_IGNORE: Duration = Duration::from_millis(250);
 
 pub fn sync_from_profile(profile: &Profile) {
     let next = if profile.enabled {
@@ -45,7 +53,24 @@ pub fn sync_from_profile(profile: &Profile) {
         TOGGLE_LATCH.store(false, Ordering::SeqCst);
     }
     *DEACTIVATE_AT.lock() = None;
-    apply_active(logical_armed());
+    if !SHUTTING_DOWN.load(Ordering::SeqCst) {
+        apply_active(logical_armed());
+    }
+}
+
+/// Release pin/suppress before the HID worker is joined on app exit.
+pub fn shutdown() {
+    SHUTTING_DOWN.store(true, Ordering::SeqCst);
+    HOLD_DOWN.store(false, Ordering::SeqCst);
+    TOGGLE_LATCH.store(false, Ordering::SeqCst);
+    FORCE_DEACTIVATE.store(false, Ordering::SeqCst);
+    QUIT_ARMED.store(false, Ordering::SeqCst);
+    *DEACTIVATE_AT.lock() = None;
+    *IGNORE_BALL_MOTION_UNTIL.lock() = None;
+    if WAS_ACTIVE.swap(false, Ordering::SeqCst) {
+        suppress::set_suppress_motion(false);
+        inject::release_ball_scroll_pin();
+    }
 }
 
 fn logical_armed() -> bool {
@@ -66,18 +91,45 @@ pub fn latch_on() -> bool {
     TOGGLE_LATCH.load(Ordering::SeqCst) && SETTINGS.lock().toggle_armed().is_some()
 }
 
+/// Keyboard watch for activators and ⌘Q while ball-scroll is configured or active.
+pub fn needs_event_watch(profile: &Profile) -> bool {
+    if !profile.enabled {
+        return is_active();
+    }
+    profile.ball_scroll.hold_enabled
+        || profile.ball_scroll.toggle_enabled
+        || profile.ball_scroll.uses_os_watch()
+        || is_active()
+}
+
+/// Drop HUGE ball deltas as pointer motion right after ball-scroll ends.
+pub fn ignore_ball_pointer_motion() -> bool {
+    IGNORE_BALL_MOTION_UNTIL
+        .lock()
+        .is_some_and(|until| Instant::now() < until)
+}
+
 /// Commit a pending off after bounce grace, and keep tray/UI in sync.
 pub fn tick() {
+    if FORCE_DEACTIVATE.swap(false, Ordering::SeqCst) {
+        apply_active(false);
+        return;
+    }
     let due = DEACTIVATE_AT
         .lock()
         .map(|t| Instant::now() >= t)
         .unwrap_or(false);
-    if !due {
-        return;
-    }
-    *DEACTIVATE_AT.lock() = None;
-    if !logical_armed() {
-        apply_active(false);
+    if due {
+        *DEACTIVATE_AT.lock() = None;
+        if !logical_armed() {
+            apply_active(false);
+        }
+    } else if logical_armed()
+        && !WAS_ACTIVE.load(Ordering::SeqCst)
+        && !QUIT_ARMED.load(Ordering::SeqCst)
+    {
+        // Pin on the HID worker — never from the CGEvent tap callback (deadlock on ⌘Q).
+        apply_active(true);
     }
 }
 
@@ -91,6 +143,13 @@ pub fn note_huge_edges(prev: ButtonState, state: ButtonState) {
 }
 
 pub fn on_os_down(activator: &Activator, is_repeat: bool) -> bool {
+    if is_modifier_key(activator) {
+        return if is_repeat {
+            false
+        } else {
+            on_down(activator)
+        };
+    }
     if is_repeat {
         return matches_hold(activator) || matches_toggle(activator);
     }
@@ -98,6 +157,13 @@ pub fn on_os_down(activator: &Activator, is_repeat: bool) -> bool {
 }
 
 pub fn on_os_up(activator: &Activator, is_repeat: bool) -> bool {
+    if is_modifier_key(activator) {
+        return if is_repeat {
+            false
+        } else {
+            on_up(activator)
+        };
+    }
     if is_repeat {
         return matches_hold(activator) || matches_toggle(activator);
     }
@@ -112,63 +178,114 @@ fn matches_toggle(activator: &Activator) -> bool {
     SETTINGS.lock().toggle_armed() == Some(activator)
 }
 
+const MODIFIER_KEYS: [&str; 4] = ["Control", "Option", "Shift", "Meta"];
+
+fn is_modifier_key(activator: &Activator) -> bool {
+    matches!(activator, Activator::Key { name } if MODIFIER_KEYS.contains(&name.as_str()))
+}
+
+/// ⌘Q — tear down ball-scroll synchronously, then quit (do not wait for HID worker).
+pub fn arm_app_quit() {
+    if SHUTTING_DOWN.swap(true, Ordering::SeqCst) {
+        app_bus::request_exit();
+        return;
+    }
+    QUIT_ARMED.store(true, Ordering::SeqCst);
+    HOLD_DOWN.store(false, Ordering::SeqCst);
+    TOGGLE_LATCH.store(false, Ordering::SeqCst);
+    FORCE_DEACTIVATE.store(false, Ordering::SeqCst);
+    *DEACTIVATE_AT.lock() = None;
+    *IGNORE_BALL_MOTION_UNTIL.lock() = None;
+    if WAS_ACTIVE.swap(false, Ordering::SeqCst) {
+        suppress::set_suppress_motion(false);
+        inject::release_ball_scroll_pin_for_quit();
+    }
+    app_bus::request_exit();
+}
+
+/// Modifier hold pins the cursor; release immediately when a chord starts (⌘C, …).
+pub fn yield_modifier_hold_for_chord(key: &Activator) {
+    if !HOLD_DOWN.load(Ordering::SeqCst) {
+        return;
+    }
+    let Some(hold) = SETTINGS.lock().hold_armed().cloned() else {
+        return;
+    };
+    if !is_modifier_key(&hold) || hold == *key {
+        return;
+    }
+    if !matches!(key, Activator::Key { .. }) {
+        return;
+    }
+    HOLD_DOWN.store(false, Ordering::SeqCst);
+    *DEACTIVATE_AT.lock() = None;
+    if WAS_ACTIVE.load(Ordering::SeqCst) {
+        FORCE_DEACTIVATE.store(true, Ordering::SeqCst);
+    }
+    emit_active();
+}
+
 fn on_down(activator: &Activator) -> bool {
-    let mut handled = false;
+    let mut swallow = false;
     if matches_hold(activator) {
         HOLD_DOWN.store(true, Ordering::SeqCst);
-        handled = true;
+        swallow = !is_modifier_key(activator);
         notify_active();
     }
     if matches_toggle(activator) {
-        handled = true;
         let now = Instant::now();
         let mut last = LAST_TOGGLE_AT.lock();
         if last
             .map(|t| now.duration_since(t) < TOGGLE_DEBOUNCE)
             .unwrap_or(false)
         {
-            return true;
+            return !is_modifier_key(activator);
         }
         *last = Some(now);
         drop(last);
         let next = !TOGGLE_LATCH.load(Ordering::SeqCst);
         TOGGLE_LATCH.store(next, Ordering::SeqCst);
         notify_active();
+        swallow = swallow || !is_modifier_key(activator);
     }
-    handled
+    swallow
 }
 
 fn on_up(activator: &Activator) -> bool {
     if matches_hold(activator) {
         HOLD_DOWN.store(false, Ordering::SeqCst);
         notify_active();
-        return true;
+        return !is_modifier_key(activator);
     }
-    matches_toggle(activator)
+    matches_toggle(activator) && !is_modifier_key(activator)
 }
 
 fn notify_active() {
     if logical_armed() {
         *DEACTIVATE_AT.lock() = None;
-        apply_active(true);
-        return;
-    }
-    if WAS_ACTIVE.load(Ordering::SeqCst) {
+    } else if WAS_ACTIVE.load(Ordering::SeqCst) {
         *DEACTIVATE_AT.lock() = Some(Instant::now() + DEACTIVATE_GRACE);
-        emit_active();
     }
+    emit_active();
 }
 
 fn apply_active(active: bool) {
+    if active && SHUTTING_DOWN.load(Ordering::SeqCst) {
+        return;
+    }
     let was = WAS_ACTIVE.swap(active, Ordering::SeqCst);
     if active && !was {
+        *IGNORE_BALL_MOTION_UNTIL.lock() = None;
         suppress::set_suppress_motion(true);
         inject::pin_cursor();
     } else if !active && was {
+        *IGNORE_BALL_MOTION_UNTIL.lock() = Some(Instant::now() + BALL_MOTION_IGNORE);
         inject::restore_pinned_cursor();
         suppress::set_suppress_motion(false);
     }
-    emit_active();
+    if !SHUTTING_DOWN.load(Ordering::SeqCst) {
+        emit_active();
+    }
 }
 
 fn emit_active() {

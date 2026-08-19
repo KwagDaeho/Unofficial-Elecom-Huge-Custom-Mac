@@ -72,6 +72,17 @@ pub fn hide() {
     app_bus::run_on_main(|| unsafe { hide_on_main() });
 }
 
+/// Quit path: stop the raise loop without scheduling AppKit work from a tap thread.
+pub fn abort_for_quit() {
+    RAISING.store(false, Ordering::SeqCst);
+}
+
+/// App exit: stop the raise loop and tear down the overlay immediately.
+pub fn shutdown() {
+    RAISING.store(false, Ordering::SeqCst);
+    app_bus::run_on_main(|| unsafe { hide_on_main() });
+}
+
 fn shielding_level() -> i32 {
     unsafe { CGShieldingWindowLevel() }
 }

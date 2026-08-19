@@ -137,21 +137,53 @@ pub fn keep_pinned_cursor() {
     }
 }
 
-/// Release ball-scroll pin. Stay disassociated until the first real motion
-/// re-bases from the pin — otherwise accumulated HID deltas teleport the cursor.
+fn unpin_at(p: CGPoint) {
+    warp_cursor(p);
+    *cursor_state().lock() = p;
+    unfreeze_os_cursor();
+    warp_cursor(p);
+    *cursor_state().lock() = p;
+}
+
+/// Release ball-scroll pin. Re-associate at the pin — do not sync from the
+/// disassociated hardware position (ball motion would teleport the cursor).
 pub fn restore_pinned_cursor() {
     end_ball_scroll_gesture();
     super::cursor_badge::hide();
     CURSOR_FROZEN.store(false, Ordering::SeqCst);
-    let Some(p) = *PINNED_CURSOR.lock() else {
-        crate::platform::suppress::set_cursor_lock(None);
-        finish_restore_sync();
-        return;
-    };
-    warp_cursor(p);
-    *cursor_state().lock() = p;
-    *RESTORE_SYNC.lock() = Some((p, Instant::now() + RESTORE_SYNC_TTL));
     crate::platform::suppress::set_cursor_lock(None);
+    RESTORE_SYNC.lock().take();
+    if let Some(p) = PINNED_CURSOR.lock().take() {
+        unpin_at(p);
+    } else {
+        unfreeze_os_cursor();
+        sync_cursor_from_system();
+    }
+}
+
+/// App exit: drop pin, badge, and cursor association immediately.
+pub fn release_ball_scroll_pin() {
+    end_ball_scroll_gesture();
+    super::cursor_badge::shutdown();
+    release_pin_state();
+}
+
+/// ⌘Q from the event tap — no main-thread AppKit scheduling.
+pub fn release_ball_scroll_pin_for_quit() {
+    end_ball_scroll_gesture();
+    super::cursor_badge::abort_for_quit();
+    release_pin_state();
+}
+
+fn release_pin_state() {
+    CURSOR_FROZEN.store(false, Ordering::SeqCst);
+    crate::platform::suppress::set_cursor_lock(None);
+    RESTORE_SYNC.lock().take();
+    if let Some(p) = PINNED_CURSOR.lock().take() {
+        unpin_at(p);
+    } else {
+        unfreeze_os_cursor();
+    }
 }
 
 pub fn restore_sync_pin() -> Option<CGPoint> {
@@ -163,10 +195,13 @@ pub fn restore_sync_pin() -> Option<CGPoint> {
 }
 
 pub fn finish_restore_sync() {
-    RESTORE_SYNC.lock().take();
-    PINNED_CURSOR.lock().take();
-    unfreeze_os_cursor();
-    sync_cursor_from_system();
+    let sync_pin = RESTORE_SYNC.lock().take().map(|(p, _)| p);
+    if let Some(p) = PINNED_CURSOR.lock().take().or(sync_pin) {
+        unpin_at(p);
+    } else {
+        unfreeze_os_cursor();
+        sync_cursor_from_system();
+    }
 }
 
 pub fn expire_restore_sync_if_due() {
