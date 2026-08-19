@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
+import type { ToggleVariant } from "@/types";
 
-type ToggleVariant = "default" | "inline" | "flag";
-
-type ToggleProps = {
+interface ToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
@@ -10,17 +9,11 @@ type ToggleProps = {
   children?: ReactNode;
   description?: ReactNode;
   variant?: ToggleVariant;
-};
+}
 
-export function Toggle({
-  checked,
-  onChange,
-  disabled = false,
-  title,
-  children,
-  description,
-  variant = "default",
-}: ToggleProps) {
+export function Toggle(props: ToggleProps) {
+  const disabled = props.disabled === true;
+  const variant = props.variant !== undefined ? props.variant : "default";
   const className = [
     "toggle",
     variant === "inline" ? "toggle-inline" : "",
@@ -30,20 +23,24 @@ export function Toggle({
     .join(" ");
 
   return (
-    <label className={className} title={title}>
+    <label className={className} title={props.title}>
       <input
         type="checkbox"
-        checked={checked}
+        checked={props.checked}
         disabled={disabled}
-        onChange={(event) => onChange(event.target.checked)}
+        onChange={(event) => props.onChange(event.target.checked)}
       />
       {variant === "inline" ? (
         <>
-          {children ? <span className="toggle-title">{children}</span> : null}
-          {description ? <span className="toggle-desc">{description}</span> : null}
+          {props.children ? (
+            <span className="toggle-title">{props.children}</span>
+          ) : null}
+          {props.description ? (
+            <span className="toggle-desc">{props.description}</span>
+          ) : null}
         </>
       ) : (
-        children
+        props.children
       )}
     </label>
   );

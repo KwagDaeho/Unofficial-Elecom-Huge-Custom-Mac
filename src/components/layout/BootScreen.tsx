@@ -1,5 +1,5 @@
-import { usePrefs } from "../../context/prefs";
-import { useProfileCtx } from "../../context/profile";
+import { usePrefs } from "@/hooks/prefs";
+import { useProfileCtx } from "@/hooks/profile";
 
 export function BootScreen() {
   const { i18n } = usePrefs();

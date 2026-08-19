@@ -1,17 +1,10 @@
 import { useState } from "react";
-import { AppHeader } from "./AppHeader";
-import { BootScreen } from "./BootScreen";
-import { OverlayScrollbar } from "./OverlayScrollbar";
-import { EditorHost } from "../editors/EditorHost";
-import { ContactFooter } from "../info/ContactFooter";
-import { InfoTab } from "../info/InfoTab";
-import { ButtonMappingPanel } from "../mapping/ButtonMappingPanel";
-import { PointerScrollPanel } from "../mapping/PointerScrollPanel";
-import { CustomButtonMappingPanel } from "../mapping/CustomButtonMappingPanel";
-import { BallScrollPanel } from "../mapping/BallScrollPanel";
-import { usePrefs } from "../../context/prefs";
-import { useProfileCtx } from "../../context/profile";
-import type { TabId } from "../../types";
+import { EditorHost } from "@/components/editors";
+import { ContactFooter } from "@/components/info";
+import { AppHeader, BootScreen, OverlayScrollbar } from "@/components/layout";
+import { CustomTab, InfoTab } from "@/components/tabs";
+import { usePrefs, useProfileCtx } from "@/hooks";
+import type { TabId } from "@/types";
 
 export function AppShell() {
   const { i18n } = usePrefs();
@@ -29,7 +22,7 @@ export function AppShell() {
 
   return (
     <>
-      <OverlayScrollbar />
+      <OverlayScrollbar contentKey={tab} />
       <main className="shell">
         <AppHeader />
 
@@ -49,15 +42,7 @@ export function AppShell() {
         </nav>
 
         {tab === "info" && <InfoTab />}
-
-        {tab === "custom" && (
-          <>
-            <ButtonMappingPanel />
-            <PointerScrollPanel />
-            <CustomButtonMappingPanel />
-            <BallScrollPanel />
-          </>
-        )}
+        {tab === "custom" && <CustomTab />}
 
         <ContactFooter />
         <EditorHost />

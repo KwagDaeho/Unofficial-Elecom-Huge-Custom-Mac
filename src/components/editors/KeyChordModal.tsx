@@ -1,36 +1,27 @@
-import type { KeyboardEventHandler, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 import { Button } from "../ui/Button";
+import type { ModalActionHandlers, ModalCopy } from "@/types";
 
-type Props = {
-  title: string;
-  hint: string;
+interface KeyChordModalProps {
+  copy: ModalCopy;
   preview: ReactNode;
   error?: ReactNode;
-  onCancel: () => void;
-  onSave?: () => void;
+  handlers: ModalActionHandlers;
   saveDisabled?: boolean;
-  saveLabel: string;
-  cancelLabel: string;
-  onKeyDown?: KeyboardEventHandler;
-};
+}
 
-export function KeyChordModal({
-  title,
-  hint,
-  preview,
-  error,
-  onCancel,
-  onSave,
-  saveDisabled,
-  saveLabel,
-  cancelLabel,
-  onKeyDown,
-}: Props) {
+export function KeyChordModal(props: KeyChordModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    dialogRef.current?.focus();
+    const dialog = dialogRef.current;
+    if (dialog !== null) {
+      dialog.focus();
+    }
   }, []);
+
+  const showSaveButton = props.handlers.onSave !== undefined;
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -40,18 +31,20 @@ export function KeyChordModal({
         role="dialog"
         aria-modal="true"
         tabIndex={-1}
-        onKeyDown={onKeyDown}>
-        <h2>{title}</h2>
-        <p className="muted">{hint}</p>
-        <div className="chord-preview">{preview}</div>
-        {error ? <p className="chord-error">{error}</p> : null}
+        onKeyDown={props.handlers.onKeyDown}>
+        <h2>{props.copy.title}</h2>
+        <p className="muted">{props.copy.hint}</p>
+        <div className="chord-preview">{props.preview}</div>
+        {props.error ? <p className="chord-error">{props.error}</p> : null}
         <div className="row">
-          <Button variant="ghost" onClick={onCancel}>
-            {cancelLabel}
+          <Button variant="ghost" onClick={props.handlers.onCancel}>
+            {props.copy.cancelLabel}
           </Button>
-          {onSave ? (
-            <Button disabled={saveDisabled} onClick={onSave}>
-              {saveLabel}
+          {showSaveButton ? (
+            <Button
+              disabled={props.saveDisabled === true}
+              onClick={props.handlers.onSave}>
+              {props.copy.saveLabel}
             </Button>
           ) : null}
         </div>

@@ -5,7 +5,15 @@
   bottom: 0;
   width: 14px;
   z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--overlay-scrollbar-fade-out, 640ms) ease;
+}
+
+.overlay-scrollbar.on {
+  opacity: 1;
   pointer-events: auto;
+  transition: none;
 }
 
 .overlay-scrollbar-thumb {

@@ -1,6 +1,6 @@
 import { CONTACT_EMAIL, CONTACT_URL } from "../../constants/contact";
 import { APP_VERSION_LABEL } from "../../constants/version";
-import { usePrefs } from "../../context/prefs";
+import { usePrefs } from "@/hooks/prefs";
 import * as tauri from "../../services/tauri";
 
 export function ContactFooter() {

@@ -1,5 +1,5 @@
-import { usePrefs } from "../../context/prefs";
-import { useSession } from "../../context/session";
+import { usePrefs } from "@/hooks/prefs";
+import { useSession } from "@/hooks/session";
 import { Button } from "../ui/Button";
 
 export function PermissionPanel() {

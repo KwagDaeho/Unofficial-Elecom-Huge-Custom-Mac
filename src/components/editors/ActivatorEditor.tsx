@@ -1,22 +1,28 @@
-import { usePrefs } from "../../context/prefs";
-import { useSession } from "../../context/session";
+import { activatorRejectedMessage } from "@/domain/editors/activatorCapture";
+import { usePrefs } from "@/hooks/prefs";
+import { useEditor } from "@/hooks/editor";
 import { Button } from "../ui/Button";
-import type { EditorMode } from "../../types";
+import type { ActivatorEditorState } from "@/types";
 
-type ActivatorEditorState = Extract<EditorMode, { kind: "ball_scroll_activator" }>;
+interface ActivatorEditorProps {
+  editor: ActivatorEditorState;
+}
 
-export function ActivatorEditor({ editor }: { editor: ActivatorEditorState }) {
+export function ActivatorEditor(props: ActivatorEditorProps) {
   const { i18n } = usePrefs();
-  const { setEditor } = useSession();
-  const rejected =
-    editor.rejected === "left"
-      ? i18n.activatorRejectedLeft
-      : editor.rejected === "tilt"
-        ? i18n.activatorRejectedTilt
-        : null;
+  const { setEditor } = useEditor();
+  const editor = props.editor;
+
+  const rejectedMessage = activatorRejectedMessage(editor.rejected, {
+    left: i18n.activatorRejectedLeft,
+    tilt: i18n.activatorRejectedTilt,
+  });
 
   const slotLabel =
     editor.slot === "toggle" ? i18n.ballScrollToggle : i18n.ballScrollHold;
+
+  const statusMessage =
+    rejectedMessage !== null ? rejectedMessage : i18n.activatorWaiting;
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -25,7 +31,7 @@ export function ActivatorEditor({ editor }: { editor: ActivatorEditorState }) {
           {i18n.activatorTitle} · {slotLabel}
         </h2>
         <p className="muted">{i18n.activatorHint}</p>
-        <div className="chord-preview">{rejected ?? i18n.activatorWaiting}</div>
+        <div className="chord-preview">{statusMessage}</div>
         <div className="row">
           <Button variant="ghost" onClick={() => setEditor(null)}>
             {i18n.cancel}

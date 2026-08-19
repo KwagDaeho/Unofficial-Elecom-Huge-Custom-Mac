@@ -3,11 +3,14 @@ import { MacroEditor } from "./MacroEditor";
 import { OpenAppEditor } from "./OpenAppEditor";
 import { ActivatorEditor } from "./ActivatorEditor";
 import { ComboActivatorEditor } from "./ComboActivatorEditor";
-import { useSession } from "../../context/session";
+import { useEditor } from "@/hooks/editor";
 
 export function EditorHost() {
-  const { editor } = useSession();
-  if (!editor) return null;
+  const { editor } = useEditor();
+
+  if (editor === null) {
+    return null;
+  }
 
   switch (editor.kind) {
     case "custom_key":

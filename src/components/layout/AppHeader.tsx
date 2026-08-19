@@ -1,5 +1,5 @@
-import { MoonIcon, SunIcon } from "../icons/ThemeIcons";
-import { usePrefs } from "../../context/prefs";
+import { MoonIcon, SunIcon } from "@/components/icons";
+import { usePrefs } from "@/hooks";
 
 export function AppHeader() {
   const { lang, theme, i18n, setLang, setTheme } = usePrefs();

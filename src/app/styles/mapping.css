@@ -123,6 +123,11 @@
   width: 100%;
 }
 
+.custom-mapping-row select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .custom-mapping-remove {
   justify-self: end;
 }

@@ -1,16 +1,14 @@
-import { BindingRow } from "./BindingRow";
-import { buttonLabel } from "../../i18n";
-import { asBinding, longPressMs } from "../../domain/profile/binding";
-import { usePrefs } from "../../context/prefs";
-import { useProfileCtx } from "../../context/profile";
-import { useSession } from "../../context/session";
+import { longPressMs, withLongPressMs } from "@/domain/profile";
+import { usePrefs, useProfileCtx } from "@/hooks";
+import { ButtonMappingCard } from "./ButtonMappingCard";
 
 export function ButtonMappingPanel() {
-  const { lang, i18n } = usePrefs();
-  const { profile, catalog, actions } = useProfileCtx();
-  const { selectCatalogValue } = useSession();
+  const { i18n } = usePrefs();
+  const { profile, catalog, lifecycle } = useProfileCtx();
 
-  if (!profile) return null;
+  if (profile === null) {
+    return null;
+  }
 
   return (
     <section className="panel">
@@ -26,11 +24,10 @@ export function ButtonMappingPanel() {
             max={2000}
             step={50}
             value={longPressMs(profile)}
-            onChange={(e) =>
-              void actions.persist({
-                ...profile,
-                longPressMs: Number(e.target.value),
-              })
+            onChange={(event) =>
+              void lifecycle.persist(
+                withLongPressMs(profile, Number(event.target.value)),
+              )
             }
           />
         </label>
@@ -43,28 +40,13 @@ export function ButtonMappingPanel() {
           <span>{i18n.clickAction}</span>
           <span>{i18n.longPressAction}</span>
         </div>
-        {catalog.map((btn) => {
-          const binding = asBinding(profile.buttons[btn.id]);
-          return (
-            <div key={btn.id} className="button-card">
-              <BindingRow
-                target={{ kind: "button", id: btn.id }}
-                binding={binding}
-                buttonId={btn.id}
-                label={
-                  <>
-                    {buttonLabel(btn.id, lang)}
-                    {btn.hiddenFromMacos && <em>{i18n.rawHid}</em>}
-                  </>
-                }
-                onFlags={(patch) => actions.updateButtonFlags(btn.id, patch)}
-                onPick={(slot, value) =>
-                  selectCatalogValue(btn.id, slot, value)
-                }
-              />
-            </div>
-          );
-        })}
+        {catalog.map((buttonMeta) => (
+          <ButtonMappingCard
+            key={buttonMeta.id}
+            buttonMeta={buttonMeta}
+            profile={profile}
+          />
+        ))}
       </div>
     </section>
   );

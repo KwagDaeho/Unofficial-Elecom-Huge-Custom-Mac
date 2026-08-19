@@ -1,6 +1,6 @@
 import { buttonLabel } from "../../i18n";
-import { usePrefs } from "../../context/prefs";
-import { useSession } from "../../context/session";
+import { usePrefs } from "@/hooks/prefs";
+import { useSession } from "@/hooks/session";
 
 export function ProbePanel() {
   const { lang, i18n } = usePrefs();

@@ -1,25 +1,35 @@
-import { usePrefs } from "../../context/prefs";
-import { useProfileCtx } from "../../context/profile";
-import { useSession } from "../../context/session";
+import { usePrefs } from "@/hooks/prefs";
+import { useProfileCtx } from "@/hooks/profile";
+import { useSession } from "@/hooks/session";
 import { Toggle } from "../ui/Toggle";
 
 export function LaunchSettings() {
   const { i18n } = usePrefs();
-  const { profile, actions } = useProfileCtx();
-  const { autostartOn, setAutostartOn } = useSession();
+  const { profile, lifecycle } = useProfileCtx();
+  const { autostart } = useSession();
 
-  if (!profile) return null;
+  if (profile === null) {
+    return null;
+  }
+
+  const loadedProfile = profile;
+
+  function handleStartMinimizedChange(startMinimized: boolean) {
+    void lifecycle.persist({ ...loadedProfile, startMinimized });
+  }
+
+  function handleAutostartChange(enabled: boolean) {
+    void autostart.setEnabled(enabled);
+  }
 
   return (
     <section className="panel panel-row panel-row-split">
-      <Toggle checked={autostartOn} onChange={(on) => void setAutostartOn(on)}>
+      <Toggle checked={autostart.enabled} onChange={handleAutostartChange}>
         {i18n.launchAtLogin}
       </Toggle>
       <Toggle
-        checked={!!profile.startMinimized}
-        onChange={(startMinimized) =>
-          void actions.persist({ ...profile, startMinimized })
-        }>
+        checked={loadedProfile.startMinimized === true}
+        onChange={handleStartMinimizedChange}>
         {i18n.startMinimized}
       </Toggle>
     </section>

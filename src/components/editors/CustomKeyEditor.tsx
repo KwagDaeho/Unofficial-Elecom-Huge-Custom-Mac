@@ -1,36 +1,44 @@
-import { formatKeyChord } from "../../domain/actions";
-import { usePrefs } from "../../context/prefs";
-import { useProfileCtx } from "../../context/profile";
-import { useSession } from "../../context/session";
+import { formatKeyChord } from "@/i18n";
+import { usePrefs } from "@/hooks/prefs";
+import { useProfileCtx } from "@/hooks/profile";
+import { useEditor } from "@/hooks/editor";
 import { KeyChordModal } from "./KeyChordModal";
-import type { EditorMode } from "../../types";
+import type { CustomKeyEditorState } from "@/types";
 
-type CustomKeyEditorState = Extract<EditorMode, { kind: "custom_key" }>;
+interface CustomKeyEditorProps {
+  editor: CustomKeyEditorState;
+}
 
-export function CustomKeyEditor({ editor }: { editor: CustomKeyEditorState }) {
+export function CustomKeyEditor(props: CustomKeyEditorProps) {
   const { lang, i18n } = usePrefs();
-  const { actions } = useProfileCtx();
-  const { setEditor } = useSession();
+  const { mappings } = useProfileCtx();
+  const { setEditor } = useEditor();
+  const editor = props.editor;
+
+  const preview =
+    editor.draft.length > 0
+      ? formatKeyChord(editor.draft, lang)
+      : i18n.customKeyWaiting;
 
   return (
     <KeyChordModal
-      title={i18n.customKeyTitle}
-      hint={i18n.customKeyHint}
-      preview={
-        editor.draft.length > 0
-          ? formatKeyChord(editor.draft, lang)
-          : i18n.customKeyWaiting
-      }
-      cancelLabel={i18n.cancel}
-      saveLabel={i18n.save}
+      copy={{
+        title: i18n.customKeyTitle,
+        hint: i18n.customKeyHint,
+        cancelLabel: i18n.cancel,
+        saveLabel: i18n.save,
+      }}
+      preview={preview}
       saveDisabled={editor.draft.length === 0}
-      onCancel={() => setEditor(null)}
-      onSave={() => {
-        actions.updateMappingSlot(editor.target, editor.slot, {
-          type: "key_stroke",
-          keys: editor.draft,
-        });
-        setEditor(null);
+      handlers={{
+        onCancel: () => setEditor(null),
+        onSave: () => {
+          mappings.updateSlot(editor.target, editor.slot, {
+            type: "key_stroke",
+            keys: editor.draft,
+          });
+          setEditor(null);
+        },
       }}
     />
   );
