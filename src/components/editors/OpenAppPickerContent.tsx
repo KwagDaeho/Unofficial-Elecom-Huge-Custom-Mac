@@ -1,6 +1,5 @@
 import type { OpenAppEditorState, OpenAppListItem } from "@/types";
 import { OpenAppList } from "./OpenAppList";
-
 interface OpenAppPickerContentProps {
   editor: OpenAppEditorState;
   apps: OpenAppListItem[];
@@ -9,8 +8,7 @@ interface OpenAppPickerContentProps {
   emptyLabel: string;
   onSelect: (app: OpenAppListItem) => void;
 }
-
-export function OpenAppPickerContent(props: OpenAppPickerContentProps) {
+export const OpenAppPickerContent = (props: OpenAppPickerContentProps) => {
   if (props.editor.loading) {
     return <p className="muted">{props.loadingLabel}</p>;
   }
@@ -27,4 +25,4 @@ export function OpenAppPickerContent(props: OpenAppPickerContentProps) {
       />
     </ul>
   );
-}
+};

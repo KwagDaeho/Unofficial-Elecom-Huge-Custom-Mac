@@ -1,8 +1,7 @@
 import type { Action, CatalogEntry } from "@/types";
 import { normalizeKeys } from "@/domain/keys/normalize";
 import { ACTION_CATALOG } from "./catalog";
-
-export function actionsEqual(a: Action, b: Action): boolean {
+export const actionsEqual = (a: Action, b: Action): boolean => {
   if (a.type !== b.type) return false;
   if (a.type === "key_stroke" && b.type === "key_stroke") {
     const normalizedLeft = normalizeKeys(a.keys).join("+");
@@ -17,10 +16,9 @@ export function actionsEqual(a: Action, b: Action): boolean {
     );
   }
   return JSON.stringify(a) === JSON.stringify(b);
-}
-
-export function findCatalogEntry(action: Action): CatalogEntry | undefined {
+};
+export const findCatalogEntry = (action: Action): CatalogEntry | undefined => {
   return ACTION_CATALOG.find(
     (e) => !e.special && actionsEqual(e.action, action),
   );
-}
+};

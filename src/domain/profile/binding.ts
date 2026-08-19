@@ -1,9 +1,8 @@
 import type { Action, ButtonBinding } from "@/types";
 import { resolveBindingFlags } from "./fields";
-
-export function asBinding(
+export const asBinding = (
   value: Action | ButtonBinding | undefined,
-): ButtonBinding {
+): ButtonBinding => {
   if (value === undefined) {
     return {
       click: { type: "default" },
@@ -28,9 +27,7 @@ export function asBinding(
     return {
       click: value.click,
       longPress:
-        value.longPress !== undefined
-          ? value.longPress
-          : { type: "disabled" },
+        value.longPress !== undefined ? value.longPress : { type: "disabled" },
       ...flags,
     };
   }
@@ -40,6 +37,5 @@ export function asBinding(
     longPressEnabled: false,
     autoClick: false,
   };
-}
-
+};
 export { longPressMs } from "./pointerSpeeds";

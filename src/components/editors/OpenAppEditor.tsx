@@ -5,19 +5,16 @@ import { useEditor } from "@/hooks/editor";
 import { Button } from "@/components/ui/Button";
 import { OpenAppPickerContent } from "./OpenAppPickerContent";
 import type { OpenAppEditorState, OpenAppListItem } from "@/types";
-
 interface OpenAppEditorProps {
   editor: OpenAppEditorState;
 }
-
-export function OpenAppEditor(props: OpenAppEditorProps) {
+export const OpenAppEditor = (props: OpenAppEditorProps) => {
   const { i18n } = usePrefs();
   const { mappings } = useProfileCtx();
   const { setEditor } = useEditor();
   const editor = props.editor;
   const filteredApps = filterOpenAppEditorApps(editor);
-
-  function handleSave() {
+  const handleSave = () => {
     if (editor.selected === null) {
       return;
     }
@@ -27,15 +24,13 @@ export function OpenAppEditor(props: OpenAppEditorProps) {
       name: editor.selected.name,
     });
     setEditor(null);
-  }
-
-  function handleSelect(app: OpenAppListItem) {
+  };
+  const handleSelect = (app: OpenAppListItem) => {
     setEditor({
       ...editor,
       selected: { name: app.name, bundleId: app.bundleId },
     });
-  }
-
+  };
   return (
     <div className="modal-backdrop" role="presentation">
       <div className="modal modal-wide" role="dialog" aria-modal="true">
@@ -65,13 +60,11 @@ export function OpenAppEditor(props: OpenAppEditorProps) {
           <Button variant="ghost" onClick={() => setEditor(null)}>
             {i18n.cancel}
           </Button>
-          <Button
-            disabled={editor.selected === null}
-            onClick={handleSave}>
+          <Button disabled={editor.selected === null} onClick={handleSave}>
             {i18n.save}
           </Button>
         </div>
       </div>
     </div>
   );
-}
+};

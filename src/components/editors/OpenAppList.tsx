@@ -1,18 +1,15 @@
 import { isOpenAppSelection } from "@/domain/apps/search";
 import type { OpenAppEditorState, OpenAppListItem } from "@/types";
-
 interface OpenAppListProps {
   editor: OpenAppEditorState;
   apps: OpenAppListItem[];
   emptyLabel: string;
   onSelect: (app: OpenAppListItem) => void;
 }
-
-export function OpenAppList(props: OpenAppListProps) {
+export const OpenAppList = (props: OpenAppListProps) => {
   if (props.apps.length === 0) {
     return <li className="muted">{props.emptyLabel}</li>;
   }
-
   return (
     <>
       {props.apps.map((app) => {
@@ -24,7 +21,8 @@ export function OpenAppList(props: OpenAppListProps) {
               className={selected ? "app-row on" : "app-row"}
               role="option"
               aria-selected={selected}
-              onClick={() => props.onSelect(app)}>
+              onClick={() => props.onSelect(app)}
+            >
               {app.icon ? (
                 <img className="app-icon" src={app.icon} alt="" />
               ) : (
@@ -40,4 +38,4 @@ export function OpenAppList(props: OpenAppListProps) {
       })}
     </>
   );
-}
+};

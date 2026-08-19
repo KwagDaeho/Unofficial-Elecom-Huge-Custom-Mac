@@ -1,7 +1,6 @@
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
-
-export function BootScreen() {
+export const BootScreen = () => {
   const { i18n } = usePrefs();
   const { bootError } = useProfileCtx();
   return (
@@ -10,4 +9,4 @@ export function BootScreen() {
       {bootError && <pre className="probe">{bootError}</pre>}
     </main>
   );
-}
+};

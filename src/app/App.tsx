@@ -1,10 +1,10 @@
 import { AppShell } from "@/components/layout";
 import { AppProviders } from "./providers";
-
-export default function App() {
+const App = () => {
   return (
     <AppProviders>
       <AppShell />
     </AppProviders>
   );
-}
+};
+export default App;

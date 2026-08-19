@@ -2,10 +2,8 @@ import { CONTACT_EMAIL, CONTACT_URL } from "../../constants/contact";
 import { APP_VERSION_LABEL } from "../../constants/version";
 import { usePrefs } from "@/hooks/prefs";
 import * as tauri from "../../services/tauri";
-
-export function ContactFooter() {
+export const ContactFooter = () => {
   const { i18n } = usePrefs();
-
   return (
     <footer className="footer">
       <p className="credit">
@@ -23,7 +21,8 @@ export function ContactFooter() {
             onClick={(e) => {
               e.preventDefault();
               void tauri.openUrl(CONTACT_URL);
-            }}>
+            }}
+          >
             open.kakao.com/me/Theo_Kwag
           </a>
         </p>
@@ -34,11 +33,12 @@ export function ContactFooter() {
             onClick={(e) => {
               e.preventDefault();
               void tauri.openUrl(`mailto:${CONTACT_EMAIL}`);
-            }}>
+            }}
+          >
             {CONTACT_EMAIL}
           </a>
         </p>
       </div>
     </footer>
   );
-}
+};

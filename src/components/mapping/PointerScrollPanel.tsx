@@ -3,17 +3,13 @@ import { useProfileCtx } from "@/hooks/profile";
 import { PointerSpeedControls } from "./PointerSpeedControls";
 import { PointerScrollToggles } from "./PointerScrollToggles";
 import { ScrollSpeedControls } from "./ScrollSpeedControls";
-
-export function PointerScrollPanel() {
+export const PointerScrollPanel = () => {
   const { i18n } = usePrefs();
   const { profile, pointer } = useProfileCtx();
-
   if (profile === null) {
     return null;
   }
-
   const profilePointer = profile.pointer;
-
   return (
     <section className="panel">
       <div className="section-head">
@@ -47,4 +43,4 @@ export function PointerScrollPanel() {
       </div>
     </section>
   );
-}
+};

@@ -1,22 +1,20 @@
 import type { ActionCategoryId, CatalogEntry } from "@/types";
 import { ACTION_CATEGORY_ORDER } from "@/constants/actionCategories";
 import { ACTION_CATALOG } from "./catalog";
-
-function entriesForCategory(
+const entriesForCategory = (
   map: Map<ActionCategoryId, CatalogEntry[]>,
   categoryId: ActionCategoryId,
-): CatalogEntry[] {
+): CatalogEntry[] => {
   const entries = map.get(categoryId);
   if (entries === undefined) {
     throw new Error(`Unknown action category: ${categoryId}`);
   }
   return entries;
-}
-
-export function groupCatalogEntries(): {
+};
+export const groupCatalogEntries = (): {
   id: ActionCategoryId;
   entries: CatalogEntry[];
-}[] {
+}[] => {
   const map = new Map<ActionCategoryId, CatalogEntry[]>();
   for (const categoryId of ACTION_CATEGORY_ORDER) {
     map.set(categoryId, []);
@@ -28,4 +26,4 @@ export function groupCatalogEntries(): {
     id: categoryId,
     entries: entriesForCategory(map, categoryId),
   }));
-}
+};

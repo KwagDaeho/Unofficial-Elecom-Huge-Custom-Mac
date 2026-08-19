@@ -1,21 +1,19 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
-
-type Thumb = { top: number; height: number };
-
+type Thumb = {
+  top: number;
+  height: number;
+};
 /** Fully hidden this long after the last scroll (unchanged). */
 const SCROLLBAR_GONE_MS = 1120;
 /** Start opacity fade sooner than before (was 900ms). */
 const SCROLLBAR_FADE_START_MS = 480;
 const SCROLLBAR_FADE_MS = SCROLLBAR_GONE_MS - SCROLLBAR_FADE_START_MS;
-
 interface OverlayScrollbarProps {
   /** Re-sync when main content changes (e.g. tab switch). */
   contentKey?: string;
 }
-
-/** Floating scrollbar over #root — does not take layout width. */
-export function OverlayScrollbar(props: OverlayScrollbarProps) {
+export const OverlayScrollbar = (props: OverlayScrollbarProps) => {
   const dragRef = useRef<{
     startY: number;
     startScroll: number;
@@ -26,31 +24,26 @@ export function OverlayScrollbar(props: OverlayScrollbarProps) {
   const [revealed, setRevealed] = useState(false);
   const [hovering, setHovering] = useState(false);
   const [thumb, setThumb] = useState<Thumb>({ top: 0, height: 40 });
-
-  function clearHideTimer() {
+  const clearHideTimer = () => {
     if (hideTimerRef.current !== null) {
       window.clearTimeout(hideTimerRef.current);
       hideTimerRef.current = null;
     }
-  }
-
-  function scheduleHide() {
+  };
+  const scheduleHide = () => {
     clearHideTimer();
     hideTimerRef.current = window.setTimeout(() => {
       setRevealed(false);
       hideTimerRef.current = null;
     }, SCROLLBAR_FADE_START_MS);
-  }
-
-  function reveal() {
+  };
+  const reveal = () => {
     setRevealed(true);
     scheduleHide();
-  }
-
+  };
   useEffect(() => {
     const root = document.getElementById("root");
     if (!root) return;
-
     const sync = () => {
       const { scrollTop, scrollHeight, clientHeight } = root;
       const hasOverflow = scrollHeight > clientHeight + 1;
@@ -68,12 +61,10 @@ export function OverlayScrollbar(props: OverlayScrollbarProps) {
       setThumb({ top, height });
     };
     syncRef.current = sync;
-
     const onScroll = () => {
       reveal();
       sync();
     };
-
     sync();
     root.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", sync);
@@ -81,7 +72,6 @@ export function OverlayScrollbar(props: OverlayScrollbarProps) {
     ro.observe(root);
     const shell = root.querySelector("main.shell");
     if (shell) ro.observe(shell);
-
     return () => {
       root.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", sync);
@@ -89,7 +79,6 @@ export function OverlayScrollbar(props: OverlayScrollbarProps) {
       clearHideTimer();
     };
   }, []);
-
   useEffect(() => {
     const root = document.getElementById("root");
     if (root) {
@@ -101,7 +90,6 @@ export function OverlayScrollbar(props: OverlayScrollbarProps) {
     const retry = window.setTimeout(() => syncRef.current(), 0);
     return () => window.clearTimeout(retry);
   }, [props.contentKey]);
-
   useEffect(() => {
     const onMove = (event: PointerEvent) => {
       const drag = dragRef.current;
@@ -127,11 +115,8 @@ export function OverlayScrollbar(props: OverlayScrollbarProps) {
       window.removeEventListener("pointercancel", onUp);
     };
   }, [thumb.height]);
-
   if (!overflow) return null;
-
   const shown = revealed || hovering;
-
   return createPortal(
     <div
       className={shown ? "overlay-scrollbar on" : "overlay-scrollbar"}
@@ -170,7 +155,10 @@ export function OverlayScrollbar(props: OverlayScrollbarProps) {
             startScroll: root.scrollTop,
           };
           const target = event.target;
-          if (target instanceof HTMLElement && typeof target.setPointerCapture === "function") {
+          if (
+            target instanceof HTMLElement &&
+            typeof target.setPointerCapture === "function"
+          ) {
             target.setPointerCapture(event.pointerId);
           }
         }}
@@ -178,4 +166,4 @@ export function OverlayScrollbar(props: OverlayScrollbarProps) {
     </div>,
     document.body,
   );
-}
+};

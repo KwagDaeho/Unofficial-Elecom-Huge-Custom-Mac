@@ -1,11 +1,15 @@
 import type { ReactNode } from "react";
 import { ActionSelect } from "./ActionSelect";
 import { resolveBindingButtonId } from "@/domain/mapping/bindingRow";
-import { isTiltButton, tiltForcesAutoClick, bindingAutoClickEnabled, bindingLongPressEnabled } from "@/domain/profile";
+import {
+  isTiltButton,
+  tiltForcesAutoClick,
+  bindingAutoClickEnabled,
+  bindingLongPressEnabled,
+} from "@/domain/profile";
 import { usePrefs } from "@/hooks";
 import { Toggle } from "@/components/ui";
 import type { ButtonBinding, ButtonId, MappingTarget } from "@/types";
-
 interface BindingRowProps {
   target: MappingTarget;
   binding: ButtonBinding;
@@ -17,8 +21,7 @@ interface BindingRowProps {
   onPick: (slot: "click" | "long_press", value: string) => void;
   buttonId?: ButtonId;
 }
-
-export function BindingRow(props: BindingRowProps) {
+export const BindingRow = (props: BindingRowProps) => {
   const { i18n } = usePrefs();
   const resolvedButtonId = resolveBindingButtonId(props.target, props.buttonId);
   const isTilt =
@@ -33,7 +36,6 @@ export function BindingRow(props: BindingRowProps) {
     ? false
     : bindingLongPressEnabled(props.binding);
   const hideLabel = props.hideLabel === true;
-
   return (
     <>
       {!hideLabel ? <span className="btn-name">{props.label}</span> : null}
@@ -62,4 +64,4 @@ export function BindingRow(props: BindingRowProps) {
       />
     </>
   );
-}
+};

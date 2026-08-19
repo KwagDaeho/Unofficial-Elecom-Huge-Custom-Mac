@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 import { Button } from "../ui/Button";
 import type { ModalActionHandlers, ModalCopy } from "@/types";
-
 interface KeyChordModalProps {
   copy: ModalCopy;
   preview: ReactNode;
@@ -10,19 +9,15 @@ interface KeyChordModalProps {
   handlers: ModalActionHandlers;
   saveDisabled?: boolean;
 }
-
-export function KeyChordModal(props: KeyChordModalProps) {
+export const KeyChordModal = (props: KeyChordModalProps) => {
   const dialogRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const dialog = dialogRef.current;
     if (dialog !== null) {
       dialog.focus();
     }
   }, []);
-
   const showSaveButton = props.handlers.onSave !== undefined;
-
   return (
     <div className="modal-backdrop" role="presentation">
       <div
@@ -31,7 +26,8 @@ export function KeyChordModal(props: KeyChordModalProps) {
         role="dialog"
         aria-modal="true"
         tabIndex={-1}
-        onKeyDown={props.handlers.onKeyDown}>
+        onKeyDown={props.handlers.onKeyDown}
+      >
         <h2>{props.copy.title}</h2>
         <p className="muted">{props.copy.hint}</p>
         <div className="chord-preview">{props.preview}</div>
@@ -43,7 +39,8 @@ export function KeyChordModal(props: KeyChordModalProps) {
           {showSaveButton ? (
             <Button
               disabled={props.saveDisabled === true}
-              onClick={props.handlers.onSave}>
+              onClick={props.handlers.onSave}
+            >
               {props.copy.saveLabel}
             </Button>
           ) : null}
@@ -51,4 +48,4 @@ export function KeyChordModal(props: KeyChordModalProps) {
       </div>
     </div>
   );
-}
+};

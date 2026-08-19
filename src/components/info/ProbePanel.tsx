@@ -1,11 +1,9 @@
 import { buttonLabel } from "../../i18n";
 import { usePrefs } from "@/hooks/prefs";
 import { useSession } from "@/hooks/session";
-
-export function ProbePanel() {
+export const ProbePanel = () => {
   const { lang, i18n } = usePrefs();
   const { report } = useSession();
-
   return (
     <section className="panel">
       <div className="section-head">
@@ -24,4 +22,4 @@ export function ProbePanel() {
       </pre>
     </section>
   );
-}
+};

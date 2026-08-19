@@ -12,8 +12,7 @@ import type {
   MappingTarget,
   Profile,
 } from "@/types";
-
-function bindingForTarget(profile: Profile | null, target: MappingTarget) {
+const bindingForTarget = (profile: Profile | null, target: MappingTarget) => {
   if (profile === null) {
     return asBinding(undefined);
   }
@@ -24,14 +23,13 @@ function bindingForTarget(profile: Profile | null, target: MappingTarget) {
     (mapping) => mapping.id === target.id,
   );
   return asBinding(entry);
-}
-
-export function resolveCatalogSelection(
+};
+export const resolveCatalogSelection = (
   target: MappingTarget,
   slot: ActionSlot,
   value: string,
   profile: Profile | null,
-): CatalogSelectionResult {
+): CatalogSelectionResult => {
   if (value === CUSTOM_KEY_SENTINEL) {
     return {
       kind: "editor",
@@ -41,9 +39,7 @@ export function resolveCatalogSelection(
   if (value === MACRO_SENTINEL) {
     const existingBinding = bindingForTarget(profile, target);
     const currentAction =
-      slot === "click"
-        ? existingBinding.click
-        : existingBinding.longPress;
+      slot === "click" ? existingBinding.click : existingBinding.longPress;
     const steps = currentAction.type === "macro" ? currentAction.steps : [];
     return {
       kind: "editor",
@@ -53,15 +49,12 @@ export function resolveCatalogSelection(
   if (value === OPEN_APP_SENTINEL) {
     const existingBinding = bindingForTarget(profile, target);
     const currentAction =
-      slot === "click"
-        ? existingBinding.click
-        : existingBinding.longPress;
+      slot === "click" ? existingBinding.click : existingBinding.longPress;
     const selected =
       currentAction.type === "open_app" && currentAction.bundle_id
         ? {
             name:
-              currentAction.name !== undefined &&
-              currentAction.name.length > 0
+              currentAction.name !== undefined && currentAction.name.length > 0
                 ? currentAction.name
                 : currentAction.bundle_id,
             bundleId: currentAction.bundle_id,
@@ -89,4 +82,4 @@ export function resolveCatalogSelection(
       action: { type: slot === "click" ? "default" : "disabled" },
     };
   }
-}
+};

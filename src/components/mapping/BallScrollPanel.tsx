@@ -4,17 +4,18 @@ import { usePrefs, useProfileCtx, useEditor } from "@/hooks";
 import { Toggle } from "@/components/ui";
 import { BallScrollActivatorRow } from "./BallScrollActivatorRow";
 import type { BallScrollSlot } from "@/types";
-
-export function BallScrollPanel() {
+export const BallScrollPanel = () => {
   const { lang, i18n } = usePrefs();
   const { profile, ballScroll } = useProfileCtx();
   const { setEditor } = useEditor();
   const [latchOn, setLatchOn] = useState(false);
-
   useEffect(() => {
     let cancelled = false;
     const unlisten = import("@tauri-apps/api/event").then(({ listen }) =>
-      listen<{ active: boolean; latch: boolean }>("ball-scroll-active", (event) => {
+      listen<{
+        active: boolean;
+        latch: boolean;
+      }>("ball-scroll-active", (event) => {
         if (!cancelled) {
           setLatchOn(event.payload.latch);
         }
@@ -25,14 +26,11 @@ export function BallScrollPanel() {
       void unlisten.then((unsubscribe) => unsubscribe());
     };
   }, []);
-
   if (profile === null) {
     return null;
   }
-
   const ball = ballScrollOf(profile.ballScroll);
-
-  function handleEnableChange(slot: BallScrollSlot, enabled: boolean) {
+  const handleEnableChange = (slot: BallScrollSlot, enabled: boolean) => {
     const activator = ballScrollActivatorForSlot(ball, slot);
     if (enabled && activator === null) {
       setEditor({ kind: "ball_scroll_activator", slot, rejected: null });
@@ -43,21 +41,21 @@ export function BallScrollPanel() {
       return;
     }
     ballScroll.update({ holdEnabled: enabled });
-  }
-
-  function handleClear(slot: BallScrollSlot) {
+  };
+  const handleClear = (slot: BallScrollSlot) => {
     if (slot === "toggle") {
       ballScroll.update({ toggleActivator: null, toggleEnabled: false });
       return;
     }
     ballScroll.update({ holdActivator: null, holdEnabled: false });
-  }
-
+  };
   return (
     <section className="panel">
       <div className="section-head">
         <h2>{i18n.ballScroll}</h2>
-        {latchOn ? <em className="ball-scroll-badge">{i18n.ballScrollOn}</em> : null}
+        {latchOn ? (
+          <em className="ball-scroll-badge">{i18n.ballScrollOn}</em>
+        ) : null}
       </div>
       <div className="controls">
         <BallScrollActivatorRow
@@ -97,19 +95,19 @@ export function BallScrollPanel() {
         </label>
         <Toggle
           checked={ball.invertVertical}
-          onChange={(invertVertical) =>
-            ballScroll.update({ invertVertical })
-          }>
+          onChange={(invertVertical) => ballScroll.update({ invertVertical })}
+        >
           {i18n.ballScrollInvertVertical}
         </Toggle>
         <Toggle
           checked={ball.invertHorizontal}
           onChange={(invertHorizontal) =>
             ballScroll.update({ invertHorizontal })
-          }>
+          }
+        >
           {i18n.ballScrollInvertHorizontal}
         </Toggle>
       </div>
     </section>
   );
-}
+};

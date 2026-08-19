@@ -1,15 +1,12 @@
 import { longPressMs, withLongPressMs } from "@/domain/profile";
 import { usePrefs, useProfileCtx } from "@/hooks";
 import { ButtonMappingCard } from "./ButtonMappingCard";
-
-export function ButtonMappingPanel() {
+export const ButtonMappingPanel = () => {
   const { i18n } = usePrefs();
   const { profile, catalog, lifecycle } = useProfileCtx();
-
   if (profile === null) {
     return null;
   }
-
   return (
     <section className="panel">
       <div className="section-head">
@@ -50,4 +47,4 @@ export function ButtonMappingPanel() {
       </div>
     </section>
   );
-}
+};

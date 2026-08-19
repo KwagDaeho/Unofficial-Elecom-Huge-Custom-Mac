@@ -3,19 +3,16 @@ import { buttonLabel } from "@/i18n";
 import { asBinding } from "@/domain/profile";
 import { usePrefs, useProfileCtx, useEditor } from "@/hooks";
 import type { ButtonMeta, Profile } from "@/types";
-
 interface ButtonMappingCardProps {
   buttonMeta: ButtonMeta;
   profile: Profile;
 }
-
-export function ButtonMappingCard(props: ButtonMappingCardProps) {
+export const ButtonMappingCard = (props: ButtonMappingCardProps) => {
   const { lang, i18n } = usePrefs();
   const { mappings } = useProfileCtx();
   const { catalogSelection } = useEditor();
   const { buttonMeta, profile } = props;
   const binding = asBinding(profile.buttons[buttonMeta.id]);
-
   return (
     <div className="button-card">
       <BindingRow
@@ -35,4 +32,4 @@ export function ButtonMappingCard(props: ButtonMappingCardProps) {
       />
     </div>
   );
-}
+};

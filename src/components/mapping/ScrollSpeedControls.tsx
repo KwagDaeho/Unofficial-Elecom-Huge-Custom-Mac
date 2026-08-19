@@ -7,17 +7,14 @@ import { formatSpeedPair } from "@/utils/format";
 import { usePrefs } from "@/hooks/prefs";
 import { SpeedRangeControl } from "./SpeedRangeControl";
 import type { Profile } from "@/types";
-
 interface ScrollSpeedControlsProps {
   pointer: Profile["pointer"];
   onScrollVertical: (value: number) => void;
   onScrollHorizontal: (value: number) => void;
 }
-
-export function ScrollSpeedControls(props: ScrollSpeedControlsProps) {
+export const ScrollSpeedControls = (props: ScrollSpeedControlsProps) => {
   const { i18n } = usePrefs();
   const { pointer } = props;
-
   return (
     <>
       <SpeedRangeControl
@@ -46,4 +43,4 @@ export function ScrollSpeedControls(props: ScrollSpeedControlsProps) {
       />
     </>
   );
-}
+};

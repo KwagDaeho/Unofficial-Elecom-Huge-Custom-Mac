@@ -1,15 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  CONNECTED_POLL_MS,
-  REPORT_POLL_MS,
-} from "../constants/polling";
+import { CONNECTED_POLL_MS, REPORT_POLL_MS } from "../constants/polling";
 import * as tauri from "../services/tauri";
 import type { DeviceInfo, LastReport } from "../types";
-
-function sameReport(
+const sameReport = (
   previousReport: LastReport | null,
   nextReport: LastReport | null,
-): boolean {
+): boolean => {
   if (previousReport === null || nextReport === null) {
     return previousReport === nextReport;
   }
@@ -22,12 +18,10 @@ function sameReport(
     previousReport.pan === nextReport.pan &&
     previousReport.buttons.join() === nextReport.buttons.join()
   );
-}
-
-export function useDeviceProbe() {
+};
+export const useDeviceProbe = () => {
   const [connected, setConnected] = useState<DeviceInfo | null>(null);
   const [report, setReport] = useState<LastReport | null>(null);
-
   const refresh = useCallback(async () => {
     const [deviceInfo, lastReport] = await Promise.all([
       tauri.getDeviceInfo(),
@@ -36,7 +30,6 @@ export function useDeviceProbe() {
     setConnected(deviceInfo);
     setReport(lastReport);
   }, []);
-
   useEffect(() => {
     void refresh();
     const reportIntervalId = window.setInterval(() => {
@@ -54,11 +47,10 @@ export function useDeviceProbe() {
       window.clearInterval(connectedIntervalId);
     };
   }, [refresh]);
-
   return {
     connected,
     report,
     refresh,
     isConnected: connected !== null,
   };
-}
+};

@@ -1,20 +1,17 @@
 import type { ComboActivator, CustomMappingEntry, Profile } from "@/types";
-
-export function customMappingsOf(profile: Profile): CustomMappingEntry[] {
+export const customMappingsOf = (profile: Profile): CustomMappingEntry[] => {
   if (profile.customMappings === undefined) {
     return [];
   }
   return profile.customMappings;
-}
-
-export function findCustomMapping(
+};
+export const findCustomMapping = (
   profile: Profile,
   entryId: string,
-): CustomMappingEntry | undefined {
+): CustomMappingEntry | undefined => {
   return customMappingsOf(profile).find((entry) => entry.id === entryId);
-}
-
-export function newCustomMappingEntry(): CustomMappingEntry {
+};
+export const newCustomMappingEntry = (): CustomMappingEntry => {
   return {
     id: crypto.randomUUID(),
     activator: { modifiers: [], keys: [], button: "fn2" },
@@ -23,8 +20,7 @@ export function newCustomMappingEntry(): CustomMappingEntry {
     longPressEnabled: false,
     autoClick: false,
   };
-}
-
-export function comboIsValid(activator: ComboActivator): boolean {
+};
+export const comboIsValid = (activator: ComboActivator): boolean => {
   return activator.modifiers.length > 0 || activator.keys.length > 0;
-}
+};

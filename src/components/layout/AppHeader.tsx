@@ -1,9 +1,7 @@
 import { MoonIcon, SunIcon } from "@/components/icons";
 import { usePrefs } from "@/hooks";
-
-export function AppHeader() {
+export const AppHeader = () => {
   const { lang, theme, i18n, setLang, setTheme } = usePrefs();
-
   return (
     <header className="hero">
       <div className="hero-top">
@@ -15,7 +13,8 @@ export function AppHeader() {
               className={theme === "light" ? "theme on" : "theme"}
               aria-label={i18n.themeLight}
               title={i18n.themeLight}
-              onClick={() => setTheme("light")}>
+              onClick={() => setTheme("light")}
+            >
               <SunIcon />
             </button>
             <button
@@ -23,7 +22,8 @@ export function AppHeader() {
               className={theme === "dark" ? "theme on" : "theme"}
               aria-label={i18n.themeDark}
               title={i18n.themeDark}
-              onClick={() => setTheme("dark")}>
+              onClick={() => setTheme("dark")}
+            >
               <MoonIcon />
             </button>
           </div>
@@ -31,13 +31,15 @@ export function AppHeader() {
             <button
               type="button"
               className={lang === "ko" ? "lang on" : "lang"}
-              onClick={() => setLang("ko")}>
+              onClick={() => setLang("ko")}
+            >
               KR
             </button>
             <button
               type="button"
               className={lang === "en" ? "lang on" : "lang"}
-              onClick={() => setLang("en")}>
+              onClick={() => setLang("en")}
+            >
               EN
             </button>
           </div>
@@ -46,4 +48,4 @@ export function AppHeader() {
       <h1>HUGE</h1>
     </header>
   );
-}
+};

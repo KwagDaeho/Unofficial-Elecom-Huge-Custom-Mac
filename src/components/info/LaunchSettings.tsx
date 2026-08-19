@@ -2,26 +2,20 @@ import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useSession } from "@/hooks/session";
 import { Toggle } from "../ui/Toggle";
-
-export function LaunchSettings() {
+export const LaunchSettings = () => {
   const { i18n } = usePrefs();
   const { profile, lifecycle } = useProfileCtx();
   const { autostart } = useSession();
-
   if (profile === null) {
     return null;
   }
-
   const loadedProfile = profile;
-
-  function handleStartMinimizedChange(startMinimized: boolean) {
+  const handleStartMinimizedChange = (startMinimized: boolean) => {
     void lifecycle.persist({ ...loadedProfile, startMinimized });
-  }
-
-  function handleAutostartChange(enabled: boolean) {
+  };
+  const handleAutostartChange = (enabled: boolean) => {
     void autostart.setEnabled(enabled);
-  }
-
+  };
   return (
     <section className="panel panel-row panel-row-split">
       <Toggle checked={autostart.enabled} onChange={handleAutostartChange}>
@@ -29,9 +23,10 @@ export function LaunchSettings() {
       </Toggle>
       <Toggle
         checked={loadedProfile.startMinimized === true}
-        onChange={handleStartMinimizedChange}>
+        onChange={handleStartMinimizedChange}
+      >
         {i18n.startMinimized}
       </Toggle>
     </section>
   );
-}
+};

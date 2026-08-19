@@ -11,13 +11,12 @@ import { asBinding } from "@/domain/profile/binding";
 import { customMappingsOf } from "@/domain/profile/customMapping";
 import { resolveBindingFlags } from "@/domain/profile/fields";
 import { withButtonSlot } from "./buttons";
-
-export function withMappingSlot(
+export const withMappingSlot = (
   profile: Profile,
   target: MappingTarget,
   slot: ActionSlot,
   action: Action,
-): Profile {
+): Profile => {
   if (target.kind === "button") {
     return withButtonSlot(profile, target.id, slot, action);
   }
@@ -32,13 +31,12 @@ export function withMappingSlot(
       : { ...entry, ...currentBinding, longPress: action };
   });
   return { ...profile, customMappings: nextEntries };
-}
-
-export function withCustomMappingFlags(
+};
+export const withCustomMappingFlags = (
   profile: Profile,
   entryId: string,
   patch: Partial<Pick<ButtonBinding, "longPressEnabled" | "autoClick">>,
-): Profile {
+): Profile => {
   const nextEntries = customMappingsOf(profile).map((entry) => {
     if (entry.id !== entryId) {
       return entry;
@@ -48,34 +46,34 @@ export function withCustomMappingFlags(
     return { ...entry, ...currentBinding, ...flags };
   });
   return { ...profile, customMappings: nextEntries };
-}
-
-export function withCustomMappingAdded(
+};
+export const withCustomMappingAdded = (
   profile: Profile,
   entry: CustomMappingEntry,
-): Profile {
+): Profile => {
   return {
     ...profile,
     customMappings: [...customMappingsOf(profile), entry],
   };
-}
-
-export function withCustomMappingRemoved(profile: Profile, entryId: string): Profile {
+};
+export const withCustomMappingRemoved = (
+  profile: Profile,
+  entryId: string,
+): Profile => {
   return {
     ...profile,
     customMappings: customMappingsOf(profile).filter(
       (entry) => entry.id !== entryId,
     ),
   };
-}
-
-export function withCustomMappingActivator(
+};
+export const withCustomMappingActivator = (
   profile: Profile,
   entryId: string,
   activator: ComboActivator,
-): Profile {
+): Profile => {
   const nextEntries = customMappingsOf(profile).map((entry) =>
     entry.id === entryId ? { ...entry, activator } : entry,
   );
   return { ...profile, customMappings: nextEntries };
-}
+};

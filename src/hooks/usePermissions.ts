@@ -2,20 +2,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { PERMISSION_POLL_MS } from "../constants/polling";
 import * as tauri from "../services/tauri";
 import type { PermissionStatus } from "../types";
-
-export function usePermissions() {
+export const usePermissions = () => {
   const [permissionStatus, setPermissionStatus] =
     useState<PermissionStatus | null>(null);
   const sawUntrusted = useRef(false);
   const restartScheduled = useRef(false);
-
-  const trusted =
-    permissionStatus !== null && permissionStatus.ready;
-
+  const trusted = permissionStatus !== null && permissionStatus.ready;
   const refresh = useCallback(async () => {
     setPermissionStatus(await tauri.getPermissionStatus());
   }, []);
-
   useEffect(() => {
     if (permissionStatus === null) {
       return;
@@ -29,7 +24,6 @@ export function usePermissions() {
       void tauri.relaunchApp();
     }
   }, [permissionStatus]);
-
   useEffect(() => {
     void refresh();
     const intervalId = window.setInterval(() => {
@@ -39,13 +33,11 @@ export function usePermissions() {
       window.clearInterval(intervalId);
     };
   }, [refresh]);
-
   const grantAccess = useCallback(async () => {
     await tauri.resetTccPermissions();
     await tauri.requestPermission("accessibility");
     setPermissionStatus(await tauri.getPermissionStatus());
   }, []);
-
   return {
     permissionStatus,
     trusted,
@@ -54,4 +46,4 @@ export function usePermissions() {
     openAccessibilitySettings: tauri.openAccessibilitySettings,
     openInputMonitoringSettings: tauri.openInputMonitoringSettings,
   };
-}
+};

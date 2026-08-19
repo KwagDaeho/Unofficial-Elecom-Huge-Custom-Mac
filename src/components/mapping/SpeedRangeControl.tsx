@@ -7,8 +7,7 @@ interface SpeedRangeControlProps {
   value: number;
   onChange: (value: number) => void;
 }
-
-export function SpeedRangeControl(props: SpeedRangeControlProps) {
+export const SpeedRangeControl = (props: SpeedRangeControlProps) => {
   return (
     <label>
       {props.label} {props.display}
@@ -22,4 +21,4 @@ export function SpeedRangeControl(props: SpeedRangeControlProps) {
       />
     </label>
   );
-}
+};

@@ -1,7 +1,6 @@
 import type { Lang } from "@/types";
 import { normalizeKeys } from "@/domain/keys/normalize";
-
-export function formatKeyChord(keys: string[], lang: Lang): string {
+export const formatKeyChord = (keys: string[], lang: Lang): string => {
   const parts = normalizeKeys(keys).map((k) => {
     switch (k) {
       case "Meta":
@@ -31,4 +30,4 @@ export function formatKeyChord(keys: string[], lang: Lang): string {
     }
   });
   return parts.join("");
-}
+};

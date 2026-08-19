@@ -7,7 +7,6 @@ import type {
 } from "@/types";
 import { formatKeyChord } from "./keys";
 import { buttonLabel, entryLabel } from "./core";
-
 /** Catalog entry ids for injectable mouse-click actions (SSOT with ACTION_CATALOG). */
 export const MOUSE_CLICK_ENTRY: Record<MouseClickButton, string> = {
   left: "mouse_left",
@@ -16,16 +15,16 @@ export const MOUSE_CLICK_ENTRY: Record<MouseClickButton, string> = {
   back: "mouse_back",
   forward: "mouse_forward",
 };
-
-export function mouseClickLabel(button: MouseClickButton, lang: Lang): string {
+export const mouseClickLabel = (
+  button: MouseClickButton,
+  lang: Lang,
+): string => {
   return entryLabel(MOUSE_CLICK_ENTRY[button], lang);
-}
-
-export function hugeButtonLabel(id: ButtonId, lang: Lang): string {
+};
+export const hugeButtonLabel = (id: ButtonId, lang: Lang): string => {
   return buttonLabel(id, lang);
-}
-
-export function formatActivator(activator: Activator, lang: Lang): string {
+};
+export const formatActivator = (activator: Activator, lang: Lang): string => {
   if (activator.type === "key") {
     return formatKeyChord([activator.name], lang);
   }
@@ -33,9 +32,11 @@ export function formatActivator(activator: Activator, lang: Lang): string {
     return mouseClickLabel(activator.button, lang);
   }
   return hugeButtonLabel(activator.button, lang);
-}
-
-export function formatComboActivator(combo: ComboActivator, lang: Lang): string {
+};
+export const formatComboActivator = (
+  combo: ComboActivator,
+  lang: Lang,
+): string => {
   const parts: string[] = [];
   for (const mod of ["Control", "Option", "Shift", "Meta"]) {
     if (combo.modifiers.includes(mod)) {
@@ -47,4 +48,4 @@ export function formatComboActivator(combo: ComboActivator, lang: Lang): string 
   }
   parts.push(hugeButtonLabel(combo.button, lang));
   return parts.join(" + ");
-}
+};

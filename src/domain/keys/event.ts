@@ -1,5 +1,4 @@
-/** Map a KeyboardEvent to our key name tokens. */
-export function eventToKeyName(e: KeyboardEvent): string | null {
+export const eventToKeyName = (e: KeyboardEvent): string | null => {
   const modMap: Record<string, string> = {
     Meta: "Meta",
     Control: "Control",
@@ -7,7 +6,6 @@ export function eventToKeyName(e: KeyboardEvent): string | null {
     Shift: "Shift",
   };
   if (e.key in modMap) return modMap[e.key];
-
   switch (e.code) {
     case "ArrowLeft":
       return "Left";
@@ -42,22 +40,18 @@ export function eventToKeyName(e: KeyboardEvent): string | null {
     default:
       break;
   }
-
   if (/^Key[A-Z]$/.test(e.code)) return e.code.slice(3);
   if (/^Digit[0-9]$/.test(e.code)) return e.code.slice(5);
   if (/^F([1-9]|1[0-2])$/.test(e.code)) return e.code;
-
   if (e.key.length === 1) return e.key.toUpperCase();
   return null;
-}
-
-export function chordFromEvent(e: KeyboardEvent): string[] {
+};
+export const chordFromEvent = (e: KeyboardEvent): string[] => {
   const keys: string[] = [];
   if (e.ctrlKey) keys.push("Control");
   if (e.altKey) keys.push("Option");
   if (e.shiftKey) keys.push("Shift");
   if (e.metaKey) keys.push("Meta");
-
   const main = eventToKeyName(e);
   if (
     main &&
@@ -67,4 +61,4 @@ export function chordFromEvent(e: KeyboardEvent): string[] {
     keys.push(main);
   }
   return keys;
-}
+};

@@ -28,105 +28,92 @@ import type {
   ProfileMutateFn,
   ProfileMutations,
 } from "@/types";
-
-export function useProfileMutations(
+export const useProfileMutations = (
   profile: Profile | null,
   mutateProfile: ProfileMutateFn,
-): ProfileMutations {
-  function updateMappingSlot(
+): ProfileMutations => {
+  const updateMappingSlot = (
     target: MappingTarget,
     slot: ActionSlot,
     action: Action,
-  ) {
+  ) => {
     mutateProfile((loadedProfile) =>
       withMappingSlot(loadedProfile, target, slot, action),
     );
-  }
-
-  function updateButtonSlot(
+  };
+  const updateButtonSlot = (
     buttonId: ButtonId,
     slot: ActionSlot,
     action: Action,
-  ) {
+  ) => {
     mutateProfile((loadedProfile) =>
       withButtonSlot(loadedProfile, buttonId, slot, action),
     );
-  }
-
-  function updateButtonFlags(
+  };
+  const updateButtonFlags = (
     buttonId: ButtonId,
     patch: Partial<Pick<ButtonBinding, "longPressEnabled" | "autoClick">>,
-  ) {
+  ) => {
     if (isTiltButton(buttonId)) {
       return;
     }
     mutateProfile((loadedProfile) =>
       withButtonFlags(loadedProfile, buttonId, patch),
     );
-  }
-
-  function updatePointer<K extends keyof Profile["pointer"]>(
+  };
+  const updatePointer = <K extends keyof Profile["pointer"]>(
     key: K,
     value: Profile["pointer"][K],
-  ) {
+  ) => {
     mutateProfile((loadedProfile) =>
       withPointerPatch(loadedProfile, key, value),
     );
-  }
-
-  function updateBallScroll(patch: Partial<BallScrollSettings>) {
-    mutateProfile((loadedProfile) =>
-      withBallScrollPatch(loadedProfile, patch),
-    );
-  }
-
-  function assignBallScrollActivator(
+  };
+  const updateBallScroll = (patch: Partial<BallScrollSettings>) => {
+    mutateProfile((loadedProfile) => withBallScrollPatch(loadedProfile, patch));
+  };
+  const assignBallScrollActivator = (
     slot: BallScrollSlot,
     activator: Activator,
-  ) {
+  ) => {
     if (slot === "toggle") {
       updateBallScroll({ toggleActivator: activator, toggleEnabled: true });
       return;
     }
     updateBallScroll({ holdActivator: activator, holdEnabled: true });
-  }
-
-  function updateCustomMappingFlags(
+  };
+  const updateCustomMappingFlags = (
     entryId: string,
     patch: Partial<Pick<ButtonBinding, "longPressEnabled" | "autoClick">>,
-  ) {
+  ) => {
     mutateProfile((loadedProfile) =>
       withCustomMappingFlags(loadedProfile, entryId, patch),
     );
-  }
-
-  function addCustomMapping(entry: CustomMappingEntry) {
+  };
+  const addCustomMapping = (entry: CustomMappingEntry) => {
     mutateProfile((loadedProfile) =>
       withCustomMappingAdded(loadedProfile, entry),
     );
-  }
-
-  function removeCustomMapping(entryId: string) {
+  };
+  const removeCustomMapping = (entryId: string) => {
     mutateProfile((loadedProfile) =>
       withCustomMappingRemoved(loadedProfile, entryId),
     );
-  }
-
-  function updateCustomMappingActivator(
+  };
+  const updateCustomMappingActivator = (
     entryId: string,
     activator: ComboActivator,
-  ) {
+  ) => {
     mutateProfile((loadedProfile) =>
       withCustomMappingActivator(loadedProfile, entryId, activator),
     );
-  }
-
-  function selectCatalogValue(
+  };
+  const selectCatalogValue = (
     buttonId: ButtonId,
     slot: ActionSlot,
     value: string,
     setEditor: Dispatch<SetStateAction<EditorMode | null>>,
-  ) {
+  ) => {
     applyCatalogSelection(
       { kind: "button", id: buttonId },
       slot,
@@ -135,14 +122,13 @@ export function useProfileMutations(
       setEditor,
       updateMappingSlot,
     );
-  }
-
-  function selectCustomCatalogValue(
+  };
+  const selectCustomCatalogValue = (
     entryId: string,
     slot: ActionSlot,
     value: string,
     setEditor: Dispatch<SetStateAction<EditorMode | null>>,
-  ) {
+  ) => {
     applyCatalogSelection(
       { kind: "custom", id: entryId },
       slot,
@@ -151,8 +137,7 @@ export function useProfileMutations(
       setEditor,
       updateMappingSlot,
     );
-  }
-
+  };
   return {
     mappings: {
       updateSlot: updateMappingSlot,
@@ -177,4 +162,4 @@ export function useProfileMutations(
       selectCustom: selectCustomCatalogValue,
     },
   };
-}
+};

@@ -2,24 +2,21 @@ import { customMappingsOf, newCustomMappingEntry } from "@/domain/profile";
 import { usePrefs, useProfileCtx } from "@/hooks";
 import { Button } from "@/components/ui";
 import { CustomMappingRow } from "./CustomMappingRow";
-
-export function CustomButtonMappingPanel() {
+export const CustomButtonMappingPanel = () => {
   const { i18n } = usePrefs();
   const { profile, customMappings } = useProfileCtx();
-
   if (profile === null) {
     return null;
   }
-
   const entries = customMappingsOf(profile);
-
   return (
     <section className="panel">
       <div className="section-head">
         <h2>{i18n.customButtonMapping}</h2>
         <Button
           size="tiny"
-          onClick={() => void customMappings.add(newCustomMappingEntry())}>
+          onClick={() => void customMappings.add(newCustomMappingEntry())}
+        >
           {i18n.customMappingAdd}
         </Button>
       </div>
@@ -43,4 +40,4 @@ export function CustomButtonMappingPanel() {
       )}
     </section>
   );
-}
+};

@@ -1,9 +1,8 @@
 import type { InstalledApp, OpenAppEditorState } from "@/types";
-
-export function matchesInstalledAppSearch(
+export const matchesInstalledAppSearch = (
   app: InstalledApp,
   query: string,
-): boolean {
+): boolean => {
   const normalizedQuery = query.trim().toLowerCase();
   if (normalizedQuery.length === 0) {
     return true;
@@ -12,23 +11,21 @@ export function matchesInstalledAppSearch(
     app.name.toLowerCase().includes(normalizedQuery) ||
     app.bundleId.toLowerCase().includes(normalizedQuery)
   );
-}
-
-export function filterOpenAppEditorApps(
+};
+export const filterOpenAppEditorApps = (
   editor: OpenAppEditorState,
   limit = 80,
-) {
+) => {
   return editor.apps
     .filter((app) => matchesInstalledAppSearch(app, editor.query))
     .slice(0, limit);
-}
-
-export function isOpenAppSelection(
+};
+export const isOpenAppSelection = (
   editor: OpenAppEditorState,
   bundleId: string,
-): boolean {
+): boolean => {
   if (editor.selected === null) {
     return false;
   }
   return editor.selected.bundleId === bundleId;
-}
+};

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import type { ToggleVariant } from "@/types";
-
 interface ToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
@@ -10,8 +9,7 @@ interface ToggleProps {
   description?: ReactNode;
   variant?: ToggleVariant;
 }
-
-export function Toggle(props: ToggleProps) {
+export const Toggle = (props: ToggleProps) => {
   const disabled = props.disabled === true;
   const variant = props.variant !== undefined ? props.variant : "default";
   const className = [
@@ -21,7 +19,6 @@ export function Toggle(props: ToggleProps) {
   ]
     .filter(Boolean)
     .join(" ");
-
   return (
     <label className={className} title={props.title}>
       <input
@@ -44,4 +41,4 @@ export function Toggle(props: ToggleProps) {
       )}
     </label>
   );
-}
+};

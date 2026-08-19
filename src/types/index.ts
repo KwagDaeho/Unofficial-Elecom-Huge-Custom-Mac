@@ -49,7 +49,10 @@ export type {
   ActivatorEditorState,
   ComboEditorState,
 } from "./editor";
-export type { EditorContextValue, EditorCatalogSelection } from "./editorContext";
+export type {
+  EditorContextValue,
+  EditorCatalogSelection,
+} from "./editorContext";
 export type { SessionContextValue, SessionAutostart } from "./sessionContext";
 export type {
   ProfileState,

@@ -1,4 +1,4 @@
-export function normalizeKeys(keys: string[]): string[] {
+export const normalizeKeys = (keys: string[]): string[] => {
   return keys.map((k) => {
     const lower = k.toLowerCase();
     if (["meta", "cmd", "command"].includes(lower)) return "Meta";
@@ -17,4 +17,4 @@ export function normalizeKeys(keys: string[]): string[] {
     if (k.length === 1) return k.toUpperCase();
     return k;
   });
-}
+};

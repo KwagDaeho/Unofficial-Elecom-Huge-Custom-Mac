@@ -6,4 +6,8 @@ export {
   withCustomMappingRemoved,
   withCustomMappingActivator,
 } from "./mappings";
-export { withPointerPatch, withBallScrollPatch, withLongPressMs } from "./settings";
+export {
+  withPointerPatch,
+  withBallScrollPatch,
+  withLongPressMs,
+} from "./settings";

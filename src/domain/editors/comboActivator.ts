@@ -1,9 +1,8 @@
 import { comboIsValid } from "@/domain/profile/customMapping";
 import type { ComboEditorState, CustomMappingEntry } from "@/types";
-
-export function comboEditorStateFromEntry(
+export const comboEditorStateFromEntry = (
   entry: CustomMappingEntry,
-): ComboEditorState {
+): ComboEditorState => {
   const validActivator = comboIsValid(entry.activator);
   return {
     kind: "custom_combo_activator",
@@ -13,4 +12,4 @@ export function comboEditorStateFromEntry(
     draftButton: validActivator ? entry.activator.button : null,
     rejected: null,
   };
-}
+};

@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import { normalizeTiltPanStreamFlags } from "@/domain/profile";
 import * as tauri from "@/services/tauri";
 import type { ButtonMeta, Profile, ProfileLoader } from "@/types";
-
-export function useProfileLoader(): ProfileLoader {
+export const useProfileLoader = (): ProfileLoader => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [catalog, setCatalog] = useState<ButtonMeta[]>([]);
   const [bootError, setBootError] = useState("");
-
-  async function refresh() {
+  const refresh = async () => {
     try {
       const [loadedProfile, buttonCatalog] = await Promise.all([
         tauri.getProfile(),
@@ -27,34 +25,29 @@ export function useProfileLoader(): ProfileLoader {
     } catch (error) {
       setBootError(String(error));
     }
-  }
-
+  };
   useEffect(() => {
     void refresh();
   }, []);
-
-  async function persist(nextProfile: Profile) {
+  const persist = async (nextProfile: Profile) => {
     try {
       await tauri.saveProfile(nextProfile);
       setProfile(nextProfile);
     } catch (error) {
       setBootError(String(error));
     }
-  }
-
-  function mutateProfile(applyPatch: (loadedProfile: Profile) => Profile) {
+  };
+  const mutateProfile = (applyPatch: (loadedProfile: Profile) => Profile) => {
     if (profile === null) {
       return;
     }
     void persist(applyPatch(profile));
-  }
-
+  };
   const lifecycle = {
     persist,
     setBootError,
     refresh,
   };
-
   return {
     profile,
     catalog,
@@ -62,4 +55,4 @@ export function useProfileLoader(): ProfileLoader {
     lifecycle,
     mutateProfile,
   };
-}
+};

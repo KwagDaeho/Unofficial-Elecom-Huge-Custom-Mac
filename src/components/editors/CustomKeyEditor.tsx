@@ -4,22 +4,18 @@ import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
 import { KeyChordModal } from "./KeyChordModal";
 import type { CustomKeyEditorState } from "@/types";
-
 interface CustomKeyEditorProps {
   editor: CustomKeyEditorState;
 }
-
-export function CustomKeyEditor(props: CustomKeyEditorProps) {
+export const CustomKeyEditor = (props: CustomKeyEditorProps) => {
   const { lang, i18n } = usePrefs();
   const { mappings } = useProfileCtx();
   const { setEditor } = useEditor();
   const editor = props.editor;
-
   const preview =
     editor.draft.length > 0
       ? formatKeyChord(editor.draft, lang)
       : i18n.customKeyWaiting;
-
   return (
     <KeyChordModal
       copy={{
@@ -42,4 +38,4 @@ export function CustomKeyEditor(props: CustomKeyEditorProps) {
       }}
     />
   );
-}
+};

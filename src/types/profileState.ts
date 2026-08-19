@@ -34,11 +34,7 @@ export type ProfileLoader = {
 };
 
 export type ProfileMappingMutations = {
-  updateSlot: (
-    target: MappingTarget,
-    slot: ActionSlot,
-    action: Action,
-  ) => void;
+  updateSlot: (target: MappingTarget, slot: ActionSlot, action: Action) => void;
   updateButtonSlot: (
     buttonId: ButtonId,
     slot: ActionSlot,

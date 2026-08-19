@@ -53,11 +53,11 @@ export const ko = {
     "1) 키 조합을 동시에 입력 2) HUGE 버튼 입력 3) 저장",
   customMappingTriggerCaptureHint:
     "⌘/Ctrl 등 모디파이어를 누른 채 HUGE 버튼(Fn1 등)을 누르세요. 예: ⌘ + Fn1. Esc로 취소.",
-  customMappingTriggerConfirmHint:
-    "미리보기를 확인한 뒤 저장하세요.",
+  customMappingTriggerConfirmHint: "미리보기를 확인한 뒤 저장하세요.",
   customMappingTriggerWaiting: "키 조합 입력…",
   customMappingTriggerButtonWaiting: "HUGE 버튼 입력…",
-  customMappingTriggerIncomplete: "키 조합을 먼저 누른 뒤 HUGE 버튼을 누르세요.",
+  customMappingTriggerIncomplete:
+    "키 조합을 먼저 누른 뒤 HUGE 버튼을 누르세요.",
   remove: "삭제",
   activatorTitle: "키 입력",
   activatorHint:

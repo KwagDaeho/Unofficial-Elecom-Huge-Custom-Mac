@@ -10,44 +10,37 @@ import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
 import { KeyChordModal } from "./KeyChordModal";
 import type { ComboEditorState } from "@/types";
-
 interface ComboActivatorEditorProps {
   editor: ComboEditorState;
 }
-
-export function ComboActivatorEditor(props: ComboActivatorEditorProps) {
+export const ComboActivatorEditor = (props: ComboActivatorEditorProps) => {
   const { lang, i18n } = usePrefs();
   const { customMappings } = useProfileCtx();
   const { setEditor } = useEditor();
   const editor = props.editor;
-
   const hint =
     editor.phase === "capture"
       ? i18n.customMappingTriggerCaptureHint
       : i18n.customMappingTriggerConfirmHint;
-
   const preview = buildComboPreview(
     editor,
     lang,
     i18n.customMappingTriggerWaiting,
   );
-
   const combo =
     editor.phase === "confirm" &&
     editor.draftButton !== null &&
     chordIsValid(editor.draftChord)
       ? comboFromDraft(editor.draftChord, editor.draftButton)
       : null;
-
-  function saveCombo() {
+  const saveCombo = () => {
     if (combo === null) {
       return;
     }
     customMappings.updateActivator(editor.entryId, combo);
     setEditor(null);
-  }
-
-  function handleKeyDown(event: KeyboardEvent) {
+  };
+  const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
       setEditor(null);
       return;
@@ -55,8 +48,7 @@ export function ComboActivatorEditor(props: ComboActivatorEditorProps) {
     if (event.key === "Enter") {
       saveCombo();
     }
-  }
-
+  };
   return (
     <KeyChordModal
       copy={{
@@ -78,4 +70,4 @@ export function ComboActivatorEditor(props: ComboActivatorEditorProps) {
       }}
     />
   );
-}
+};

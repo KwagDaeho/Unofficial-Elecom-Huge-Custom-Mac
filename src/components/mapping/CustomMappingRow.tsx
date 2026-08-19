@@ -5,12 +5,10 @@ import { customMappingTriggerLabel } from "@/i18n/customMapping";
 import { usePrefs, useProfileCtx, useEditor } from "@/hooks";
 import { Button } from "@/components/ui";
 import type { CustomMappingEntry } from "@/types";
-
 interface CustomMappingRowProps {
   entry: CustomMappingEntry;
 }
-
-export function CustomMappingRow(props: CustomMappingRowProps) {
+export const CustomMappingRow = (props: CustomMappingRowProps) => {
   const { lang, i18n } = usePrefs();
   const { customMappings } = useProfileCtx();
   const { catalogSelection, setEditor } = useEditor();
@@ -21,13 +19,13 @@ export function CustomMappingRow(props: CustomMappingRowProps) {
     lang,
     i18n.customMappingSetTrigger,
   );
-
   return (
     <div className="custom-mapping-row">
       <div className="combo-trigger">
         <Button
           size="tiny"
-          onClick={() => setEditor(comboEditorStateFromEntry(entry))}>
+          onClick={() => setEditor(comboEditorStateFromEntry(entry))}
+        >
           {triggerLabel}
         </Button>
       </div>
@@ -45,10 +43,11 @@ export function CustomMappingRow(props: CustomMappingRowProps) {
         <Button
           variant="ghost"
           size="tiny"
-          onClick={() => void customMappings.remove(entry.id)}>
+          onClick={() => void customMappings.remove(entry.id)}
+        >
           {i18n.remove}
         </Button>
       </div>
     </div>
   );
-}
+};

@@ -6,10 +6,8 @@ import {
   CustomButtonMappingPanel,
   PointerScrollPanel,
 } from "@/components/mapping";
-
-export function CustomTab() {
+export const CustomTab = () => {
   const { trusted } = useSession();
-
   return (
     <>
       {!trusted && <PermissionPanel />}
@@ -19,4 +17,4 @@ export function CustomTab() {
       <BallScrollPanel />
     </>
   );
-}
+};

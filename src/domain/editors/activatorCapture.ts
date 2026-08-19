@@ -1,9 +1,11 @@
 import type { ActivatorEditorState } from "@/types";
-
-export function activatorRejectedMessage(
+export const activatorRejectedMessage = (
   rejected: ActivatorEditorState["rejected"],
-  labels: { left: string; tilt: string },
-): string | null {
+  labels: {
+    left: string;
+    tilt: string;
+  },
+): string | null => {
   if (rejected === "left") {
     return labels.left;
   }
@@ -11,4 +13,4 @@ export function activatorRejectedMessage(
     return labels.tilt;
   }
   return null;
-}
+};

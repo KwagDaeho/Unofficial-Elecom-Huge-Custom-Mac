@@ -7,41 +7,30 @@ import type {
   EditorContextValue,
   EditorMode,
 } from "@/types";
-
 export const EditorContext = createContext<EditorContextValue | null>(null);
-
-export function useEditor(): EditorContextValue {
+export const useEditor = (): EditorContextValue => {
   const context = useContext(EditorContext);
   if (context === null) {
     throw new Error("useEditor must be used within EditorProvider");
   }
   return context;
-}
-
-export function useEditorState(): EditorContextValue {
+};
+export const useEditorState = (): EditorContextValue => {
   const { ballScroll, catalogSelection } = useProfileCtx();
   const [editor, setEditor] = useState<EditorMode | null>(null);
-
   useKeyCapture(editor, setEditor, (slot, activator) => {
     ballScroll.assignActivator(slot, activator);
   });
-
-  function selectButton(
+  const selectButton = (
     buttonId: ButtonId,
     slot: ActionSlot,
     value: string,
-  ) {
+  ) => {
     catalogSelection.selectButton(buttonId, slot, value, setEditor);
-  }
-
-  function selectCustom(
-    entryId: string,
-    slot: ActionSlot,
-    value: string,
-  ) {
+  };
+  const selectCustom = (entryId: string, slot: ActionSlot, value: string) => {
     catalogSelection.selectCustom(entryId, slot, value, setEditor);
-  }
-
+  };
   return {
     editor,
     setEditor,
@@ -50,4 +39,4 @@ export function useEditorState(): EditorContextValue {
       selectCustom,
     },
   };
-}
+};

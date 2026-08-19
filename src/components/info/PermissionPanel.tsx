@@ -1,11 +1,9 @@
 import { usePrefs } from "@/hooks/prefs";
 import { useSession } from "@/hooks/session";
 import { Button } from "../ui/Button";
-
-export function PermissionPanel() {
+export const PermissionPanel = () => {
   const { i18n } = usePrefs();
   const { grantAccess } = useSession();
-
   return (
     <section className="panel warn">
       <h2>{i18n.accessibilityTitle}</h2>
@@ -19,4 +17,4 @@ export function PermissionPanel() {
       </div>
     </section>
   );
-}
+};

@@ -1,21 +1,19 @@
 import type { BallScrollSettings, Profile } from "@/types";
 import { activatorsEqual, ballScrollOf } from "@/domain/profile/activator";
-
-export function withPointerPatch<K extends keyof Profile["pointer"]>(
+export const withPointerPatch = <K extends keyof Profile["pointer"]>(
   profile: Profile,
   key: K,
   value: Profile["pointer"][K],
-): Profile {
+): Profile => {
   return {
     ...profile,
     pointer: { ...profile.pointer, [key]: value },
   };
-}
-
-export function withBallScrollPatch(
+};
+export const withBallScrollPatch = (
   profile: Profile,
   patch: Partial<BallScrollSettings>,
-): Profile {
+): Profile => {
   let next = { ...ballScrollOf(profile.ballScroll), ...patch };
   if (
     next.toggleActivator &&
@@ -29,8 +27,10 @@ export function withBallScrollPatch(
     }
   }
   return { ...profile, ballScroll: next };
-}
-
-export function withLongPressMs(profile: Profile, longPressMs: number): Profile {
+};
+export const withLongPressMs = (
+  profile: Profile,
+  longPressMs: number,
+): Profile => {
   return { ...profile, longPressMs };
-}
+};

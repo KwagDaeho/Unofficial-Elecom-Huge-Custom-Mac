@@ -4,14 +4,11 @@ import { OpenAppEditor } from "./OpenAppEditor";
 import { ActivatorEditor } from "./ActivatorEditor";
 import { ComboActivatorEditor } from "./ComboActivatorEditor";
 import { useEditor } from "@/hooks/editor";
-
-export function EditorHost() {
+export const EditorHost = () => {
   const { editor } = useEditor();
-
   if (editor === null) {
     return null;
   }
-
   switch (editor.kind) {
     case "custom_key":
       return <CustomKeyEditor editor={editor} />;
@@ -26,4 +23,4 @@ export function EditorHost() {
     default:
       return null;
   }
-}
+};

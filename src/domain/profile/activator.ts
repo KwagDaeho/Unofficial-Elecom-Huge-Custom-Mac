@@ -7,7 +7,6 @@ import type {
   ComboActivator,
   ResolvedBallScrollSettings,
 } from "@/types";
-
 export const DEFAULT_BALL_SCROLL: ResolvedBallScrollSettings = {
   toggleEnabled: false,
   toggleActivator: null,
@@ -17,12 +16,13 @@ export const DEFAULT_BALL_SCROLL: ResolvedBallScrollSettings = {
   invertHorizontal: false,
   speed: 1,
 };
-
-export function ballScrollOf(
+export const ballScrollOf = (
   value: BallScrollSettings | undefined,
-): ResolvedBallScrollSettings {
+): ResolvedBallScrollSettings => {
   const merged: BallScrollSettings =
-    value !== undefined ? { ...DEFAULT_BALL_SCROLL, ...value } : DEFAULT_BALL_SCROLL;
+    value !== undefined
+      ? { ...DEFAULT_BALL_SCROLL, ...value }
+      : DEFAULT_BALL_SCROLL;
   return {
     toggleEnabled: merged.toggleEnabled,
     toggleActivator: merged.toggleActivator,
@@ -30,14 +30,14 @@ export function ballScrollOf(
     holdActivator: merged.holdActivator,
     invertVertical: merged.invertVertical === true,
     invertHorizontal: merged.invertHorizontal === true,
-    speed: merged.speed !== undefined ? merged.speed : DEFAULT_BALL_SCROLL.speed,
+    speed:
+      merged.speed !== undefined ? merged.speed : DEFAULT_BALL_SCROLL.speed,
   };
-}
-
-export function activatorsEqual(
+};
+export const activatorsEqual = (
   left: Activator | null,
   right: Activator | null,
-): boolean {
+): boolean => {
   if (left === null || right === null) {
     return false;
   }
@@ -54,22 +54,20 @@ export function activatorsEqual(
     return left.button === right.button;
   }
   return false;
-}
-
-export function comboFromDraft(
+};
+export const comboFromDraft = (
   chord: string[],
   button: ButtonId,
-): ComboActivator | null {
+): ComboActivator | null => {
   const { modifiers, keys } = splitChord(chord);
   if (modifiers.length === 0 && keys.length === 0) {
     return null;
   }
   return { modifiers, keys, button };
-}
-
-export function ballScrollActivatorForSlot(
+};
+export const ballScrollActivatorForSlot = (
   ball: ResolvedBallScrollSettings,
   slot: BallScrollSlot,
-): Activator | null {
+): Activator | null => {
   return slot === "toggle" ? ball.toggleActivator : ball.holdActivator;
-}
+};

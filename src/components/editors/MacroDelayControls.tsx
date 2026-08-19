@@ -1,21 +1,17 @@
 import { clampMacroDelayMs } from "@/domain/editors/macro";
 import type { MacroEditorState, MacroStep } from "@/types";
-
 interface MacroDelayControlsProps {
   editor: MacroEditorState;
   delayLabel: string;
   onStepsChange: (steps: MacroStep[]) => void;
 }
-
-export function MacroDelayControls(props: MacroDelayControlsProps) {
+export const MacroDelayControls = (props: MacroDelayControlsProps) => {
   const delaySteps = props.editor.steps
     .map((step, index) => ({ step, index }))
     .filter((entry) => entry.step.type === "delay");
-
   if (delaySteps.length === 0) {
     return null;
   }
-
   return (
     <div className="controls tight">
       {delaySteps.map(({ step, index }) =>
@@ -41,4 +37,4 @@ export function MacroDelayControls(props: MacroDelayControlsProps) {
       )}
     </div>
   );
-}
+};

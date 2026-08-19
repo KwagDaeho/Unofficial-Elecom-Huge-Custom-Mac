@@ -5,10 +5,8 @@ import {
   ProbePanel,
 } from "@/components/info";
 import { useSession } from "@/hooks";
-
-export function InfoTab() {
+export const InfoTab = () => {
   const { trusted } = useSession();
-
   return (
     <>
       <DeviceStatus />
@@ -17,4 +15,4 @@ export function InfoTab() {
       <ProbePanel />
     </>
   );
-}
+};

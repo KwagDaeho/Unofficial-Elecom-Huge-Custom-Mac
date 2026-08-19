@@ -5,11 +5,14 @@ export const en = {
   waiting: "Waiting for HUGE",
   notConnected: "Not connected",
   remappingOn: "Custom input",
-  remappingDesc: "This app takes ELECOM HUGE trackball input and applies your custom settings.",
+  remappingDesc:
+    "This app takes ELECOM HUGE trackball input and applies your custom settings.",
   accessibilityTitle: "Accessibility permission required",
   accessibilityStep1: "Click «Grant access».",
-  accessibilityStep2: "Allow Elecom Huge Custom in the system prompt or Accessibility settings.",
-  accessibilityStep3: "When permission is granted, the app restarts automatically.",
+  accessibilityStep2:
+    "Allow Elecom Huge Custom in the system prompt or Accessibility settings.",
+  accessibilityStep3:
+    "When permission is granted, the app restarts automatically.",
   grantAccess: "Grant access",
   buttonMapping: "Button mapping",
   clickAction: "Click",
@@ -33,8 +36,7 @@ export const en = {
   ballScrollHold: "Hold key",
   ballScrollToggleHelp:
     "Press the key to switch ball movement to scroll. Press again to go back.",
-  ballScrollHoldHelp:
-    "While the key is held, ball movement becomes scroll.",
+  ballScrollHoldHelp: "While the key is held, ball movement becomes scroll.",
   ballScrollInvertVertical: "Invert vertical",
   ballScrollInvertHorizontal: "Invert horizontal",
   ballScrollSpeed: "Scroll speed",
@@ -52,11 +54,11 @@ export const en = {
     "1) Press a key chord 2) Press a HUGE button 3) Save",
   customMappingTriggerCaptureHint:
     "Hold a modifier (⌘, Ctrl, …) and press a HUGE button (Fn1, L, …). e.g. ⌘ + Fn1. Esc cancels.",
-  customMappingTriggerConfirmHint:
-    "Review the preview, then save.",
+  customMappingTriggerConfirmHint: "Review the preview, then save.",
   customMappingTriggerWaiting: "Press a key chord…",
   customMappingTriggerButtonWaiting: "Press a HUGE button…",
-  customMappingTriggerIncomplete: "Press a key chord first, then a HUGE button.",
+  customMappingTriggerIncomplete:
+    "Press a key chord first, then a HUGE button.",
   remove: "Remove",
   activatorTitle: "Set a key",
   activatorHint:
@@ -81,7 +83,8 @@ export const en = {
   themeLight: "Light mode",
   themeDark: "Dark mode",
   customKeyTitle: "Custom key",
-  customKeyHint: "Press the chord you want. Modifiers + key are captured together.",
+  customKeyHint:
+    "Press the chord you want. Modifiers + key are captured together.",
   customKeyWaiting: "Waiting for key…",
   openAppTitle: "Open app",
   openAppHint: "Search and pick an installed application.",

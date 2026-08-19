@@ -4,17 +4,14 @@ import { formatSpeedPair } from "@/utils/format";
 import { usePrefs } from "@/hooks/prefs";
 import { SpeedRangeControl } from "./SpeedRangeControl";
 import type { Profile } from "@/types";
-
 interface PointerSpeedControlsProps {
   pointer: Profile["pointer"];
   onSpeedX: (value: number) => void;
   onSpeedY: (value: number) => void;
 }
-
-export function PointerSpeedControls(props: PointerSpeedControlsProps) {
+export const PointerSpeedControls = (props: PointerSpeedControlsProps) => {
   const { i18n } = usePrefs();
   const { pointer } = props;
-
   return (
     <>
       <SpeedRangeControl
@@ -37,4 +34,4 @@ export function PointerSpeedControls(props: PointerSpeedControlsProps) {
       />
     </>
   );
-}
+};

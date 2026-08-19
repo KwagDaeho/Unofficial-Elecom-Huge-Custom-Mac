@@ -5,29 +5,24 @@ import { useEditor } from "@/hooks/editor";
 import { Button } from "../ui/Button";
 import { MacroDelayControls } from "./MacroDelayControls";
 import type { MacroEditorState, MacroStep } from "@/types";
-
 interface MacroEditorProps {
   editor: MacroEditorState;
 }
-
-export function MacroEditor(props: MacroEditorProps) {
+export const MacroEditor = (props: MacroEditorProps) => {
   const { lang, i18n } = usePrefs();
   const { mappings } = useProfileCtx();
   const { setEditor } = useEditor();
   const editor = props.editor;
-
-  function updateSteps(steps: MacroStep[]) {
+  const updateSteps = (steps: MacroStep[]) => {
     setEditor({ ...editor, steps });
-  }
-
-  function handleSave() {
+  };
+  const handleSave = () => {
     mappings.updateSlot(editor.target, editor.slot, {
       type: "macro",
       steps: editor.steps,
     });
     setEditor(null);
-  }
-
+  };
   return (
     <div className="modal-backdrop" role="presentation">
       <div className="modal modal-wide" role="dialog" aria-modal="true">
@@ -41,8 +36,11 @@ export function MacroEditor(props: MacroEditorProps) {
                 variant="ghost"
                 size="tiny"
                 onClick={() =>
-                  updateSteps(editor.steps.filter((_, index) => index !== stepIndex))
-                }>
+                  updateSteps(
+                    editor.steps.filter((_, index) => index !== stepIndex),
+                  )
+                }
+              >
                 {i18n.removeStep}
               </Button>
             </li>
@@ -54,14 +52,16 @@ export function MacroEditor(props: MacroEditorProps) {
         <div className="row wrap">
           <Button
             variant="ghost"
-            onClick={() => setEditor({ ...editor, capturing: true })}>
+            onClick={() => setEditor({ ...editor, capturing: true })}
+          >
             {i18n.addKeystroke}
           </Button>
           <Button
             variant="ghost"
             onClick={() =>
               updateSteps([...editor.steps, { type: "delay", ms: 100 }])
-            }>
+            }
+          >
             {i18n.addDelay}
           </Button>
         </div>
@@ -74,13 +74,11 @@ export function MacroEditor(props: MacroEditorProps) {
           <Button variant="ghost" onClick={() => setEditor(null)}>
             {i18n.cancel}
           </Button>
-          <Button
-            disabled={editor.steps.length === 0}
-            onClick={handleSave}>
+          <Button disabled={editor.steps.length === 0} onClick={handleSave}>
             {i18n.save}
           </Button>
         </div>
       </div>
     </div>
   );
-}
+};

@@ -5,12 +5,10 @@ import { AppHeader, BootScreen, OverlayScrollbar } from "@/components/layout";
 import { CustomTab, InfoTab } from "@/components/tabs";
 import { usePrefs, useProfileCtx } from "@/hooks";
 import type { TabId } from "@/types";
-
-export function AppShell() {
+export const AppShell = () => {
   const { i18n } = usePrefs();
   const { profile } = useProfileCtx();
   const [tab, setTab] = useState<TabId>("info");
-
   if (!profile) {
     return (
       <>
@@ -19,7 +17,6 @@ export function AppShell() {
       </>
     );
   }
-
   return (
     <>
       <OverlayScrollbar contentKey={tab} />
@@ -30,13 +27,15 @@ export function AppShell() {
           <button
             type="button"
             className={tab === "info" ? "tab on" : "tab"}
-            onClick={() => setTab("info")}>
+            onClick={() => setTab("info")}
+          >
             {i18n.tabInfo}
           </button>
           <button
             type="button"
             className={tab === "custom" ? "tab on" : "tab"}
-            onClick={() => setTab("custom")}>
+            onClick={() => setTab("custom")}
+          >
             {i18n.tabCustom}
           </button>
         </nav>
@@ -49,4 +48,4 @@ export function AppShell() {
       </main>
     </>
   );
-}
+};

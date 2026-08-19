@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import { PrefsContext, usePrefsState } from "@/hooks/prefs";
-
 interface PrefsProviderProps {
   children: ReactNode;
 }
-
-export function PrefsProvider(props: PrefsProviderProps) {
+export const PrefsProvider = (props: PrefsProviderProps) => {
   const value = usePrefsState();
   return (
-    <PrefsContext.Provider value={value}>{props.children}</PrefsContext.Provider>
+    <PrefsContext.Provider value={value}>
+      {props.children}
+    </PrefsContext.Provider>
   );
-}
+};

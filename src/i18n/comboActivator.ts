@@ -1,11 +1,10 @@
 import { formatKeyChord, hugeButtonLabel } from "@/i18n";
 import type { ComboEditorState, Lang } from "@/types";
-
-export function buildComboPreview(
+export const buildComboPreview = (
   editor: ComboEditorState,
   lang: Lang,
   waitingLabel: string,
-): string {
+): string => {
   const chordPreview =
     editor.draftChord.length > 0
       ? formatKeyChord(editor.draftChord, lang)
@@ -21,12 +20,14 @@ export function buildComboPreview(
     return waitingLabel;
   }
   return previewParts.join(" + ");
-}
-
-export function buildComboErrorMessage(
+};
+export const buildComboErrorMessage = (
   rejected: ComboEditorState["rejected"],
-  labels: { incomplete: string; tilt: string },
-): string | null {
+  labels: {
+    incomplete: string;
+    tilt: string;
+  },
+): string | null => {
   if (rejected === "incomplete") {
     return labels.incomplete;
   }
@@ -34,4 +35,4 @@ export function buildComboErrorMessage(
     return labels.tilt;
   }
   return null;
-}
+};

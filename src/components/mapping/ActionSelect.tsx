@@ -9,27 +9,23 @@ import {
 } from "@/constants/sentinels";
 import { usePrefs } from "@/hooks";
 import type { Action } from "@/types";
-
 interface ActionSelectProps {
   action: Action;
   onPick: (value: string) => void;
   disabled?: boolean;
 }
-
-export function ActionSelect(props: ActionSelectProps) {
+export const ActionSelect = (props: ActionSelectProps) => {
   const { lang } = usePrefs();
   const groups = groupCatalog(lang);
   const matched = findCatalogEntry(props.action);
   const value = catalogValueForAction(props.action);
   const disabled = props.disabled === true;
-
-  function handleChange(event: ChangeEvent<HTMLSelectElement>) {
+  const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     if (disabled) {
       return;
     }
     props.onPick(event.target.value);
-  }
-
+  };
   return (
     <select value={value} disabled={disabled} onChange={handleChange}>
       {matched === undefined ? (
@@ -71,4 +67,4 @@ export function ActionSelect(props: ActionSelectProps) {
       ))}
     </select>
   );
-}
+};

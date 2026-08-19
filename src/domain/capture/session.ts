@@ -1,7 +1,6 @@
 import type { EditorMode, CaptureMode, CaptureSession } from "@/types";
 import { CAPTURE_SESSION_OFF } from "@/services/tauri";
-
-export function captureModeOf(editor: EditorMode | null): CaptureMode {
+export const captureModeOf = (editor: EditorMode | null): CaptureMode => {
   if (!editor) return "off";
   if (editor.kind === "custom_key") return "custom_key";
   if (editor.kind === "custom_combo_activator") {
@@ -10,9 +9,8 @@ export function captureModeOf(editor: EditorMode | null): CaptureMode {
   if (editor.kind === "macro" && editor.capturing) return "macro";
   if (editor.kind === "ball_scroll_activator") return "ball_scroll";
   return "off";
-}
-
-export function captureSessionFor(mode: CaptureMode): CaptureSession {
+};
+export const captureSessionFor = (mode: CaptureMode): CaptureSession => {
   switch (mode) {
     case "custom_key":
       return {
@@ -52,4 +50,4 @@ export function captureSessionFor(mode: CaptureMode): CaptureSession {
     default:
       return CAPTURE_SESSION_OFF;
   }
-}
+};

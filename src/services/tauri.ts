@@ -12,131 +12,103 @@ import type {
   PermissionStatus,
   Profile,
 } from "@/types";
-
-export async function getProfile(): Promise<Profile> {
+export const getProfile = async (): Promise<Profile> => {
   return invoke<Profile>("get_profile");
-}
-
-export async function saveProfile(profile: Profile): Promise<void> {
+};
+export const saveProfile = async (profile: Profile): Promise<void> => {
   await invoke("save_profile", { profile });
-}
-
-/** Backend command: `get_connected`. */
-export async function getDeviceInfo(): Promise<DeviceInfo | null> {
+};
+export const getDeviceInfo = async (): Promise<DeviceInfo | null> => {
   return invoke<DeviceInfo | null>("get_connected");
-}
-
-export async function getConnected(): Promise<DeviceInfo | null> {
+};
+export const getConnected = async (): Promise<DeviceInfo | null> => {
   return getDeviceInfo();
-}
-
-export async function isDeviceConnected(): Promise<boolean> {
+};
+export const isDeviceConnected = async (): Promise<boolean> => {
   return (await getDeviceInfo()) != null;
-}
-
-export async function getLastReport(): Promise<LastReport | null> {
+};
+export const getLastReport = async (): Promise<LastReport | null> => {
   return invoke<LastReport | null>("get_last_report");
-}
-
-/** Backend command: `permission_status`. */
-export async function getPermissionStatus(): Promise<PermissionStatus> {
+};
+export const getPermissionStatus = async (): Promise<PermissionStatus> => {
   return invoke<PermissionStatus>("permission_status");
-}
-
-/**
- * Backend only exposes `request_accessibility`, which also requests
- * Input Monitoring once Accessibility looks trusted.
- */
-export async function requestPermission(
+};
+export const requestPermission = async (
   kind: "accessibility" | "input_monitoring",
-): Promise<boolean> {
+): Promise<boolean> => {
   void kind;
   return invoke<boolean>("request_accessibility");
-}
-
-export async function openAccessibilitySettings(): Promise<void> {
+};
+export const openAccessibilitySettings = async (): Promise<void> => {
   await invoke("open_accessibility_settings");
-}
-
-/** Backend command: `open_privacy_security_settings` (closest IM settings entry). */
-export async function openInputMonitoringSettings(): Promise<void> {
+};
+export const openInputMonitoringSettings = async (): Promise<void> => {
   await invoke("open_privacy_security_settings");
-}
-
-export async function relaunchApp(): Promise<void> {
+};
+export const relaunchApp = async (): Promise<void> => {
   await invoke("relaunch_app");
-}
-
-export async function listInstalledApps(): Promise<InstalledApp[]> {
+};
+export const listInstalledApps = async (): Promise<InstalledApp[]> => {
   return invoke<InstalledApp[]>("list_installed_apps");
-}
-
-/** Open a filesystem path via the opener plugin (not an invoke command). */
-export async function openPath(path: string): Promise<void> {
+};
+export const openPath = async (path: string): Promise<void> => {
   const mod = await import("@tauri-apps/plugin-opener");
   await mod.openPath(path);
-}
-
-export async function openUrl(url: string): Promise<void> {
+};
+export const openUrl = async (url: string): Promise<void> => {
   const mod = await import("@tauri-apps/plugin-opener");
   await mod.openUrl(url);
-}
-
-export async function buttonCatalog(): Promise<ButtonMeta[]> {
+};
+export const buttonCatalog = async (): Promise<ButtonMeta[]> => {
   return invoke<ButtonMeta[]>("button_catalog");
-}
-
+};
 export const CAPTURE_SESSION_OFF: CaptureSession = {
   keyCapture: false,
   comboTrigger: false,
   activatorCapture: false,
   uiModal: false,
 };
-
-export async function applyCaptureSession(session: CaptureSession): Promise<void> {
+export const applyCaptureSession = async (
+  session: CaptureSession,
+): Promise<void> => {
   await invoke("apply_capture_session", { session });
-}
-
-export async function setKeyCapture(active: boolean): Promise<void> {
+};
+export const setKeyCapture = async (active: boolean): Promise<void> => {
   await invoke("set_key_capture", { active });
-}
-
-export async function setActivatorCapture(active: boolean): Promise<void> {
+};
+export const setActivatorCapture = async (active: boolean): Promise<void> => {
   await invoke("set_activator_capture", { active });
-}
-
-export async function setComboActivatorCapture(active: boolean): Promise<void> {
+};
+export const setComboActivatorCapture = async (
+  active: boolean,
+): Promise<void> => {
   await invoke("set_combo_activator_capture", { active });
-}
-
-export async function setComboTriggerCapture(active: boolean): Promise<void> {
+};
+export const setComboTriggerCapture = async (
+  active: boolean,
+): Promise<void> => {
   await invoke("set_combo_trigger_capture", { active });
-}
-
-export async function setUiModal(active: boolean): Promise<void> {
+};
+export const setUiModal = async (active: boolean): Promise<void> => {
   await invoke("set_ui_modal", { active });
-}
-
-export async function getAppIcon(path: string): Promise<string | null> {
+};
+export const getAppIcon = async (path: string): Promise<string | null> => {
   return invoke<string | null>("get_app_icon", { path });
-}
-
-export async function resetTccPermissions(): Promise<void> {
+};
+export const resetTccPermissions = async (): Promise<void> => {
   await invoke("reset_tcc_permissions");
-}
-
-export async function autostartIsEnabled(): Promise<boolean> {
+};
+export const autostartIsEnabled = async (): Promise<boolean> => {
   try {
     const mod = await import("@tauri-apps/plugin-autostart");
     return await mod.isEnabled();
   } catch {
     return false;
   }
-}
-
-export async function autostartSet(on: boolean): Promise<boolean> {
+};
+export const autostartSet = async (on: boolean): Promise<boolean> => {
   const mod = await import("@tauri-apps/plugin-autostart");
   if (on) await mod.enable();
   else await mod.disable();
   return await mod.isEnabled();
-}
+};

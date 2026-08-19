@@ -1,6 +1,14 @@
 export { asBinding, longPressMs } from "./binding";
-export { customMappingsOf, newCustomMappingEntry, comboIsValid } from "./customMapping";
-export { resolveBindingFlags, bindingLongPressEnabled, bindingAutoClickEnabled } from "./fields";
+export {
+  customMappingsOf,
+  newCustomMappingEntry,
+  comboIsValid,
+} from "./customMapping";
+export {
+  resolveBindingFlags,
+  bindingLongPressEnabled,
+  bindingAutoClickEnabled,
+} from "./fields";
 export {
   ballScrollOf,
   ballScrollActivatorForSlot,
@@ -8,7 +16,11 @@ export {
   comboFromDraft,
   DEFAULT_BALL_SCROLL,
 } from "./activator";
-export { isTiltButton, tiltForcesAutoClick, normalizeTiltPanStreamFlags } from "./tilt";
+export {
+  isTiltButton,
+  tiltForcesAutoClick,
+  normalizeTiltPanStreamFlags,
+} from "./tilt";
 export {
   invertHorizontalScrollEnabled,
   invertVerticalScrollEnabled,
