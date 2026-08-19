@@ -89,7 +89,7 @@ export function OpenAppEditor({ editor }: { editor: OpenAppEditorState }) {
             disabled={!editor.selected}
             onClick={() => {
               if (!editor.selected) return;
-              actions.updateButtonSlot(editor.buttonId, editor.slot, {
+              actions.updateMappingSlot(editor.target, editor.slot, {
                 type: "open_app",
                 bundle_id: editor.selected.bundleId,
                 name: editor.selected.name,

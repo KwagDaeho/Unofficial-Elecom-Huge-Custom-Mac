@@ -7,6 +7,8 @@ import { ContactFooter } from "../info/ContactFooter";
 import { InfoTab } from "../info/InfoTab";
 import { ButtonMappingPanel } from "../mapping/ButtonMappingPanel";
 import { PointerScrollPanel } from "../mapping/PointerScrollPanel";
+import { CustomButtonMappingPanel } from "../mapping/CustomButtonMappingPanel";
+import { BallScrollPanel } from "../mapping/BallScrollPanel";
 import { usePrefs } from "../../context/prefs";
 import { useProfileCtx } from "../../context/profile";
 import type { TabId } from "../../types";
@@ -52,6 +54,8 @@ export function AppShell() {
           <>
             <ButtonMappingPanel />
             <PointerScrollPanel />
+            <CustomButtonMappingPanel />
+            <BallScrollPanel />
           </>
         )}
 

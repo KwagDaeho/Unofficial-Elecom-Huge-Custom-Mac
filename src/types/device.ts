@@ -11,7 +11,6 @@ export type DeviceInfo = {
 
 export type ButtonMeta = {
   id: ButtonId;
-  label: string;
   hiddenFromMacos: boolean;
 };
 

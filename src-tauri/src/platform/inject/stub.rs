@@ -3,7 +3,16 @@
 use crate::domain::device::ButtonId;
 use crate::domain::profile::Action;
 
-pub fn sync_cursor_from_system() {}
+pub fn click_at_cursor() {}
+pub fn pin_cursor() {}
+pub fn restore_pinned_cursor() {}
+pub fn keep_pinned_cursor() {}
+pub fn restore_sync_pin() -> Option<core_graphics::geometry::CGPoint> {
+    None
+}
+pub fn finish_restore_sync() {}
+pub fn expire_restore_sync_if_due() {}
+pub fn end_idle_ball_scroll() {}
 pub fn move_by(_dx: f64, _dy: f64) {}
 pub fn scroll(_dx_lines: i32, _dy_lines: i32) {}
 pub fn scroll_pixels(_dx: i32, _dy: i32) {}
@@ -18,6 +27,12 @@ pub fn scroll_notches_ex(
     _dy_notches: f64,
     _pointer: &crate::domain::profile::PointerSettings,
     _continuous: bool,
+) {
+}
+pub fn scroll_ball(
+    _hid_dx: i16,
+    _hid_dy: i16,
+    _ball: &crate::domain::profile::BallScrollSettings,
 ) {
 }
 pub fn scroll_by_units(

@@ -85,8 +85,42 @@ export async function buttonCatalog(): Promise<ButtonMeta[]> {
   return invoke<ButtonMeta[]>("button_catalog");
 }
 
+export type CaptureSession = {
+  keyCapture: boolean;
+  comboTrigger: boolean;
+  activatorCapture: boolean;
+  uiModal: boolean;
+};
+
+export const CAPTURE_SESSION_OFF: CaptureSession = {
+  keyCapture: false,
+  comboTrigger: false,
+  activatorCapture: false,
+  uiModal: false,
+};
+
+export async function applyCaptureSession(session: CaptureSession): Promise<void> {
+  await invoke("apply_capture_session", { session });
+}
+
 export async function setKeyCapture(active: boolean): Promise<void> {
   await invoke("set_key_capture", { active });
+}
+
+export async function setActivatorCapture(active: boolean): Promise<void> {
+  await invoke("set_activator_capture", { active });
+}
+
+export async function setComboActivatorCapture(active: boolean): Promise<void> {
+  await invoke("set_combo_activator_capture", { active });
+}
+
+export async function setComboTriggerCapture(active: boolean): Promise<void> {
+  await invoke("set_combo_trigger_capture", { active });
+}
+
+export async function setUiModal(active: boolean): Promise<void> {
+  await invoke("set_ui_modal", { active });
 }
 
 export async function getAppIcon(path: string): Promise<string | null> {

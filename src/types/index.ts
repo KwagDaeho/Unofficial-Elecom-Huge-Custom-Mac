@@ -6,7 +6,16 @@ export type {
   ActionCategoryId,
   CatalogEntry,
 } from "./action";
-export type { ButtonId, ButtonBinding, Profile } from "./profile";
+export type {
+  ButtonId,
+  ButtonBinding,
+  Profile,
+  Activator,
+  BallScrollSlot,
+  BallScrollSettings,
+  ComboActivator,
+  CustomMappingEntry,
+} from "./profile";
 export type {
   DeviceInfo,
   ButtonMeta,
@@ -18,6 +27,7 @@ export type {
   PermissionStatus,
   ActionSlot,
   EditorMode,
+  MappingTarget,
   TabId,
   Theme,
 } from "./ui";

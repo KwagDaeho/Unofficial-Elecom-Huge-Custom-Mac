@@ -23,6 +23,10 @@ static SUPPRESS_MASK: AtomicU8 = AtomicU8::new(0);
 /// When we synthesize mouse-down, OS still posts plain MouseMoved — suppress it
 /// so `inject::move_by` owns the stream (*MouseDragged).
 static SUPPRESS_MOTION: AtomicBool = AtomicBool::new(false);
+/// While set, MouseMoved is rewritten to this point (ball-scroll pin).
+static CURSOR_LOCK: AtomicBool = AtomicBool::new(false);
+static CURSOR_LOCK_X: AtomicU64 = AtomicU64::new(0);
+static CURSOR_LOCK_Y: AtomicU64 = AtomicU64::new(0);
 /// Drop OS ScrollWheel until this unix-ms (set when HID reports HUGE wheel/pan).
 static SCROLL_ARM_UNTIL_MS: AtomicU64 = AtomicU64::new(0);
 
@@ -32,6 +36,15 @@ static TAP_THREAD: Mutex<Option<JoinHandle<()>>> = Mutex::new(None);
 
 const EVENT_SCROLL_WHEEL: u32 = 22;
 const EVENT_MOUSE_MOVED: u32 = 5;
+const EVENT_LEFT_DOWN: u32 = 1;
+const EVENT_LEFT_UP: u32 = 2;
+const EVENT_RIGHT_DOWN: u32 = 3;
+const EVENT_RIGHT_UP: u32 = 4;
+const EVENT_LEFT_DRAGGED: u32 = 6;
+const EVENT_RIGHT_DRAGGED: u32 = 7;
+const EVENT_OTHER_DOWN: u32 = 25;
+const EVENT_OTHER_UP: u32 = 26;
+const EVENT_OTHER_DRAGGED: u32 = 27;
 const FIELD_SCROLL_MOMENTUM_PHASE: u32 = 123;
 
 fn now_ms() -> u64 {
@@ -47,6 +60,27 @@ pub fn set_suppress_mask(mask: u8) {
 
 pub fn set_suppress_motion(suppress: bool) {
     SUPPRESS_MOTION.store(suppress, Ordering::SeqCst);
+}
+
+pub fn set_cursor_lock(point: Option<(f64, f64)>) {
+    if let Some((x, y)) = point {
+        CURSOR_LOCK_X.store(x.to_bits(), Ordering::SeqCst);
+        CURSOR_LOCK_Y.store(y.to_bits(), Ordering::SeqCst);
+        CURSOR_LOCK.store(true, Ordering::SeqCst);
+    } else {
+        CURSOR_LOCK.store(false, Ordering::SeqCst);
+    }
+}
+
+fn cursor_lock_point() -> Option<(f64, f64)> {
+    if CURSOR_LOCK.load(Ordering::SeqCst) {
+        Some((
+            f64::from_bits(CURSOR_LOCK_X.load(Ordering::SeqCst)),
+            f64::from_bits(CURSOR_LOCK_Y.load(Ordering::SeqCst)),
+        ))
+    } else {
+        None
+    }
 }
 
 /// True while our tap is dropping OS events for this physical HUGE button.
@@ -93,6 +127,7 @@ pub fn arm_huge_scroll_echo_suppress() {
 pub fn clear_suppress() {
     SUPPRESS_MASK.store(0, Ordering::SeqCst);
     SUPPRESS_MOTION.store(false, Ordering::SeqCst);
+    CURSOR_LOCK.store(false, Ordering::SeqCst);
     SCROLL_ARM_UNTIL_MS.store(0, Ordering::SeqCst);
 }
 
@@ -101,7 +136,12 @@ fn scroll_echo_armed() -> bool {
 }
 
 fn should_suppress(etype: u32, button_number: i64) -> bool {
-    if SUPPRESS_MOTION.load(Ordering::SeqCst) && etype == EVENT_MOUSE_MOVED {
+    if SUPPRESS_MOTION.load(Ordering::SeqCst)
+        && matches!(
+            etype,
+            EVENT_MOUSE_MOVED | EVENT_LEFT_DRAGGED | EVENT_RIGHT_DRAGGED | EVENT_OTHER_DRAGGED
+        )
+    {
         return true;
     }
     let mask = SUPPRESS_MASK.load(Ordering::SeqCst);
@@ -149,6 +189,10 @@ extern "C" {
     ) -> *mut std::ffi::c_void;
     fn CGEventTapEnable(tap: *mut std::ffi::c_void, enable: bool);
     fn CGEventGetIntegerValueField(event: *mut std::ffi::c_void, field: u32) -> i64;
+    fn CGEventGetDoubleValueField(event: *mut std::ffi::c_void, field: u32) -> f64;
+    fn CGEventSetIntegerValueField(event: *mut std::ffi::c_void, field: u32, value: i64);
+    fn CGEventSetDoubleValueField(event: *mut std::ffi::c_void, field: u32, value: f64);
+    fn CGEventSetLocation(event: *mut std::ffi::c_void, point: core_graphics::geometry::CGPoint);
 }
 
 unsafe extern "C" fn tap_callback(
@@ -165,11 +209,47 @@ unsafe extern "C" fn tap_callback(
         return event;
     }
 
+    if matches!(
+        etype,
+        EVENT_MOUSE_MOVED | EVENT_LEFT_DRAGGED | EVENT_RIGHT_DRAGGED | EVENT_OTHER_DRAGGED
+    ) {
+        if let Some(pin) = crate::platform::inject::restore_sync_pin() {
+            apply_restore_sync_motion(event, pin.x, pin.y);
+            return event;
+        }
+    }
+
     if etype == EVENT_SCROLL_WHEEL {
+        if let Some((x, y)) = cursor_lock_point() {
+            pin_mouse_event(event, x, y);
+            return event;
+        }
         if should_drop_scroll_echo(event) {
             return std::ptr::null_mut();
         }
         return event;
+    }
+
+    if let Some((x, y)) = cursor_lock_point() {
+        if matches!(
+            etype,
+            EVENT_MOUSE_MOVED | EVENT_LEFT_DRAGGED | EVENT_RIGHT_DRAGGED | EVENT_OTHER_DRAGGED
+        ) {
+            crate::platform::inject::keep_pinned_cursor();
+            return std::ptr::null_mut();
+        }
+        if matches!(
+            etype,
+            EVENT_LEFT_DOWN
+                | EVENT_LEFT_UP
+                | EVENT_RIGHT_DOWN
+                | EVENT_RIGHT_UP
+                | EVENT_OTHER_DOWN
+                | EVENT_OTHER_UP
+        ) {
+            pin_mouse_event(event, x, y);
+            return event;
+        }
     }
 
     let button = unsafe { CGEventGetIntegerValueField(event, EventField::MOUSE_EVENT_BUTTON_NUMBER) };
@@ -177,6 +257,28 @@ unsafe extern "C" fn tap_callback(
         return std::ptr::null_mut();
     }
     event
+}
+
+fn apply_restore_sync_motion(event: *mut std::ffi::c_void, pin_x: f64, pin_y: f64) {
+    unsafe {
+        let dx = CGEventGetDoubleValueField(event, EventField::MOUSE_EVENT_DELTA_X);
+        let dy = CGEventGetDoubleValueField(event, EventField::MOUSE_EVENT_DELTA_Y);
+        CGEventSetLocation(
+            event,
+            core_graphics::geometry::CGPoint::new(pin_x + dx, pin_y + dy),
+        );
+    }
+    crate::platform::inject::finish_restore_sync();
+}
+
+fn pin_mouse_event(event: *mut std::ffi::c_void, x: f64, y: f64) {
+    unsafe {
+        CGEventSetLocation(event, core_graphics::geometry::CGPoint::new(x, y));
+        CGEventSetDoubleValueField(event, EventField::MOUSE_EVENT_DELTA_X, 0.0);
+        CGEventSetDoubleValueField(event, EventField::MOUSE_EVENT_DELTA_Y, 0.0);
+        CGEventSetIntegerValueField(event, EventField::MOUSE_EVENT_DELTA_X, 0);
+        CGEventSetIntegerValueField(event, EventField::MOUSE_EVENT_DELTA_Y, 0);
+    }
 }
 
 fn event_mask() -> u64 {

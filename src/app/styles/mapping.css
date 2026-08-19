@@ -86,3 +86,49 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+
+.custom-mapping-help {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+}
+
+.custom-mapping-grid .button-head {
+  grid-template-columns:
+    minmax(7.5rem, 10.5rem) 5.5rem 7rem minmax(0, 1fr) minmax(0, 1fr) 3.5rem;
+}
+
+.custom-mapping-row {
+  display: grid;
+  grid-template-columns:
+    minmax(7.5rem, 10.5rem) 5.5rem 7rem minmax(0, 1fr) minmax(0, 1fr) 3.5rem;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  padding: 3px 8px 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--accent-soft);
+}
+
+.custom-mapping-row .combo-trigger {
+  justify-self: start;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-mapping-row select {
+  min-width: 0;
+  width: 100%;
+}
+
+.custom-mapping-remove {
+  justify-self: end;
+}
+
+.ball-scroll-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+}

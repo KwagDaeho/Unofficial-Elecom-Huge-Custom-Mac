@@ -1,4 +1,4 @@
-mod input;
+pub(crate) mod input;
 mod worker;
 
 use std::sync::atomic::{AtomicBool, Ordering};

@@ -49,7 +49,7 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "macos")]
     apply_dock_icon(APP_ICON_PNG);
 
-    let _tray = TrayIconBuilder::new()
+    let _tray = TrayIconBuilder::with_id("main")
         .icon(icon.clone())
         .menu(&menu)
         .tooltip("Elecom Huge Custom")

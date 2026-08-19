@@ -1,11 +1,9 @@
-import { ActionSelect } from "./ActionSelect";
+import { BindingRow } from "./BindingRow";
 import { buttonLabel } from "../../i18n";
 import { asBinding, longPressMs } from "../../domain/profile/binding";
-import { isTiltButton, tiltForcesAutoClick } from "../../domain/profile/tilt";
 import { usePrefs } from "../../context/prefs";
 import { useProfileCtx } from "../../context/profile";
 import { useSession } from "../../context/session";
-import { Toggle } from "../ui/Toggle";
 
 export function ButtonMappingPanel() {
   const { lang, i18n } = usePrefs();
@@ -47,44 +45,21 @@ export function ButtonMappingPanel() {
         </div>
         {catalog.map((btn) => {
           const binding = asBinding(profile.buttons[btn.id]);
-          const tiltBtn = isTiltButton(btn.id);
-          const forceAcOn = tiltForcesAutoClick(btn.id, binding.click);
-          // Tilt: AC locked ON for L-R scroll / default, locked OFF otherwise.
-          const autoOn = tiltBtn ? forceAcOn : !!binding.autoClick;
-          const lpOn = forceAcOn ? false : !!binding.longPressEnabled;
           return (
             <div key={btn.id} className="button-card">
-              <span className="btn-name" title={buttonLabel(btn.id, lang)}>
-                {buttonLabel(btn.id, lang)}
-                {btn.hiddenFromMacos && <em>{i18n.rawHid}</em>}
-              </span>
-              <Toggle
-                variant="flag"
-                title={i18n.longPressEnable}
-                checked={lpOn}
-                disabled={autoOn || forceAcOn}
-                onChange={(longPressEnabled) =>
-                  actions.updateButtonFlags(btn.id, { longPressEnabled })
+              <BindingRow
+                target={{ kind: "button", id: btn.id }}
+                binding={binding}
+                buttonId={btn.id}
+                label={
+                  <>
+                    {buttonLabel(btn.id, lang)}
+                    {btn.hiddenFromMacos && <em>{i18n.rawHid}</em>}
+                  </>
                 }
-              />
-              <Toggle
-                variant="flag"
-                title={i18n.autoClickEnable}
-                checked={autoOn}
-                disabled={tiltBtn || lpOn}
-                onChange={(autoClick) =>
-                  actions.updateButtonFlags(btn.id, { autoClick })
-                }
-              />
-              <ActionSelect
-                action={binding.click}
-                onPick={(value) => selectCatalogValue(btn.id, "click", value)}
-              />
-              <ActionSelect
-                action={binding.longPress}
-                disabled={!lpOn}
-                onPick={(value) =>
-                  selectCatalogValue(btn.id, "long_press", value)
+                onFlags={(patch) => actions.updateButtonFlags(btn.id, patch)}
+                onPick={(slot, value) =>
+                  selectCatalogValue(btn.id, slot, value)
                 }
               />
             </div>

@@ -9,33 +9,41 @@ import * as tauri from "../../services/tauri";
 import type {
   Action,
   ActionSlot,
-  ButtonId,
   EditorMode,
-  MacroStep,
+  MappingTarget,
   Profile,
 } from "../../types";
 
+function bindingForTarget(profile: Profile | null, target: MappingTarget) {
+  if (!profile) return asBinding(undefined);
+  if (target.kind === "button") {
+    return asBinding(profile.buttons[target.id]);
+  }
+  const entry = profile.customMappings?.find((e) => e.id === target.id);
+  return asBinding(entry);
+}
+
 export function selectCatalogValue(
-  buttonId: ButtonId,
+  target: MappingTarget,
   slot: ActionSlot,
   value: string,
   profile: Profile | null,
   setEditor: Dispatch<SetStateAction<EditorMode | null>>,
-  updateButtonSlot: (id: ButtonId, slot: ActionSlot, action: Action) => void,
+  updateSlot: (target: MappingTarget, slot: ActionSlot, action: Action) => void,
 ) {
   if (value === CUSTOM_KEY_SENTINEL) {
-    setEditor({ kind: "custom_key", buttonId, slot, draft: [] });
+    setEditor({ kind: "custom_key", target, slot, draft: [] });
     return;
   }
   if (value === MACRO_SENTINEL) {
-    const existing = asBinding(profile?.buttons[buttonId]);
+    const existing = bindingForTarget(profile, target);
     const current = slot === "click" ? existing.click : existing.longPress;
-    const steps = current.type === "macro" ? current.steps : ([] as MacroStep[]);
-    setEditor({ kind: "macro", buttonId, slot, steps, capturing: false });
+    const steps = current.type === "macro" ? current.steps : [];
+    setEditor({ kind: "macro", target, slot, steps, capturing: false });
     return;
   }
   if (value === OPEN_APP_SENTINEL) {
-    const existing = asBinding(profile?.buttons[buttonId]);
+    const existing = bindingForTarget(profile, target);
     const current = slot === "click" ? existing.click : existing.longPress;
     const selected =
       current.type === "open_app" && current.bundle_id
@@ -43,7 +51,7 @@ export function selectCatalogValue(
         : null;
     setEditor({
       kind: "open_app",
-      buttonId,
+      target,
       slot,
       query: "",
       selected,
@@ -89,9 +97,9 @@ export function selectCatalogValue(
     return;
   }
   try {
-    updateButtonSlot(buttonId, slot, JSON.parse(value) as Action);
+    updateSlot(target, slot, JSON.parse(value) as Action);
   } catch {
-    updateButtonSlot(buttonId, slot, {
+    updateSlot(target, slot, {
       type: slot === "click" ? "default" : "disabled",
     });
   }

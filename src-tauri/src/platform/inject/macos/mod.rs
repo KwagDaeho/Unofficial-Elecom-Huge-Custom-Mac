@@ -4,17 +4,20 @@ mod action;
 mod keyboard;
 mod mouse;
 mod pointer;
+mod cursor_badge;
 
 pub use action::{
     default_mouse_button, press_action, press_action_forced, release_action, release_action_forced,
 };
 pub use mouse::synthetic_buttons_held;
+pub use mouse::click_at_cursor;
 // mouse_down / mouse_up stay crate-visible via mouse::* for action; also re-export for API parity.
 #[allow(unused_imports)]
 pub use mouse::{mouse_down, mouse_up};
 pub use pointer::{
-    move_by, scroll_by_units_ex, scroll_notches_ex, set_shared_pointer_mode, shared_pointer_mode,
-    sync_cursor_from_system,
+    end_idle_ball_scroll, expire_restore_sync_if_due, finish_restore_sync, keep_pinned_cursor,
+    move_by, pin_cursor, restore_pinned_cursor, restore_sync_pin, scroll_ball, scroll_by_units_ex,
+    scroll_notches_ex, set_shared_pointer_mode, shared_pointer_mode, sync_cursor_from_system,
 };
 // Extra scroll helpers kept public for API parity with the former monolith.
 #[allow(unused_imports)]
@@ -108,6 +111,10 @@ impl ButtonsDown {
             None
         }
     }
+}
+
+fn cursor_is_pinned() -> bool {
+    pointer::cursor_is_pinned()
 }
 
 fn cursor_state() -> &'static Mutex<CGPoint> {

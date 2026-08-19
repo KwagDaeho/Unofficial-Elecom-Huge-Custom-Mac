@@ -60,6 +60,11 @@ pub fn run() {
             commands::relaunch_app,
             commands::button_catalog,
             commands::set_key_capture,
+            commands::apply_capture_session,
+            commands::set_activator_capture,
+            commands::set_combo_activator_capture,
+            commands::set_combo_trigger_capture,
+            commands::set_ui_modal,
             commands::list_installed_apps,
             commands::get_app_icon,
         ])
@@ -75,7 +80,7 @@ pub fn run() {
         .expect("error while building tauri application")
         .run(|app_handle, event| {
             if let tauri::RunEvent::Exit = event {
-                capture::set_key_capture(false);
+                capture::apply_capture_session(capture::CaptureSession::OFF);
                 if let Some(state) = app_handle.try_state::<AppState>() {
                     state.engine.stop();
                 }

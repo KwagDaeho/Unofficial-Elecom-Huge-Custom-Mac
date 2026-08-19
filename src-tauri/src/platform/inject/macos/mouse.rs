@@ -102,8 +102,10 @@ pub fn mouse_up(button: &MouseClickButton) {
         e.set_integer_value_field(EventField::MOUSE_EVENT_CLICK_STATE, 1);
         post_mouse_event(&e, button);
     }
-    unsafe {
-        let _ = CGAssociateMouseAndMouseCursorPosition(true);
+    if !super::cursor_is_pinned() {
+        unsafe {
+            let _ = CGAssociateMouseAndMouseCursorPosition(true);
+        }
     }
 }
 
@@ -135,4 +137,29 @@ pub(super) fn double_click() {
     // Ensure we didn't leave synthetic button / motion-suppress state sticky.
     buttons_down().lock().set(&MouseClickButton::Left, false);
     sync_motion_suppress();
+}
+
+/// Post a left click at the cursor for webview UI (HUGE L → modal buttons).
+pub fn click_at_cursor() {
+    let pos = cursor_pos();
+    let src = source();
+    if let Ok(down) = CGEvent::new_mouse_event(
+        src.clone(),
+        CGEventType::LeftMouseDown,
+        pos,
+        CGMouseButton::Left,
+    ) {
+        down.set_integer_value_field(EventField::MOUSE_EVENT_CLICK_STATE, 1);
+        down.post(CGEventTapLocation::Session);
+    }
+    std::thread::sleep(std::time::Duration::from_millis(16));
+    if let Ok(up) = CGEvent::new_mouse_event(
+        src,
+        CGEventType::LeftMouseUp,
+        pos,
+        CGMouseButton::Left,
+    ) {
+        up.set_integer_value_field(EventField::MOUSE_EVENT_CLICK_STATE, 1);
+        up.post(CGEventTapLocation::Session);
+    }
 }

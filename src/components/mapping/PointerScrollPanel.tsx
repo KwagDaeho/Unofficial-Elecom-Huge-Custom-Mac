@@ -29,7 +29,8 @@ export function PointerScrollPanel() {
       </div>
       <div className="controls">
         <label>
-          {i18n.speedX} {formatSpeedPair(pointerSpeedX(profile.pointer), POINTER_REF_DPI)}
+          {i18n.speedX}{" "}
+          {formatSpeedPair(pointerSpeedX(profile.pointer), POINTER_REF_DPI)}
           <input
             type="range"
             min={1}
@@ -40,7 +41,8 @@ export function PointerScrollPanel() {
           />
         </label>
         <label>
-          {i18n.speedY} {formatSpeedPair(pointerSpeedY(profile.pointer), POINTER_REF_DPI)}
+          {i18n.speedY}{" "}
+          {formatSpeedPair(pointerSpeedY(profile.pointer), POINTER_REF_DPI)}
           <input
             type="range"
             min={1}
@@ -52,7 +54,10 @@ export function PointerScrollPanel() {
         </label>
         <label>
           {i18n.scrollSpeedVertical}{" "}
-          {formatSpeedPair(scrollSpeedVertical(profile.pointer), SCROLL_BASE_VERTICAL_PX)}
+          {formatSpeedPair(
+            scrollSpeedVertical(profile.pointer),
+            SCROLL_BASE_VERTICAL_PX,
+          )}
           <input
             type="range"
             min={0.1}
@@ -66,7 +71,10 @@ export function PointerScrollPanel() {
         </label>
         <label>
           {i18n.scrollSpeedHorizontal}{" "}
-          {formatSpeedPair(scrollSpeedHorizontal(profile.pointer), SCROLL_BASE_HORIZONTAL_PX)}
+          {formatSpeedPair(
+            scrollSpeedHorizontal(profile.pointer),
+            SCROLL_BASE_HORIZONTAL_PX,
+          )}
           <input
             type="range"
             min={0.1}

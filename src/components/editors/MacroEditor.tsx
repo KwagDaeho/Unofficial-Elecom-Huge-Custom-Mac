@@ -89,7 +89,7 @@ export function MacroEditor({ editor }: { editor: MacroEditorState }) {
           <Button
             disabled={editor.steps.length === 0}
             onClick={() => {
-              actions.updateButtonSlot(editor.buttonId, editor.slot, {
+              actions.updateMappingSlot(editor.target, editor.slot, {
                 type: "macro",
                 steps: editor.steps,
               });

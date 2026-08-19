@@ -1,3 +1,4 @@
+pub mod app_bus;
 pub mod apps;
 pub mod capture;
 pub mod suppress;

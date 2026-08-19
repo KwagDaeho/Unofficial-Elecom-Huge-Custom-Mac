@@ -366,6 +366,58 @@ input[type="range"] {
   gap: 6px;
 }
 
+.ball-scroll {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+}
+
+.ball-scroll-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ball-scroll-head strong {
+  font-size: 1rem;
+}
+
+.ball-scroll-head em {
+  font-style: normal;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.ball-scroll-help {
+  flex-basis: 100%;
+  width: 100%;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+.ball-scroll-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.ball-scroll-key {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

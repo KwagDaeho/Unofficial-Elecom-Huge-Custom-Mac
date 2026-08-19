@@ -1,6 +1,8 @@
 import { CustomKeyEditor } from "./CustomKeyEditor";
 import { MacroEditor } from "./MacroEditor";
 import { OpenAppEditor } from "./OpenAppEditor";
+import { ActivatorEditor } from "./ActivatorEditor";
+import { ComboActivatorEditor } from "./ComboActivatorEditor";
 import { useSession } from "../../context/session";
 
 export function EditorHost() {
@@ -14,6 +16,10 @@ export function EditorHost() {
       return <MacroEditor editor={editor} />;
     case "open_app":
       return <OpenAppEditor editor={editor} />;
+    case "ball_scroll_activator":
+      return <ActivatorEditor editor={editor} />;
+    case "custom_combo_activator":
+      return <ComboActivatorEditor editor={editor} />;
     default:
       return null;
   }

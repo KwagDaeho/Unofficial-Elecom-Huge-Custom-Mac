@@ -10,29 +10,46 @@ export type PermissionStatus = {
 
 export type ActionSlot = "click" | "long_press";
 
+export type MappingTarget =
+  | { kind: "button"; id: ButtonId }
+  | { kind: "custom"; id: string };
+
 export type EditorMode =
   | {
       kind: "custom_key";
-      buttonId: ButtonId;
+      target: MappingTarget;
       slot: ActionSlot;
       draft: string[];
     }
   | {
       kind: "macro";
-      buttonId: ButtonId;
+      target: MappingTarget;
       slot: ActionSlot;
       steps: MacroStep[];
       capturing: boolean;
     }
   | {
       kind: "open_app";
-      buttonId: ButtonId;
+      target: MappingTarget;
       slot: ActionSlot;
       query: string;
       selected: { name: string; bundleId: string } | null;
       apps: { name: string; bundleId: string; path: string; icon?: string }[];
       loading: boolean;
       error: string | null;
+    }
+  | {
+      kind: "ball_scroll_activator";
+      slot: "toggle" | "hold";
+      rejected: string | null;
+    }
+  | {
+      kind: "custom_combo_activator";
+      entryId: string;
+      phase: "capture" | "confirm";
+      draftChord: string[];
+      draftButton: ButtonId | null;
+      rejected: string | null;
     };
 
 export type TabId = "info" | "custom";

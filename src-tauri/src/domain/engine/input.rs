@@ -1,9 +1,12 @@
 //! Button / timing policy helpers used by the HID worker.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
 use std::thread;
 use std::time::{Duration, Instant};
 
+use crate::domain::ball_scroll;
+use crate::domain::custom_mapping;
 use crate::domain::device::{ButtonId, ButtonState};
 use crate::domain::profile::{Action, ButtonBinding, Profile};
 use crate::domain::remap;
@@ -255,14 +258,40 @@ pub(crate) fn fire_due_long_presses(
     pointer: &crate::domain::profile::PointerSettings,
     threshold: Duration,
 ) {
+    fire_due_long_presses_for(
+        pending,
+        held,
+        pointer,
+        threshold,
+        |id| *id,
+    );
+}
+
+pub(crate) fn fire_due_long_presses_for<K, F>(
+    pending: &mut HashMap<K, PendingHold>,
+    held: &mut HashMap<K, Action>,
+    pointer: &crate::domain::profile::PointerSettings,
+    threshold: Duration,
+    inject_id: F,
+) where
+    K: Eq + Hash + Clone,
+    F: Fn(&K) -> ButtonId,
+{
     let now = Instant::now();
-    for (id, hold) in pending.iter_mut() {
-        if hold.long_fired || now.duration_since(hold.started) < threshold {
-            continue;
-        }
-        hold.long_fired = true;
-        inject::press_action(*id, &hold.long_press, pointer);
-        held.insert(*id, hold.long_press.clone());
+    let due: Vec<(K, Action)> = pending
+        .iter_mut()
+        .filter_map(|(key, hold)| {
+            if hold.long_fired || now.duration_since(hold.started) < threshold {
+                return None;
+            }
+            hold.long_fired = true;
+            let id = inject_id(key);
+            inject::press_action(id, &hold.long_press, pointer);
+            Some((key.clone(), hold.long_press.clone()))
+        })
+        .collect();
+    for (key, action) in due {
+        held.insert(key, action);
     }
 }
 
@@ -270,12 +299,23 @@ pub(crate) fn fire_due_key_repeats(
     repeats: &mut HashMap<ButtonId, ActionRepeat>,
     pointer: &crate::domain::profile::PointerSettings,
 ) {
+    fire_due_key_repeats_for(repeats, pointer, |id| *id);
+}
+
+pub(crate) fn fire_due_key_repeats_for<K, F>(
+    repeats: &mut HashMap<K, ActionRepeat>,
+    pointer: &crate::domain::profile::PointerSettings,
+    inject_id: F,
+) where
+    K: Eq + Hash,
+    F: Fn(&K) -> ButtonId,
+{
     let now = Instant::now();
-    for (id, rep) in repeats.iter_mut() {
+    for (key, rep) in repeats.iter_mut() {
         if now < rep.next_at {
             continue;
         }
-        fire_action_pulse(*id, &rep.action, pointer);
+        fire_action_pulse(inject_id(key), &rep.action, pointer);
         rep.next_at = now + KEY_REPEAT_RATE;
     }
 }
@@ -316,9 +356,12 @@ pub(crate) fn fire_due_scroll_repeats(
     }
 }
 
-/// Accumulate due hold-repeat ticks (may be multiple buttons) without injecting yet,
-/// so the engine can merge them with the same report's wheel/pan into one gesture.
-pub(crate) fn take_due_scroll_repeats(repeats: &mut HashMap<ButtonId, ScrollRepeat>) -> (i32, i32) {
+pub(crate) fn take_due_scroll_repeats_for<K>(
+    repeats: &mut HashMap<K, ScrollRepeat>,
+) -> (i32, i32)
+where
+    K: Eq + Hash,
+{
     let now = Instant::now();
     let mut dx = 0i32;
     let mut dy = 0i32;
@@ -331,6 +374,12 @@ pub(crate) fn take_due_scroll_repeats(repeats: &mut HashMap<ButtonId, ScrollRepe
         rep.next_at = now + SCROLL_REPEAT_RATE;
     }
     (dx, dy)
+}
+
+/// Accumulate due hold-repeat ticks (may be multiple buttons) without injecting yet,
+/// so the engine can merge them with the same report's wheel/pan into one gesture.
+pub(crate) fn take_due_scroll_repeats(repeats: &mut HashMap<ButtonId, ScrollRepeat>) -> (i32, i32) {
+    take_due_scroll_repeats_for(repeats)
 }
 
 fn start_scroll_repeat(repeats: &mut HashMap<ButtonId, ScrollRepeat>, id: ButtonId, action: &Action) {
@@ -386,6 +435,150 @@ pub(crate) fn tilt_side_sustain(_profile: &Profile, _id: ButtonId) -> bool {
     false
 }
 
+fn start_key_repeat_for<K: Eq + Hash>(
+    repeats: &mut HashMap<K, ActionRepeat>,
+    key: K,
+    id: ButtonId,
+    action: &Action,
+) {
+    if matches!(action, Action::Disabled) || is_scroll_action(action) {
+        return;
+    }
+    let action = match action {
+        Action::Default => {
+            if let Some(btn) = inject::default_mouse_button(id) {
+                Action::MouseClick { button: btn }
+            } else {
+                return;
+            }
+        }
+        other => other.clone(),
+    };
+    repeats.insert(
+        key,
+        ActionRepeat {
+            action,
+            next_at: Instant::now() + KEY_REPEAT_DELAY,
+        },
+    );
+}
+
+fn start_scroll_repeat_for<K: Eq + Hash>(
+    repeats: &mut HashMap<K, ScrollRepeat>,
+    key: K,
+    action: &Action,
+) {
+    if let Action::Scroll { dx, dy } = action {
+        if *dx != 0 || *dy != 0 {
+            repeats.insert(
+                key,
+                ScrollRepeat {
+                    dx: *dx,
+                    dy: *dy,
+                    next_at: Instant::now() + SCROLL_REPEAT_DELAY,
+                },
+            );
+        }
+    }
+}
+
+pub(crate) fn apply_binding_release<K>(
+    state_key: K,
+    inject_id: ButtonId,
+    profile: &Profile,
+    pending: &mut HashMap<K, PendingHold>,
+    held: &mut HashMap<K, Action>,
+    scroll_repeats: &mut HashMap<K, ScrollRepeat>,
+    key_repeats: &mut HashMap<K, ActionRepeat>,
+) where
+    K: Eq + Hash,
+{
+    scroll_repeats.remove(&state_key);
+    key_repeats.remove(&state_key);
+    if let Some(hold) = pending.remove(&state_key) {
+        if hold.long_fired {
+            if let Some(action) = held.remove(&state_key) {
+                inject::release_action(inject_id, &action);
+            }
+        } else {
+            fire_deferred_click_pulse(inject_id, &hold.click, &profile.pointer);
+        }
+    } else if let Some(action) = held.remove(&state_key) {
+        inject::release_action(inject_id, &action);
+    }
+}
+
+pub(crate) fn apply_binding_press<K>(
+    state_key: K,
+    inject_id: ButtonId,
+    binding: &ButtonBinding,
+    profile: &Profile,
+    pending: &mut HashMap<K, PendingHold>,
+    held: &mut HashMap<K, Action>,
+    scroll_repeats: &mut HashMap<K, ScrollRepeat>,
+    key_repeats: &mut HashMap<K, ActionRepeat>,
+) where
+    K: Eq + Hash + Clone,
+{
+    let is_tilt = matches!(
+        inject_id,
+        ButtonId::WheelTiltLeft | ButtonId::WheelTiltRight
+    );
+    if is_tilt && tilt_uses_pan_stream(binding) {
+        return;
+    }
+    if is_tilt {
+        if inject::shared_pointer_mode() && remap::action_is_native_for(inject_id, &binding.click) {
+            // OS-native already handled elsewhere.
+        } else if is_scroll_action(&binding.click) {
+            inject::press_action(inject_id, &binding.click, &profile.pointer);
+        } else {
+            fire_action_pulse(inject_id, &binding.click, &profile.pointer);
+        }
+        return;
+    }
+
+    if binding.uses_long_press() {
+        pending.insert(
+            state_key,
+            PendingHold {
+                started: Instant::now(),
+                click: binding.click.clone(),
+                long_press: binding.long_press.clone(),
+                long_fired: false,
+            },
+        );
+    } else if binding.uses_auto_click() {
+        if is_scroll_action(&binding.click) {
+            held.insert(state_key.clone(), binding.click.clone());
+            inject::press_action(inject_id, &binding.click, &profile.pointer);
+            start_scroll_repeat_for(scroll_repeats, state_key, &binding.click);
+        } else {
+            let pulse = match &binding.click {
+                Action::Default => {
+                    if let Some(btn) = inject::default_mouse_button(inject_id) {
+                        Action::MouseClick { button: btn }
+                    } else {
+                        binding.click.clone()
+                    }
+                }
+                other => other.clone(),
+            };
+            fire_action_pulse(inject_id, &pulse, &profile.pointer);
+            start_key_repeat_for(key_repeats, state_key, inject_id, &pulse);
+        }
+    } else if inject::shared_pointer_mode()
+        && remap::action_is_native_for(inject_id, &binding.click)
+    {
+        // Both off + OS-native → OS owns hold/drag.
+    } else if is_scroll_action(&binding.click) {
+        inject::press_action(inject_id, &binding.click, &profile.pointer);
+    } else {
+        held.insert(state_key, binding.click.clone());
+        inject::press_action(inject_id, &binding.click, &profile.pointer);
+    }
+}
+
 pub(crate) fn handle_button_transitions(
     prev: ButtonState,
     state: ButtonState,
@@ -394,91 +587,41 @@ pub(crate) fn handle_button_transitions(
     held: &mut HashMap<ButtonId, Action>,
     scroll_repeats: &mut HashMap<ButtonId, ScrollRepeat>,
     key_repeats: &mut HashMap<ButtonId, ActionRepeat>,
+    skip_release: &HashSet<ButtonId>,
+    skip_press: &HashSet<ButtonId>,
 ) {
     for id in state.released_edges(prev) {
-        scroll_repeats.remove(&id);
-        key_repeats.remove(&id);
-        if let Some(hold) = pending.remove(&id) {
-            if hold.long_fired {
-                if let Some(action) = held.remove(&id) {
-                    inject::release_action(id, &action);
-                }
-            } else {
-                // Released before LP threshold → one click. Native L/R/… must
-                // be synthesized: suppress already dropped the OS down.
-                fire_deferred_click_pulse(id, &hold.click, &profile.pointer);
-            }
-        } else if let Some(action) = held.remove(&id) {
-            inject::release_action(id, &action);
+        if skip_release.contains(&id) {
+            continue;
         }
+        if ball_scroll::is_reserved_huge(id) || custom_mapping::is_reserved_huge(id) {
+            scroll_repeats.remove(&id);
+            key_repeats.remove(&id);
+            pending.remove(&id);
+            if let Some(action) = held.remove(&id) {
+                inject::release_action(id, &action);
+            }
+            continue;
+        }
+        apply_binding_release(id, id, profile, pending, held, scroll_repeats, key_repeats);
     }
     for id in state.pressed_edges(prev) {
+        if skip_press.contains(&id) {
+            continue;
+        }
+        if ball_scroll::is_reserved_huge(id) || custom_mapping::is_reserved_huge(id) {
+            continue;
+        }
         let binding = binding_of(profile, id);
-        let is_tilt = matches!(
+        apply_binding_press(
             id,
-            ButtonId::WheelTiltLeft | ButtonId::WheelTiltRight
+            id,
+            &binding,
+            profile,
+            pending,
+            held,
+            scroll_repeats,
+            key_repeats,
         );
-        if is_tilt && tilt_uses_pan_stream(&binding) {
-            // OS default / horizontal scroll → HID pan stream only.
-            continue;
-        }
-        if is_tilt {
-            // Remapped tilt: one pulse per press edge (AC profile flag is UI-only;
-            // do not enter key-repeat / sustain paths).
-            if inject::shared_pointer_mode()
-                && remap::action_is_native_for(id, &binding.click)
-            {
-                // OS-native already handled elsewhere.
-            } else if is_scroll_action(&binding.click) {
-                inject::press_action(id, &binding.click, &profile.pointer);
-            } else {
-                fire_action_pulse(id, &binding.click, &profile.pointer);
-            }
-            continue;
-        }
-
-        if binding.uses_long_press() {
-            pending.insert(
-                id,
-                PendingHold {
-                    started: Instant::now(),
-                    click: binding.click,
-                    long_press: binding.long_press,
-                    long_fired: false,
-                },
-            );
-        } else if binding.uses_auto_click() {
-            if is_scroll_action(&binding.click) {
-                held.insert(id, binding.click.clone());
-                inject::press_action(id, &binding.click, &profile.pointer);
-                start_scroll_repeat(scroll_repeats, id, &binding.click);
-            } else {
-                // Prefer concrete MouseClick so pulses/repeats always synthesize
-                // while OS clicks are suppressed.
-                let pulse = match &binding.click {
-                    Action::Default => {
-                        if let Some(btn) = inject::default_mouse_button(id) {
-                            Action::MouseClick { button: btn }
-                        } else {
-                            binding.click.clone()
-                        }
-                    }
-                    other => other.clone(),
-                };
-                fire_action_pulse(id, &pulse, &profile.pointer);
-                start_key_repeat(key_repeats, id, &pulse);
-            }
-        } else if inject::shared_pointer_mode()
-            && remap::action_is_native_for(id, &binding.click)
-        {
-            // Both off + OS-native → OS owns hold/drag.
-        } else if is_scroll_action(&binding.click) {
-            // Both off + scroll → one notch (no hold-repeat).
-            inject::press_action(id, &binding.click, &profile.pointer);
-        } else {
-            // Both off → sustained hold until release.
-            held.insert(id, binding.click.clone());
-            inject::press_action(id, &binding.click, &profile.pointer);
-        }
     }
 }

@@ -24,6 +24,7 @@ type SessionContextValue = {
   editor: EditorMode | null;
   setEditor: Dispatch<SetStateAction<EditorMode | null>>;
   selectCatalogValue: (buttonId: ButtonId, slot: ActionSlot, value: string) => void;
+  selectCustomCatalogValue: (entryId: string, slot: ActionSlot, value: string) => void;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -35,7 +36,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [editor, setEditor] = useState<EditorMode | null>(null);
   const [autostartOn, setAutostartOnState] = useState(false);
 
-  useKeyCapture(editor, setEditor);
+  useKeyCapture(editor, setEditor, (slot, activator) => {
+    actions.assignBallScrollActivator(slot, activator);
+  });
 
   useEffect(() => {
     void tauri.autostartIsEnabled().then(setAutostartOnState);
@@ -57,6 +60,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     actions.selectCatalogValue(buttonId, slot, value, setEditor);
   }
 
+  function selectCustomCatalogValue(
+    entryId: string,
+    slot: ActionSlot,
+    value: string,
+  ) {
+    actions.selectCustomCatalogValue(entryId, slot, value, setEditor);
+  }
+
   return (
     <SessionContext.Provider
       value={{
@@ -69,6 +80,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         editor,
         setEditor,
         selectCatalogValue,
+        selectCustomCatalogValue,
       }}>
       {children}
     </SessionContext.Provider>

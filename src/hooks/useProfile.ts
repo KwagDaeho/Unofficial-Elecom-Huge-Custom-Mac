@@ -3,14 +3,25 @@ import type { Dispatch, SetStateAction } from "react";
 import { asBinding } from "../domain/profile/binding";
 import { selectCatalogValue as selectCatalogValueDomain } from "../domain/profile/selectCatalogValue";
 import { isTiltButton, normalizeTiltPanStreamFlags } from "../domain/profile/tilt";
+import {
+  activatorsEqual,
+  ballScrollOf,
+} from "../domain/profile/activator";
+import { customMappingsOf } from "../domain/profile/customMapping";
 import * as tauri from "../services/tauri";
 import type {
   Action,
   ActionSlot,
+  Activator,
+  BallScrollSettings,
+  BallScrollSlot,
   ButtonBinding,
   ButtonId,
   ButtonMeta,
+  ComboActivator,
+  CustomMappingEntry,
   EditorMode,
+  MappingTarget,
   Profile,
 } from "../types";
 
@@ -51,6 +62,23 @@ export function useProfileState() {
     } catch (e) {
       setBootError(String(e));
     }
+  }
+
+  function updateMappingSlot(target: MappingTarget, slot: ActionSlot, action: Action) {
+    if (!profile) return;
+    if (target.kind === "button") {
+      updateButtonSlot(target.id, slot, action);
+      return;
+    }
+    const entries = customMappingsOf(profile);
+    const next = entries.map((entry) => {
+      if (entry.id !== target.id) return entry;
+      const current = asBinding(entry);
+      return slot === "click"
+        ? { ...entry, ...current, click: action }
+        : { ...entry, ...current, longPress: action };
+    });
+    void persist({ ...profile, customMappings: next });
   }
 
   function updateButtonSlot(id: ButtonId, slot: ActionSlot, action: Action) {
@@ -104,6 +132,72 @@ export function useProfileState() {
     });
   }
 
+  function updateBallScroll(patch: Partial<BallScrollSettings>) {
+    if (!profile) return;
+    let next = { ...ballScrollOf(profile.ballScroll), ...patch };
+    if (
+      next.toggleActivator &&
+      next.holdActivator &&
+      activatorsEqual(next.toggleActivator, next.holdActivator)
+    ) {
+      if (patch.toggleActivator) {
+        next = { ...next, holdActivator: null };
+      } else if (patch.holdActivator) {
+        next = { ...next, toggleActivator: null };
+      }
+    }
+    void persist({ ...profile, ballScroll: next });
+  }
+
+  function assignBallScrollActivator(slot: BallScrollSlot, activator: Activator) {
+    if (slot === "toggle") {
+      updateBallScroll({ toggleActivator: activator, toggleEnabled: true });
+    } else {
+      updateBallScroll({ holdActivator: activator, holdEnabled: true });
+    }
+  }
+
+  function updateCustomMappingFlags(
+    entryId: string,
+    patch: Partial<Pick<ButtonBinding, "longPressEnabled" | "autoClick">>,
+  ) {
+    if (!profile) return;
+    const next = customMappingsOf(profile).map((entry) => {
+      if (entry.id !== entryId) return entry;
+      const current = asBinding(entry);
+      let longPressEnabled = patch.longPressEnabled ?? !!current.longPressEnabled;
+      let autoClick = patch.autoClick ?? !!current.autoClick;
+      if (patch.longPressEnabled === true) autoClick = false;
+      if (patch.autoClick === true) longPressEnabled = false;
+      return { ...entry, ...current, longPressEnabled, autoClick };
+    });
+    void persist({ ...profile, customMappings: next });
+  }
+
+  function addCustomMapping(entry: CustomMappingEntry) {
+    if (!profile) return;
+    void persist({
+      ...profile,
+      customMappings: [...customMappingsOf(profile), entry],
+    });
+  }
+
+  function removeCustomMapping(entryId: string) {
+    if (!profile) return;
+    void persist({
+      ...profile,
+      customMappings: customMappingsOf(profile).filter((e) => e.id !== entryId),
+    });
+  }
+
+  function updateCustomMappingActivator(entryId: string, activator: ComboActivator) {
+    if (!profile) return;
+    const next = customMappingsOf(profile).map((entry) =>
+      entry.id === entryId ? { ...entry, activator } : entry,
+    );
+    void persist({ ...profile, customMappings: next });
+  }
+
   function selectCatalogValue(
     buttonId: ButtonId,
     slot: ActionSlot,
@@ -111,12 +205,28 @@ export function useProfileState() {
     setEditor: Dispatch<SetStateAction<EditorMode | null>>,
   ) {
     selectCatalogValueDomain(
-      buttonId,
+      { kind: "button", id: buttonId },
       slot,
       value,
       profile,
       setEditor,
-      updateButtonSlot,
+      updateMappingSlot,
+    );
+  }
+
+  function selectCustomCatalogValue(
+    entryId: string,
+    slot: ActionSlot,
+    value: string,
+    setEditor: Dispatch<SetStateAction<EditorMode | null>>,
+  ) {
+    selectCatalogValueDomain(
+      { kind: "custom", id: entryId },
+      slot,
+      value,
+      profile,
+      setEditor,
+      updateMappingSlot,
     );
   }
 
@@ -129,9 +239,17 @@ export function useProfileState() {
       setBootError,
       refresh,
       updateButtonSlot,
+      updateMappingSlot,
       updateButtonFlags,
+      updateCustomMappingFlags,
+      addCustomMapping,
+      removeCustomMapping,
+      updateCustomMappingActivator,
       updatePointer,
+      updateBallScroll,
+      assignBallScrollActivator,
       selectCatalogValue,
+      selectCustomCatalogValue,
     },
   };
 }

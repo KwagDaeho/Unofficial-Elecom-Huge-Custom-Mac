@@ -25,7 +25,6 @@ pub fn button_catalog() -> Vec<serde_json::Value> {
         .map(|id| {
             serde_json::json!({
                 "id": id,
-                "label": id.label(),
                 "hiddenFromMacos": id.is_hidden_from_macos(),
             })
         })
