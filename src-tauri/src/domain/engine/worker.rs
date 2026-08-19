@@ -146,6 +146,16 @@ pub(crate) fn run(
                     inject::end_idle_ball_scroll();
                     let mut state = prev;
                     tilt_gate.apply(&mut state);
+                    custom_mapping::sync_button_state(state);
+                    custom_mapping::maintain_chords(
+                        state,
+                        &profile_snap,
+                        &mut custom_maps,
+                        &mut pending,
+                        &mut held,
+                        &mut scroll_repeats,
+                        &mut key_repeats,
+                    );
                     if state != prev {
                         apply_button_edges(
                             prev,
@@ -224,6 +234,7 @@ pub(crate) fn run(
                     tilt_gate.note_pan(parsed.pan, now, left_sustain, right_sustain);
                     tilt_gate.expire(now);
                     tilt_gate.apply(&mut state);
+                    custom_mapping::sync_button_state(state);
 
                     // Probe: show gated tilt (pulse), not sticky raw pan bits.
                     let buttons = ButtonId::ALL
@@ -493,8 +504,27 @@ fn apply_button_edges(
     if capture::input_capture_active() || capture::ui_modal_active() {
         return;
     }
-    let (skip_rel, skip_press) =
-        custom_mapping::handle_transitions(prev, state, profile, custom_maps);
+    custom_mapping::sync_button_state(state);
+    let mut skip_press = custom_mapping::maintain_chords(
+        state,
+        profile,
+        custom_maps,
+        pending,
+        held,
+        scroll_repeats,
+        key_repeats,
+    );
+    let (skip_rel, skip_from_custom) = custom_mapping::handle_transitions(
+        prev,
+        state,
+        profile,
+        custom_maps,
+        pending,
+        held,
+        scroll_repeats,
+        key_repeats,
+    );
+    skip_press.extend(skip_from_custom);
     handle_button_transitions(
         prev,
         state,

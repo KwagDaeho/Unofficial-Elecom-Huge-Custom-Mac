@@ -141,7 +141,7 @@ pub(super) fn post_key(src: &CGEventSource, code: u16, key_down: bool, flags: CG
     }
 }
 
-pub(super) fn keystroke(keys: &[String]) {
+fn keystroke_with_source(src: &CGEventSource, keys: &[String]) {
     let mut flags = CGEventFlags::empty();
     let mut mod_order: Vec<CGEventFlags> = Vec::new();
     let mut main_key: Option<u16> = None;
@@ -159,32 +159,64 @@ pub(super) fn keystroke(keys: &[String]) {
         return;
     };
 
-    let src = source();
-
-    // 1) Press modifiers for real (updates system modifier state).
     let mut accumulated = CGEventFlags::empty();
     for flag in &mod_order {
         if let Some(mk) = modifier_keycode(*flag) {
             accumulated.insert(*flag);
-            post_key(&src, mk, true, accumulated);
+            post_key(src, mk, true, accumulated);
         }
     }
 
-    // 2) Main key tap with full chord flags.
-    post_key(&src, code, true, flags);
-    post_key(&src, code, false, flags);
+    post_key(src, code, true, flags);
+    post_key(src, code, false, flags);
 
-    // 3) Release modifiers in reverse — clears sticky Control/Option/etc.
     for flag in mod_order.iter().rev() {
         if let Some(mk) = modifier_keycode(*flag) {
             accumulated.remove(*flag);
-            post_key(&src, mk, false, accumulated);
+            post_key(src, mk, false, accumulated);
         }
     }
+}
 
-    // 4) Belt-and-suspenders: empty flags-changed style noop via key up of
-    //    nothing is unavailable; posting a neutral key-up with empty flags
-    //    on a dummy is unnecessary if steps above ran.
+pub(super) fn keystroke(keys: &[String]) {
+    keystroke_with_source(&super::source(), keys);
+}
+
+/// Keystroke via a private event source — ignores combined-session modifier state
+/// so a held Control/Option does not pollute Cmd+Space etc.
+pub fn keystroke_isolated(keys: &[String]) {
+    use core_graphics::event_source::CGEventSourceStateID;
+    let src = CGEventSource::new(CGEventSourceStateID::Private)
+        .unwrap_or_else(|_| super::source());
+    keystroke_with_source(&src, keys);
+}
+
+/// Release tracked chord modifiers/keys so injected actions are not polluted
+/// (e.g. Control held → right-click; Control+Command+Space → emoji picker).
+pub fn release_chord_hold(modifiers: &[String], keys: &[String]) {
+    let src = super::source();
+    let mut accumulated = CGEventFlags::empty();
+    let mod_flags: Vec<CGEventFlags> = modifiers
+        .iter()
+        .filter_map(|name| is_modifier(name))
+        .collect();
+    for flag in &mod_flags {
+        accumulated.insert(*flag);
+    }
+    for name in keys.iter().rev() {
+        if is_modifier(name).is_some() {
+            continue;
+        }
+        if let Some(code) = key_code(name) {
+            post_key(&src, code, false, accumulated);
+        }
+    }
+    for flag in mod_flags.iter().rev() {
+        if let Some(code) = modifier_keycode(*flag) {
+            accumulated.remove(*flag);
+            post_key(&src, code, false, accumulated);
+        }
+    }
 }
 
 /// NX auxiliary / media keys via NSEvent (shows volume HUD + Now Playing).

@@ -579,6 +579,40 @@ pub(crate) fn apply_binding_press<K>(
     }
 }
 
+pub(crate) fn cancel_regular_binding(
+    id: ButtonId,
+    profile: &Profile,
+    pending: &mut HashMap<ButtonId, PendingHold>,
+    held: &mut HashMap<ButtonId, Action>,
+    scroll_repeats: &mut HashMap<ButtonId, ScrollRepeat>,
+    key_repeats: &mut HashMap<ButtonId, ActionRepeat>,
+) {
+    scroll_repeats.remove(&id);
+    key_repeats.remove(&id);
+    if let Some(hold) = pending.remove(&id) {
+        if hold.long_fired {
+            if let Some(action) = held.remove(&id) {
+                inject::release_action(id, &action);
+            }
+        }
+    } else if let Some(action) = held.remove(&id) {
+        inject::release_action(id, &action);
+    }
+}
+
+pub(crate) fn clear_regular_binding_state(
+    id: ButtonId,
+    pending: &mut HashMap<ButtonId, PendingHold>,
+    held: &mut HashMap<ButtonId, Action>,
+    scroll_repeats: &mut HashMap<ButtonId, ScrollRepeat>,
+    key_repeats: &mut HashMap<ButtonId, ActionRepeat>,
+) {
+    scroll_repeats.remove(&id);
+    key_repeats.remove(&id);
+    pending.remove(&id);
+    held.remove(&id);
+}
+
 pub(crate) fn handle_button_transitions(
     prev: ButtonState,
     state: ButtonState,
@@ -592,6 +626,7 @@ pub(crate) fn handle_button_transitions(
 ) {
     for id in state.released_edges(prev) {
         if skip_release.contains(&id) {
+            clear_regular_binding_state(id, pending, held, scroll_repeats, key_repeats);
             continue;
         }
         if ball_scroll::is_reserved_huge(id) || custom_mapping::is_reserved_huge(id) {

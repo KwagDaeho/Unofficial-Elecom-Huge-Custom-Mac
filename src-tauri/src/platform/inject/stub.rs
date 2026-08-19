@@ -79,3 +79,14 @@ pub fn default_mouse_button(
 ) -> Option<crate::domain::profile::MouseClickButton> {
     None
 }
+pub fn release_chord_hold(_modifiers: &[String], _keys: &[String]) {}
+pub fn keystroke_isolated(_keys: &[String]) {}
+pub fn with_chord_action<F: FnOnce()>(_mods: &[String], f: F) {
+    f();
+}
+pub fn chord_action_inject() -> bool {
+    false
+}
+pub fn should_block_chord_modifier(_name: &str) -> bool {
+    false
+}

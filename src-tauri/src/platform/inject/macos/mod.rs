@@ -9,6 +9,7 @@ mod cursor_badge;
 pub use action::{
     default_mouse_button, press_action, press_action_forced, release_action, release_action_forced,
 };
+pub use keyboard::{keystroke_isolated, release_chord_hold};
 pub use mouse::synthetic_buttons_held;
 pub use mouse::click_at_cursor;
 // mouse_down / mouse_up stay crate-visible via mouse::* for action; also re-export for API parity.
@@ -31,6 +32,8 @@ use core_graphics::event::CGEvent;
 use core_graphics::event_source::{CGEventSource, CGEventSourceStateID};
 use core_graphics::geometry::CGPoint;
 use parking_lot::Mutex;
+use std::collections::HashSet;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::OnceLock;
 
 use crate::domain::profile::MouseClickButton;
@@ -129,4 +132,32 @@ fn buttons_down() -> &'static Mutex<ButtonsDown> {
 fn sync_motion_suppress() {
     let held = buttons_down().lock().any();
     crate::platform::suppress::set_suppress_motion(held);
+}
+
+static CHORD_ACTION_INJECT: AtomicBool = AtomicBool::new(false);
+static CHORD_BLOCK_MODS: OnceLock<Mutex<HashSet<String>>> = OnceLock::new();
+
+fn chord_block_mods() -> &'static Mutex<HashSet<String>> {
+    CHORD_BLOCK_MODS.get_or_init(|| Mutex::new(HashSet::new()))
+}
+
+/// Run an injected action without physical chord modifiers polluting keystrokes.
+pub fn with_chord_action<F: FnOnce()>(mods: &[String], f: F) {
+    {
+        let mut block = chord_block_mods().lock();
+        block.clear();
+        block.extend(mods.iter().cloned());
+    }
+    CHORD_ACTION_INJECT.store(true, Ordering::SeqCst);
+    f();
+    CHORD_ACTION_INJECT.store(false, Ordering::SeqCst);
+    chord_block_mods().lock().clear();
+}
+
+pub fn chord_action_inject() -> bool {
+    CHORD_ACTION_INJECT.load(Ordering::SeqCst)
+}
+
+pub fn should_block_chord_modifier(name: &str) -> bool {
+    chord_block_mods().lock().contains(name)
 }

@@ -238,6 +238,7 @@ mod macos {
     use crate::domain::ball_scroll;
     use crate::domain::custom_mapping;
     use crate::domain::profile::Activator;
+    use crate::platform::inject;
     use core_foundation::base::TCFType;
     use core_foundation::mach_port::{CFMachPort, CFMachPortRef};
     use core_foundation::runloop::{kCFRunLoopCommonModes, CFRunLoop};
@@ -662,6 +663,20 @@ mod macos {
     }
 
     fn handle_watch(etype: u32, event: CGEventRef) -> CGEventRef {
+        if let Some((button_id, down)) = custom_mapping::button_edge_from_event(
+            etype,
+            unsafe { CGEventGetIntegerValueField(event, MOUSE_EVENT_BUTTON_NUMBER) },
+        ) {
+            let flags = unsafe { CGEventGetFlags(event) };
+            if custom_mapping::should_swallow_os_button(button_id, flags, down) {
+                if down {
+                    custom_mapping::note_os_button_swallowed(button_id);
+                } else {
+                    custom_mapping::note_os_button_released(button_id);
+                }
+                return std::ptr::null_mut();
+            }
+        }
         if etype == KEY_DOWN {
             let autorepeat =
                 unsafe { CGEventGetIntegerValueField(event, KEYBOARD_EVENT_AUTOREPEAT) } != 0;
@@ -676,6 +691,17 @@ mod macos {
                     ball_scroll::yield_modifier_hold_for_chord(&activator);
                 }
                 custom_mapping::note_os_down(&activator, autorepeat);
+                if let Activator::Key { name } = &activator {
+                    if inject::should_block_chord_modifier(name) {
+                        return std::ptr::null_mut();
+                    }
+                    if custom_mapping::should_swallow_os_key(name) {
+                        if ball_scroll::on_os_down(&activator, autorepeat) {
+                            return std::ptr::null_mut();
+                        }
+                        return std::ptr::null_mut();
+                    }
+                }
                 if ball_scroll::on_os_down(&activator, autorepeat) {
                     return std::ptr::null_mut();
                 }
@@ -687,6 +713,17 @@ mod macos {
                 unsafe { CGEventGetIntegerValueField(event, KEYBOARD_EVENT_AUTOREPEAT) } != 0;
             if let Some(activator) = key_activator(event) {
                 custom_mapping::note_os_up(&activator, autorepeat);
+                if let Activator::Key { name } = &activator {
+                    if inject::should_block_chord_modifier(name) {
+                        return std::ptr::null_mut();
+                    }
+                    if custom_mapping::should_swallow_os_key(name) {
+                        if ball_scroll::on_os_up(&activator, autorepeat) {
+                            return std::ptr::null_mut();
+                        }
+                        return std::ptr::null_mut();
+                    }
+                }
                 if ball_scroll::on_os_up(&activator, autorepeat) {
                     return std::ptr::null_mut();
                 }
@@ -695,6 +732,11 @@ mod macos {
         }
         if etype == FLAGS_CHANGED {
             if let Some((activator, down)) = modifier_down(event) {
+                if let Activator::Key { name } = &activator {
+                    if inject::should_block_chord_modifier(name) {
+                        return std::ptr::null_mut();
+                    }
+                }
                 if down {
                     custom_mapping::note_os_down(&activator, false);
                 } else {

@@ -6,12 +6,12 @@ use crate::domain::device::ButtonId;
 use crate::domain::profile::{Action, MacroStep, MouseClickButton, SystemCommand};
 
 use super::keyboard::{
-    keystroke, media_mute, media_next, media_play_pause, media_previous, media_volume_down,
-    media_volume_up, post_key,
+    keystroke, keystroke_isolated, media_mute, media_next, media_play_pause, media_previous,
+    media_volume_down, media_volume_up, post_key,
 };
 use super::mouse::{click_once, double_click, mouse_down, mouse_up};
 use super::pointer::{scroll_by_units_ex, shared_pointer_mode};
-use super::source;
+use super::{chord_action_inject, source};
 
 // Private Dock SPI — toggles Launchpad / Tahoe “Apps” view (same action as
 // System Settings → 앱 보기), independent of the user’s chosen hotkey.
@@ -77,6 +77,14 @@ fn launchpad() {
     }
 }
 
+fn chord_safe_keystroke(keys: &[String]) {
+    if chord_action_inject() {
+        keystroke_isolated(keys);
+    } else {
+        keystroke(keys);
+    }
+}
+
 fn system_command(cmd: &SystemCommand) {
     log::info!("system_command: {cmd:?}");
     match cmd {
@@ -85,7 +93,9 @@ fn system_command(cmd: &SystemCommand) {
         SystemCommand::ShowDesktop => show_desktop(),
         SystemCommand::Launchpad => launchpad(),
         SystemCommand::Spotlight => {
-            if !run_osascript(
+            if chord_action_inject() {
+                chord_safe_keystroke(&["Meta".into(), "Space".into()]);
+            } else if !run_osascript(
                 "tell application \"System Events\" to keystroke space using command down",
             ) {
                 keystroke(&["Meta".into(), "Space".into()]);

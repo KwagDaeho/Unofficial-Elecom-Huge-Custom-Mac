@@ -145,20 +145,21 @@ fn unpin_at(p: CGPoint) {
     *cursor_state().lock() = p;
 }
 
-/// Release ball-scroll pin. Re-associate at the pin — do not sync from the
-/// disassociated hardware position (ball motion would teleport the cursor).
+/// Release ball-scroll pin. Stay disassociated until the first real motion
+/// re-bases from the pin — otherwise accumulated HID deltas teleport the cursor.
 pub fn restore_pinned_cursor() {
     end_ball_scroll_gesture();
     super::cursor_badge::hide();
     CURSOR_FROZEN.store(false, Ordering::SeqCst);
+    let Some(p) = *PINNED_CURSOR.lock() else {
+        crate::platform::suppress::set_cursor_lock(None);
+        finish_restore_sync();
+        return;
+    };
+    warp_cursor(p);
+    *cursor_state().lock() = p;
+    *RESTORE_SYNC.lock() = Some((p, Instant::now() + RESTORE_SYNC_TTL));
     crate::platform::suppress::set_cursor_lock(None);
-    RESTORE_SYNC.lock().take();
-    if let Some(p) = PINNED_CURSOR.lock().take() {
-        unpin_at(p);
-    } else {
-        unfreeze_os_cursor();
-        sync_cursor_from_system();
-    }
 }
 
 /// App exit: drop pin, badge, and cursor association immediately.
