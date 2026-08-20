@@ -1,7 +1,9 @@
+import { Panel } from "@/components/ui/Panel";
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useSession } from "@/hooks/session";
 import { Toggle } from "../ui/Toggle";
+
 export const LaunchSettings = () => {
   const { i18n } = usePrefs();
   const { profile, lifecycle } = useProfileCtx();
@@ -17,7 +19,7 @@ export const LaunchSettings = () => {
     void autostart.setEnabled(enabled);
   };
   return (
-    <section className="panel panel-row panel-row-split">
+    <Panel variant="rowSplit">
       <Toggle checked={autostart.enabled} onChange={handleAutostartChange}>
         {i18n.launchAtLogin}
       </Toggle>
@@ -27,6 +29,6 @@ export const LaunchSettings = () => {
       >
         {i18n.startMinimized}
       </Toggle>
-    </section>
+    </Panel>
   );
 };

@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
+
+import { cx } from "@/utils/cx";
 import type { ToggleVariant } from "@/types";
+
+import * as styles from "./Toggle.css";
+
 interface ToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
@@ -9,16 +14,15 @@ interface ToggleProps {
   description?: ReactNode;
   variant?: ToggleVariant;
 }
+
 export const Toggle = (props: ToggleProps) => {
   const disabled = props.disabled === true;
   const variant = props.variant !== undefined ? props.variant : "default";
-  const className = [
-    "toggle",
-    variant === "inline" ? "toggle-inline" : "",
-    variant === "flag" ? "flag-toggle" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const className = cx(
+    styles.root,
+    variant === "inline" && styles.inline,
+    variant === "flag" && styles.flag,
+  );
   return (
     <label className={className} title={props.title}>
       <input
@@ -30,10 +34,10 @@ export const Toggle = (props: ToggleProps) => {
       {variant === "inline" ? (
         <>
           {props.children ? (
-            <span className="toggle-title">{props.children}</span>
+            <span className={styles.title}>{props.children}</span>
           ) : null}
           {props.description ? (
-            <span className="toggle-desc">{props.description}</span>
+            <span className={styles.description}>{props.description}</span>
           ) : null}
         </>
       ) : (

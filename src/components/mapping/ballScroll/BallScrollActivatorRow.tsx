@@ -1,12 +1,14 @@
 import { ballScrollActivatorForSlot } from "@/domain/profile";
 import { formatActivator } from "@/i18n";
-import { Button, Toggle } from "@/components/ui";
+import { Button, Muted, Toggle } from "@/components/ui";
 import type {
   BallScrollSlot,
   Dict,
   Lang,
   ResolvedBallScrollSettings,
 } from "@/types";
+import * as styles from "./BallScrollActivatorRow.css";
+
 interface BallScrollActivatorRowProps {
   slot: BallScrollSlot;
   ball: ResolvedBallScrollSettings;
@@ -16,6 +18,7 @@ interface BallScrollActivatorRowProps {
   onEnableChange: (slot: BallScrollSlot, enabled: boolean) => void;
   onClear: (slot: BallScrollSlot) => void;
 }
+
 export const BallScrollActivatorRow = (props: BallScrollActivatorRowProps) => {
   const isToggle = props.slot === "toggle";
   const activator = ballScrollActivatorForSlot(props.ball, props.slot);
@@ -27,14 +30,14 @@ export const BallScrollActivatorRow = (props: BallScrollActivatorRowProps) => {
     ? props.i18n.ballScrollToggleHelp
     : props.i18n.ballScrollHoldHelp;
   return (
-    <div className="ball-scroll-row">
+    <div className={styles.row}>
       <span>{label}</span>
       <Toggle
         variant="flag"
         checked={enabled}
         onChange={(on) => props.onEnableChange(props.slot, on)}
       />
-      <div className="ball-scroll-key">
+      <div className={styles.key}>
         <Button size="tiny" onClick={() => props.onOpenCapture(props.slot)}>
           {activator !== null
             ? formatActivator(activator, props.lang)
@@ -50,7 +53,9 @@ export const BallScrollActivatorRow = (props: BallScrollActivatorRowProps) => {
           </Button>
         ) : null}
       </div>
-      <p className="muted ball-scroll-help">{helpText}</p>
+      <Muted as="p" className={styles.help}>
+        {helpText}
+      </Muted>
     </div>
   );
 };

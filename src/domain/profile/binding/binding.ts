@@ -38,4 +38,4 @@ export const asBinding = (
     autoClick: false,
   };
 };
-export { longPressMs } from "../pointerSpeeds";
+export { longPressMs } from "../pointer/speeds";

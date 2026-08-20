@@ -5,7 +5,7 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { ensureGestureCanvasChannel } from "@/domain/gesture/gestureCanvasChannel";
+import { ensureGestureCanvasChannel } from "@/domain/gesture";
 import {
   applyComboTriggerCapture,
   applyKeyCapture,

@@ -1,8 +1,10 @@
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
+import { Controls, Panel, SectionHead } from "@/components/ui";
 import { PointerSpeedControls } from "./PointerSpeedControls";
 import { PointerScrollToggles } from "./PointerScrollToggles";
 import { ScrollSpeedControls } from "./ScrollSpeedControls";
+
 export const PointerScrollPanel = () => {
   const { i18n } = usePrefs();
   const { profile, pointer } = useProfileCtx();
@@ -11,11 +13,9 @@ export const PointerScrollPanel = () => {
   }
   const profilePointer = profile.pointer;
   return (
-    <section className="panel">
-      <div className="section-head">
-        <h2>{i18n.pointerScroll}</h2>
-      </div>
-      <div className="controls">
+    <Panel>
+      <SectionHead title={i18n.pointerScroll} />
+      <Controls>
         <PointerSpeedControls
           pointer={profilePointer}
           onSpeedX={(value) => pointer.update("speedX", value)}
@@ -40,7 +40,7 @@ export const PointerScrollPanel = () => {
             pointer.update("invertHorizontalScroll", value)
           }
         />
-      </div>
-    </section>
+      </Controls>
+    </Panel>
   );
 };

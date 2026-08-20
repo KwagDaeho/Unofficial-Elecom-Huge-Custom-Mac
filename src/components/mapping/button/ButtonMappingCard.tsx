@@ -3,10 +3,13 @@ import { buttonLabel } from "@/i18n";
 import { asBinding } from "@/domain/profile";
 import { usePrefs, useProfileCtx, useEditor } from "@/hooks";
 import type { ButtonMeta, Profile } from "@/types";
+import * as styles from "./ButtonMappingCard.css";
+
 interface ButtonMappingCardProps {
   buttonMeta: ButtonMeta;
   profile: Profile;
 }
+
 export const ButtonMappingCard = (props: ButtonMappingCardProps) => {
   const { lang, i18n } = usePrefs();
   const { mappings } = useProfileCtx();
@@ -14,7 +17,7 @@ export const ButtonMappingCard = (props: ButtonMappingCardProps) => {
   const { buttonMeta, profile } = props;
   const binding = asBinding(profile.buttons[buttonMeta.id]);
   return (
-    <div className="button-card">
+    <div className={styles.card}>
       <BindingRow
         target={{ kind: "button", id: buttonMeta.id }}
         binding={binding}

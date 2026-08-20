@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
+
+import { cx } from "@/utils/cx";
+
+import { shell } from "./AppShell.css";
+import * as styles from "./OverlayScrollbar.css";
+
 type Thumb = {
   top: number;
   height: number;
@@ -70,8 +76,8 @@ export const OverlayScrollbar = (props: OverlayScrollbarProps) => {
     window.addEventListener("resize", sync);
     const ro = new ResizeObserver(sync);
     ro.observe(root);
-    const shell = root.querySelector("main.shell");
-    if (shell) ro.observe(shell);
+    const shellEl = root.querySelector(`main.${shell}`);
+    if (shellEl) ro.observe(shellEl);
     return () => {
       root.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", sync);
@@ -119,7 +125,7 @@ export const OverlayScrollbar = (props: OverlayScrollbarProps) => {
   const shown = revealed || hovering;
   return createPortal(
     <div
-      className={shown ? "overlay-scrollbar on" : "overlay-scrollbar"}
+      className={cx(styles.root, shown && styles.visible)}
       style={
         {
           "--overlay-scrollbar-fade-out": `${SCROLLBAR_FADE_MS}ms`,
@@ -142,7 +148,7 @@ export const OverlayScrollbar = (props: OverlayScrollbarProps) => {
       }}
     >
       <div
-        className="overlay-scrollbar-thumb"
+        className={styles.thumb}
         style={{ top: thumb.top, height: thumb.height }}
         onPointerDown={(event) => {
           event.preventDefault();

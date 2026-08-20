@@ -1,2 +1,10 @@
 export { Button } from "./Button";
+export { ChordError, ChordPreview } from "./ChordPreview";
+export { Controls } from "./Controls";
+export { Modal } from "./Modal";
+export { Muted } from "./Muted";
+export { Panel, panelStyles } from "./Panel";
+export { Row } from "./Row";
+export { SectionHead } from "./SectionHead";
+export { SrOnly } from "./SrOnly";
 export { Toggle } from "./Toggle";

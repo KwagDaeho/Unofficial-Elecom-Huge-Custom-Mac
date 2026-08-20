@@ -1,6 +1,9 @@
 import { longPressMs, withLongPressMs } from "@/domain/profile";
 import { usePrefs, useProfileCtx } from "@/hooks";
+import { Controls, Panel, SectionHead } from "@/components/ui";
 import { ButtonMappingCard } from "./ButtonMappingCard";
+import * as styles from "./ButtonMappingPanel.css";
+
 export const ButtonMappingPanel = () => {
   const { i18n } = usePrefs();
   const { profile, catalog, lifecycle } = useProfileCtx();
@@ -8,11 +11,9 @@ export const ButtonMappingPanel = () => {
     return null;
   }
   return (
-    <section className="panel">
-      <div className="section-head">
-        <h2>{i18n.buttonMapping}</h2>
-      </div>
-      <div className="controls tight map-tools">
+    <Panel>
+      <SectionHead title={i18n.buttonMapping} />
+      <Controls tight tools>
         <label>
           {i18n.longPressTime} ({longPressMs(profile)} ms)
           <input
@@ -28,9 +29,9 @@ export const ButtonMappingPanel = () => {
             }
           />
         </label>
-      </div>
-      <div className="button-grid">
-        <div className="button-head">
+      </Controls>
+      <div className={styles.buttonGrid}>
+        <div className={styles.buttonHead}>
           <span />
           <span>{i18n.longPressEnable}</span>
           <span>{i18n.autoClickEnable}</span>
@@ -45,6 +46,6 @@ export const ButtonMappingPanel = () => {
           />
         ))}
       </div>
-    </section>
+    </Panel>
   );
 };

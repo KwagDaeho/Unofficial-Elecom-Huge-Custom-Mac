@@ -1,4 +1,10 @@
-import { Button } from "../ui/Button";
+import {
+  Button,
+  ChordPreview,
+  Modal,
+  Muted,
+  Row,
+} from "@/components/ui";
 
 interface MacroKeyPromptProps {
   title: string;
@@ -10,32 +16,24 @@ interface MacroKeyPromptProps {
 
 export const MacroKeyPrompt = (props: MacroKeyPromptProps) => {
   return (
-    <div
-      className="editor-nested-backdrop"
-      role="presentation"
-      onClick={props.onCancel}
+    <Modal
+      nested
+      compact
+      onBackdropClick={props.onCancel}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          props.onCancel();
+        }
+      }}
     >
-      <div
-        className="modal macro-key-prompt"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="macro-key-prompt-title"
-        onClick={(event) => event.stopPropagation()}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            props.onCancel();
-          }
-        }}
-      >
-        <h2 id="macro-key-prompt-title">{props.title}</h2>
-        <p className="muted">{props.hint}</p>
-        <div className="chord-preview">{props.waitingLabel}</div>
-        <div className="row">
-          <Button variant="ghost" onClick={props.onCancel}>
-            {props.cancelLabel}
-          </Button>
-        </div>
-      </div>
-    </div>
+      <h2 id="macro-key-prompt-title">{props.title}</h2>
+      <Muted variant="modal">{props.hint}</Muted>
+      <ChordPreview>{props.waitingLabel}</ChordPreview>
+      <Row>
+        <Button variant="ghost" onClick={props.onCancel}>
+          {props.cancelLabel}
+        </Button>
+      </Row>
+    </Modal>
   );
 };

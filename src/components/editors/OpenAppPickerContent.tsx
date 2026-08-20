@@ -1,5 +1,9 @@
 import type { InstalledAppWithIcon, OpenAppEditorState } from "@/types";
+import { Muted } from "@/components/ui";
 import { OpenAppList } from "./OpenAppList";
+
+import * as styles from "./OpenAppPickerContent.css";
+
 interface OpenAppPickerContentProps {
   editor: OpenAppEditorState;
   apps: InstalledAppWithIcon[];
@@ -8,15 +12,16 @@ interface OpenAppPickerContentProps {
   emptyLabel: string;
   onSelect: (app: InstalledAppWithIcon) => void;
 }
+
 export const OpenAppPickerContent = (props: OpenAppPickerContentProps) => {
   if (props.editor.loading) {
-    return <p className="muted">{props.loadingLabel}</p>;
+    return <Muted>{props.loadingLabel}</Muted>;
   }
   if (props.editor.error !== null) {
-    return <p className="muted">{props.errorLabel}</p>;
+    return <Muted>{props.errorLabel}</Muted>;
   }
   return (
-    <ul className="app-list" role="listbox">
+    <ul className={styles.list} role="listbox">
       <OpenAppList
         editor={props.editor}
         apps={props.apps}

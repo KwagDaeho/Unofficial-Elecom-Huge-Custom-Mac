@@ -6,6 +6,11 @@ import {
   type ReactNode,
 } from "react";
 
+import { cx } from "@/utils/cx";
+
+import * as scrollAreaStyles from "./OverlayScrollArea.css";
+import * as scrollbarStyles from "./OverlayScrollbar.css";
+
 type Thumb = {
   top: number;
   height: number;
@@ -140,23 +145,20 @@ export const OverlayScrollArea = (props: OverlayScrollAreaProps) => {
   const shown = revealed || hovering;
 
   return (
-    <div className="overlay-scroll-area">
+    <div className={scrollAreaStyles.root}>
       <div
         ref={viewportRef}
-        className={["overlay-scroll-area-viewport", props.className]
-          .filter(Boolean)
-          .join(" ")}
+        className={cx(scrollAreaStyles.viewport, props.className)}
         style={props.style}
       >
         {props.children}
       </div>
       {overflow ? (
         <div
-          className={
-            shown
-              ? "overlay-scrollbar overlay-scrollbar-embedded on"
-              : "overlay-scrollbar overlay-scrollbar-embedded"
-          }
+          className={cx(
+            scrollbarStyles.embedded,
+            shown && scrollbarStyles.visible,
+          )}
           style={
             {
               "--overlay-scrollbar-fade-out": `${SCROLLBAR_FADE_MS}ms`,
@@ -179,7 +181,7 @@ export const OverlayScrollArea = (props: OverlayScrollAreaProps) => {
           }}
         >
           <div
-            className="overlay-scrollbar-thumb"
+            className={scrollbarStyles.thumb}
             style={{ top: thumb.top, height: thumb.height }}
             onPointerDown={(event) => {
               event.preventDefault();
@@ -205,3 +207,5 @@ export const OverlayScrollArea = (props: OverlayScrollAreaProps) => {
     </div>
   );
 };
+
+export { scrollAreaStyles as overlayScrollAreaStyles };

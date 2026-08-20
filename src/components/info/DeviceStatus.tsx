@@ -1,8 +1,14 @@
+import { Panel, panelStyles } from "@/components/ui/Panel";
+import { Muted } from "@/components/ui/Muted";
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useSession } from "@/hooks/session";
 import { connectedLabel } from "../../utils/format";
 import { Toggle } from "../ui/Toggle";
+import { cx } from "@/utils/cx";
+
+import * as styles from "./DeviceStatus.css";
+
 export const DeviceStatus = () => {
   const { i18n } = usePrefs();
   const { profile, lifecycle } = useProfileCtx();
@@ -18,15 +24,17 @@ export const DeviceStatus = () => {
   };
   return (
     <>
-      <section className="panel panel-row">
-        <div className="status-row">
-          <span className={`dot ${isConnected ? "on" : "off"}`} />
+      <Panel variant="row">
+        <div className={panelStyles.statusRow}>
+          <span className={cx(styles.dot, isConnected && styles.dotOn)} />
           <strong>{isConnected ? i18n.connected : i18n.waiting}</strong>
-          <span className="muted status-detail">{statusLabel}</span>
+          <Muted as="span" className={styles.statusDetail}>
+            {statusLabel}
+          </Muted>
         </div>
-      </section>
+      </Panel>
 
-      <section className="panel panel-row">
+      <Panel variant="row">
         <Toggle
           variant="inline"
           checked={loadedProfile.enabled}
@@ -35,7 +43,7 @@ export const DeviceStatus = () => {
         >
           {i18n.remappingOn}
         </Toggle>
-      </section>
+      </Panel>
     </>
   );
 };

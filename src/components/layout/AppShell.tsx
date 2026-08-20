@@ -5,6 +5,10 @@ import { AppHeader, BootScreen, OverlayScrollbar } from "@/components/layout";
 import { CustomTab, InfoTab } from "@/components/tabs";
 import { usePrefs, useProfileCtx } from "@/hooks";
 import type { TabId } from "@/types";
+import { cx } from "@/utils/cx";
+
+import * as styles from "./AppShell.css";
+
 export const AppShell = () => {
   const { i18n } = usePrefs();
   const { profile } = useProfileCtx();
@@ -20,20 +24,20 @@ export const AppShell = () => {
   return (
     <>
       <OverlayScrollbar contentKey={tab} />
-      <main className="shell">
+      <main className={styles.shell}>
         <AppHeader />
 
-        <nav className="tabs" aria-label="Sections">
+        <nav className={styles.tabs} aria-label="Sections">
           <button
             type="button"
-            className={tab === "info" ? "tab on" : "tab"}
+            className={cx(styles.tab, tab === "info" && styles.tabActive)}
             onClick={() => setTab("info")}
           >
             {i18n.tabInfo}
           </button>
           <button
             type="button"
-            className={tab === "custom" ? "tab on" : "tab"}
+            className={cx(styles.tab, tab === "custom" && styles.tabActive)}
             onClick={() => setTab("custom")}
           >
             {i18n.tabCustom}

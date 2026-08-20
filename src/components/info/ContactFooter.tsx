@@ -6,18 +6,21 @@ import {
   CONTACT_URL,
 } from "../../constants/contact";
 import { APP_VERSION_LABEL } from "../../constants/version";
+import { Muted } from "@/components/ui/Muted";
 import { usePrefs } from "@/hooks/prefs";
 import * as tauri from "../../services/tauri";
+
+import * as styles from "./ContactFooter.css";
 
 export const ContactFooter = () => {
   const { i18n } = usePrefs();
   return (
-    <footer className="footer">
-      <p className="credit">
-        <span className="credit-by">{i18n.creditBy}</span> {i18n.credit}
+    <footer className={styles.footer}>
+      <p className={styles.credit}>
+        <span className={styles.creditBy}>{i18n.creditBy}</span> {i18n.credit}
       </p>
-      <p className="muted">{APP_VERSION_LABEL}</p>
-      <div className="contact-block">
+      <Muted>{APP_VERSION_LABEL}</Muted>
+      <div className={styles.contactBlock}>
         <strong>{i18n.contactLabel}</strong>
         <p>
           {i18n.emailLabel}{" "}

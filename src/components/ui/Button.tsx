@@ -1,5 +1,10 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
+
+import { cx } from "@/utils/cx";
 import type { ButtonSize, ButtonVariant } from "@/types";
+
+import * as styles from "./Button.css";
+
 interface ButtonProps
   extends Omit<
     ButtonHTMLAttributes<HTMLButtonElement>,
@@ -10,21 +15,20 @@ interface ButtonProps
   size?: ButtonSize;
   onClick?: () => void;
 }
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
   const variant = props.variant !== undefined ? props.variant : "default";
   const size = props.size !== undefined ? props.size : "default";
-  const className = [
-    variant === "ghost" ? "ghost" : "",
-    size === "tiny" ? "tiny-btn" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const className = cx(
+    variant === "ghost" && styles.ghost,
+    size === "tiny" && styles.tiny,
+  );
   const { children, variant: _variant, size: _size, onClick, ...rest } = props;
   return (
     <button
       ref={ref}
       type="button"
-      className={className.length > 0 ? className : undefined}
+      className={className || undefined}
       onClick={onClick}
       {...rest}
     >

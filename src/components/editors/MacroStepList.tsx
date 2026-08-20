@@ -6,10 +6,13 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
-import { formatMacroStepLabel } from "@/i18n/macro";
-import { OverlayScrollArea } from "../layout/OverlayScrollArea";
+import { formatMacroStepLabel } from "@/i18n";
+import { cx } from "@/utils/cx";
+import { OverlayScrollArea, overlayScrollAreaStyles } from "../layout/OverlayScrollArea";
 import { Button } from "../ui/Button";
 import type { Lang, MacroStep } from "@/types";
+
+import * as styles from "./MacroStepList.css";
 
 interface MacroStepListProps {
   steps: MacroStep[];
@@ -53,8 +56,8 @@ const measureStride = (
     return next.offsetTop - item.offsetTop;
   }
   if (item instanceof HTMLElement) {
-    const styles = window.getComputedStyle(list!);
-    const gap = Number.parseFloat(styles.rowGap || styles.gap || "0") || 0;
+    const listStyles = window.getComputedStyle(list!);
+    const gap = Number.parseFloat(listStyles.rowGap || listStyles.gap || "0") || 0;
     return item.offsetHeight + gap;
   }
   return 40;
@@ -251,17 +254,17 @@ export const MacroStepList = (props: MacroStepListProps) => {
 
   return (
     <OverlayScrollArea
-      className="macro-steps"
+      className={styles.stepsArea}
       contentKey={String(props.steps.length)}
     >
       <ul
         ref={(node) => {
           listRef.current = node;
           viewportRef.current =
-            node?.closest(".overlay-scroll-area-viewport") ?? null;
+            node?.closest(`.${overlayScrollAreaStyles.viewport}`) ?? null;
         }}
         aria-label={props.reorderHint}
-        className={drag ? "macro-steps-list dragging" : "macro-steps-list"}
+        className={cx(styles.list, drag && styles.listDragging)}
       >
         {props.steps.map((step, stepIndex) => {
           const dragging = drag?.fromIndex === stepIndex;
@@ -280,25 +283,25 @@ export const MacroStepList = (props: MacroStepListProps) => {
           return (
             <li
               key={stepIndex}
-              className={dragging ? "macro-step-dragging" : ""}
+              className={cx(styles.stepItem, dragging && styles.stepDragging)}
               style={style}
             >
               <button
                 type="button"
-                className="macro-step-drag-zone"
+                className={styles.dragZone}
                 aria-label={props.reorderHint}
                 title={props.reorderHint}
                 onPointerDown={(event) => startDrag(stepIndex, event)}
               >
-                <span className="macro-step-handle" aria-hidden>
+                <span className={styles.handle} aria-hidden>
                   ⋮⋮
                 </span>
-                <span className="macro-step-order">{stepIndex + 1}</span>
+                <span className={styles.order}>{stepIndex + 1}</span>
               </button>
-              <span className="macro-step-label">
+              <span className={styles.label}>
                 {formatMacroStepLabel(step, props.lang)}
               </span>
-              <div className="macro-step-actions">
+              <div className={styles.actions}>
                 {editable ? (
                   <Button
                     variant="ghost"

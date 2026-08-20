@@ -1,35 +1,31 @@
 export { asBinding, longPressMs } from "./binding";
 export {
-  customMappingsOf,
-  newCustomMappingEntry,
-  comboIsValid,
-} from "./customMapping";
-export {
-  gestureEntryIsValid,
-  gestureHoldLabel,
-  gestureHoldConflictsWithBallScroll,
-  ballScrollHoldConflictsWithGesture,
-  gestureMappingsOf,
-  newGestureMappingEntry,
-} from "./gestureMapping";
-export { gesturePreviewPoints } from "./gesturePreview";
-export {
   resolveBindingFlags,
   bindingLongPressEnabled,
   bindingAutoClickEnabled,
 } from "./binding";
 export {
-  ballScrollOf,
-  ballScrollActivatorForSlot,
   activatorsEqual,
+  ballScrollActivatorForSlot,
+  ballScrollOf,
   comboFromDraft,
   DEFAULT_BALL_SCROLL,
 } from "./activator";
+export { CHORD_MODIFIERS, chordIsValid, splitChord } from "./chord";
 export {
-  isTiltButton,
-  tiltForcesAutoClick,
-  normalizeTiltPanStreamFlags,
-} from "./tilt";
+  comboIsValid,
+  customMappingsOf,
+  newCustomMappingEntry,
+} from "./custom";
+export {
+  ballScrollHoldConflictsWithGesture,
+  gestureEntryIsValid,
+  gestureHoldConflictsWithBallScroll,
+  gestureHoldLabel,
+  gestureMappingsOf,
+  gesturePreviewPoints,
+  newGestureMappingEntry,
+} from "./gesture";
 export {
   invertHorizontalScrollEnabled,
   invertVerticalScrollEnabled,
@@ -37,7 +33,9 @@ export {
   pointerSpeedY,
   scrollSpeedHorizontal,
   scrollSpeedVertical,
-} from "./pointerSpeeds";
+  isTiltButton,
+  normalizeTiltPanStreamFlags,
+  tiltForcesAutoClick,
+} from "./pointer";
 export * from "./catalog";
-export { CHORD_MODIFIERS, splitChord, chordIsValid } from "./chord";
 export * from "./patches";

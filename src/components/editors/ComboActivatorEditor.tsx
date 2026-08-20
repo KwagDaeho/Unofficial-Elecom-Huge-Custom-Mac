@@ -4,7 +4,7 @@ import { chordIsValid } from "@/domain/profile";
 import {
   buildComboErrorMessage,
   buildComboPreview,
-} from "@/i18n/comboActivator";
+} from "@/i18n";
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";

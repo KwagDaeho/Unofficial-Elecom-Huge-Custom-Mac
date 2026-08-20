@@ -1,13 +1,16 @@
 import { BindingRow } from "../button/BindingRow";
 import { asBinding } from "@/domain/profile";
 import { comboEditorStateFromEntry } from "@/domain/editors";
-import { customMappingTriggerLabel } from "@/i18n/customMapping";
+import { customMappingTriggerLabel } from "@/i18n";
 import { usePrefs, useProfileCtx, useEditor } from "@/hooks";
 import { Button } from "@/components/ui";
 import type { CustomMappingEntry } from "@/types";
+import * as styles from "./CustomMappingRow.css";
+
 interface CustomMappingRowProps {
   entry: CustomMappingEntry;
 }
+
 export const CustomMappingRow = (props: CustomMappingRowProps) => {
   const { lang, i18n } = usePrefs();
   const { customMappings } = useProfileCtx();
@@ -20,8 +23,8 @@ export const CustomMappingRow = (props: CustomMappingRowProps) => {
     i18n.customMappingSetTrigger,
   );
   return (
-    <div className="custom-mapping-row">
-      <div className="combo-trigger">
+    <div className={styles.row}>
+      <div className={styles.comboTrigger}>
         <Button
           size="tiny"
           onClick={() => setEditor(comboEditorStateFromEntry(entry))}
@@ -39,7 +42,7 @@ export const CustomMappingRow = (props: CustomMappingRowProps) => {
           catalogSelection.selectCustom(entry.id, slot, value)
         }
       />
-      <div className="custom-mapping-remove">
+      <div className={styles.remove}>
         <Button
           variant="ghost"
           size="tiny"

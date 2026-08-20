@@ -1,32 +1,41 @@
 export {
-  DEFAULT_GESTURE_MIN_SCORE,
-  GESTURE_SQUARE_SIZE,
-  GESTURE_TEMPLATE_SIZE,
-  MIN_PATH_LENGTH_RATIO,
-  MIN_RAW_PATH_LENGTH,
-  MIN_TEMPLATE_TURNING,
-  MIN_TURNING_RATIO,
-  matchGestureScore,
+  bearingDelta,
+  pathBBox,
+  pathLength,
+  pathTurning,
+  resample,
+  sharpTurnCount,
+  simplifyGesturePath,
+  startEndBearing,
+} from "./geometry";
+export {
   normalizeGesturePreview,
   normalizeGestureTemplate,
-  passesShapeChecks,
   pathBendSignature,
-  pathTurning,
   rawPathLength,
-  sharpTurnCount,
   significantCornerCount,
-} from "./unistroke";
-export type { GesturePoint } from "./unistroke";
+} from "./template";
+export { matchGestureScore, passesShapeChecks } from "./match";
+export {
+  appendCanvasPoint,
+  clientToCanvasPoint,
+  emitGestureCanvasUiChange,
+  ensureGestureCanvasChannel,
+  paintGestureCanvas,
+  paintGestureStroke,
+  subscribeGestureCanvasPhase,
+  subscribeGestureCanvasUiChange,
+} from "./canvas";
+export type { GestureCanvasUiDetail, GestureDrawPhase } from "./canvas";
 export {
   canvasRecorderInitial,
   canvasRecorderIsRecording,
   canvasRecorderReduce,
-  clientToCanvasPoint,
-  CANVAS_RECORDER_HEIGHT,
-  CANVAS_RECORDER_WIDTH,
-} from "./canvasRecorder";
-export type { CanvasRecorderAction, CanvasRecorderState, CanvasRecordMode } from "./canvasRecorder";
-export {
-  ensureGestureCanvasChannel,
-  subscribeGestureCanvasPhase,
-} from "./gestureCanvasChannel";
+} from "./recorder";
+export type {
+  CanvasRecordMode,
+  CanvasRecorderAction,
+  CanvasRecorderState,
+} from "./recorder";
+
+export type { GesturePoint } from "@/types";

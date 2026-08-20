@@ -5,6 +5,8 @@ import { Button } from "@/components/ui";
 import { ActionSelect } from "../button/ActionSelect";
 import { GestureTemplateThumbnail } from "./GestureTemplateThumbnail";
 import type { GestureMappingEntry } from "@/types";
+import * as styles from "./GestureMappingRow.css";
+import { colGap } from "./GestureMappingPanel.css";
 
 interface GestureMappingRowProps {
   entry: GestureMappingEntry;
@@ -25,8 +27,8 @@ export const GestureMappingRow = (props: GestureMappingRowProps) => {
     setEditor({ kind: "gesture_path_recorder", entryId: entry.id });
 
   return (
-    <div className="custom-mapping-row gesture-mapping-row">
-      <div className="combo-trigger">
+    <div className={styles.row}>
+      <div className={styles.comboTrigger}>
         <Button
           size="tiny"
           onClick={() =>
@@ -40,19 +42,19 @@ export const GestureMappingRow = (props: GestureMappingRowProps) => {
           {holdLabel}
         </Button>
       </div>
-      <span className="gesture-col-gap" aria-hidden="true" />
+      <span className={colGap} aria-hidden="true" />
       <GestureTemplateThumbnail
         template={gesturePreviewPoints(entry)}
         emptyLabel={i18n.gestureShapeSet}
         previewLabel={i18n.gestureShapePreviewHint}
       />
-      <span className="gesture-col-gap" aria-hidden="true" />
+      <span className={colGap} aria-hidden="true" />
       <ActionSelect
         action={binding.click}
         onPick={(value) => catalogSelection.selectGesture(entry.id, "click", value)}
       />
-      <span className="gesture-col-gap" aria-hidden="true" />
-      <div className="gesture-mapping-actions">
+      <span className={colGap} aria-hidden="true" />
+      <div className={styles.actions}>
         <Button variant="ghost" size="tiny" onClick={openRecorder}>
           {i18n.editStep}
         </Button>

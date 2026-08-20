@@ -1,7 +1,8 @@
 import { gestureMappingsOf, newGestureMappingEntry } from "@/domain/profile";
 import { usePrefs, useProfileCtx } from "@/hooks";
-import { Button } from "@/components/ui";
+import { Button, Muted, Panel } from "@/components/ui";
 import { GestureMappingRow } from "./GestureMappingRow";
+import * as styles from "./GestureMappingPanel.css";
 
 export const GestureMappingPanel = () => {
   const { i18n } = usePrefs();
@@ -11,8 +12,8 @@ export const GestureMappingPanel = () => {
   }
   const entries = gestureMappingsOf(profile);
   return (
-    <section className="panel">
-      <div className="section-head">
+    <Panel>
+      <div className={styles.sectionHeadRow}>
         <h2>{i18n.gestureMapping}</h2>
         <Button
           size="tiny"
@@ -21,18 +22,18 @@ export const GestureMappingPanel = () => {
           {i18n.gestureMappingAdd}
         </Button>
       </div>
-      <p className="muted custom-mapping-help">{i18n.gestureMappingHelp}</p>
+      <Muted variant="help">{i18n.gestureMappingHelp}</Muted>
       {entries.length === 0 ? (
-        <p className="muted">{i18n.gestureMappingEmpty}</p>
+        <Muted>{i18n.gestureMappingEmpty}</Muted>
       ) : (
-        <div className="button-grid custom-mapping-grid gesture-mapping-grid">
-          <div className="button-head">
+        <div className={styles.gestureMappingGrid}>
+          <div className={styles.gestureMappingHead}>
             <span>{i18n.gestureHoldKey}</span>
-            <span className="gesture-col-gap" aria-hidden="true" />
+            <span className={styles.colGap} aria-hidden="true" />
             <span>{i18n.gestureShape}</span>
-            <span className="gesture-col-gap" aria-hidden="true" />
+            <span className={styles.colGap} aria-hidden="true" />
             <span>{i18n.gestureAction}</span>
-            <span className="gesture-col-gap" aria-hidden="true" />
+            <span className={styles.colGap} aria-hidden="true" />
             <span aria-hidden="true" />
           </div>
           {entries.map((entry) => (
@@ -40,6 +41,6 @@ export const GestureMappingPanel = () => {
           ))}
         </div>
       )}
-    </section>
+    </Panel>
   );
 };

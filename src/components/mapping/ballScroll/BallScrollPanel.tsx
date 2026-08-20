@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { ballScrollOf, ballScrollActivatorForSlot } from "@/domain/profile";
 import { usePrefs, useProfileCtx, useEditor } from "@/hooks";
-import { Toggle } from "@/components/ui";
+import { Controls, Panel, SectionHead, Toggle } from "@/components/ui";
 import { BallScrollActivatorRow } from "./BallScrollActivatorRow";
 import type { BallScrollSlot } from "@/types";
+
 export const BallScrollPanel = () => {
   const { lang, i18n } = usePrefs();
   const { profile, ballScroll } = useProfileCtx();
@@ -50,14 +51,12 @@ export const BallScrollPanel = () => {
     ballScroll.update({ holdActivator: null, holdEnabled: false });
   };
   return (
-    <section className="panel">
-      <div className="section-head">
-        <h2>{i18n.ballScroll}</h2>
-        {latchOn ? (
-          <em className="ball-scroll-badge">{i18n.ballScrollOn}</em>
-        ) : null}
-      </div>
-      <div className="controls">
+    <Panel>
+      <SectionHead
+        title={i18n.ballScroll}
+        badge={latchOn ? i18n.ballScrollOn : undefined}
+      />
+      <Controls>
         <BallScrollActivatorRow
           slot="toggle"
           ball={ball}
@@ -107,7 +106,7 @@ export const BallScrollPanel = () => {
         >
           {i18n.ballScrollInvertHorizontal}
         </Toggle>
-      </div>
-    </section>
+      </Controls>
+    </Panel>
   );
 };

@@ -10,6 +10,8 @@ import {
 import { usePrefs } from "@/hooks";
 import { Toggle } from "@/components/ui";
 import type { ButtonBinding, ButtonId, MappingTarget } from "@/types";
+import * as styles from "./BindingRow.css";
+
 interface BindingRowProps {
   target: MappingTarget;
   binding: ButtonBinding;
@@ -21,6 +23,7 @@ interface BindingRowProps {
   onPick: (slot: "click" | "long_press", value: string) => void;
   buttonId?: ButtonId;
 }
+
 export const BindingRow = (props: BindingRowProps) => {
   const { i18n } = usePrefs();
   const resolvedButtonId = resolveBindingButtonId(props.target, props.buttonId);
@@ -38,7 +41,9 @@ export const BindingRow = (props: BindingRowProps) => {
   const hideLabel = props.hideLabel === true;
   return (
     <>
-      {!hideLabel ? <span className="btn-name">{props.label}</span> : null}
+      {!hideLabel ? (
+        <span className={styles.btnName}>{props.label}</span>
+      ) : null}
       <Toggle
         variant="flag"
         title={i18n.longPressEnable}

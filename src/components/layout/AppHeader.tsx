@@ -1,16 +1,23 @@
 import { MoonIcon, SunIcon } from "@/components/icons";
 import { usePrefs } from "@/hooks";
+import { cx } from "@/utils/cx";
+
+import * as styles from "./AppHeader.css";
+
 export const AppHeader = () => {
   const { lang, theme, i18n, setLang, setTheme } = usePrefs();
   return (
-    <header className="hero">
-      <div className="hero-top">
-        <p className="eyebrow">ELECOM</p>
-        <div className="toolbar">
-          <div className="theme-toggle" role="group" aria-label="Theme">
+    <header className={styles.hero}>
+      <div className={styles.heroTop}>
+        <p className={styles.eyebrow}>ELECOM</p>
+        <div className={styles.toolbar}>
+          <div className={styles.themeToggle} role="group" aria-label="Theme">
             <button
               type="button"
-              className={theme === "light" ? "theme on" : "theme"}
+              className={cx(
+                styles.themeButton,
+                theme === "light" && styles.themeButtonActive,
+              )}
               aria-label={i18n.themeLight}
               title={i18n.themeLight}
               onClick={() => setTheme("light")}
@@ -19,7 +26,10 @@ export const AppHeader = () => {
             </button>
             <button
               type="button"
-              className={theme === "dark" ? "theme on" : "theme"}
+              className={cx(
+                styles.themeButton,
+                theme === "dark" && styles.themeButtonActive,
+              )}
               aria-label={i18n.themeDark}
               title={i18n.themeDark}
               onClick={() => setTheme("dark")}
@@ -27,17 +37,23 @@ export const AppHeader = () => {
               <MoonIcon />
             </button>
           </div>
-          <div className="lang-switch" role="group" aria-label="Language">
+          <div className={styles.langSwitch} role="group" aria-label="Language">
             <button
               type="button"
-              className={lang === "ko" ? "lang on" : "lang"}
+              className={cx(
+                styles.langButton,
+                lang === "ko" && styles.langButtonActive,
+              )}
               onClick={() => setLang("ko")}
             >
               KR
             </button>
             <button
               type="button"
-              className={lang === "en" ? "lang on" : "lang"}
+              className={cx(
+                styles.langButton,
+                lang === "en" && styles.langButtonActive,
+              )}
               onClick={() => setLang("en")}
             >
               EN

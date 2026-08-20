@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
-import {
-  CANVAS_BG,
-  paintGestureStroke,
-} from "@/domain/gesture/gestureCanvasPaint";
+import { CANVAS_BG } from "@/constants/gestureCanvas";
+import { paintGestureStroke } from "@/domain/gesture";
+import { cx } from "@/utils/cx";
 import type { GesturePoint } from "@/types";
+import * as styles from "./GestureTemplateThumbnail.css";
 
 const THUMB_SIZE = 36;
 const POPOVER_SIZE = 160;
@@ -58,15 +58,15 @@ export const GestureTemplateThumbnail = (props: GestureTemplateThumbnailProps) =
 
   if (!hasTemplate) {
     return (
-      <div className="gesture-thumb gesture-thumb-empty" aria-hidden="true">
-        <span className="gesture-thumb-empty-mark">—</span>
+      <div className={styles.thumbEmpty} aria-hidden="true">
+        <span className={styles.thumbEmptyMark}>—</span>
       </div>
     );
   }
 
   return (
     <div
-      className={`gesture-thumb${open ? " gesture-thumb-open" : ""}`}
+      className={cx(styles.thumb, open && styles.thumbOpen)}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
       onClick={() => setOpen((current) => !current)}
@@ -82,15 +82,15 @@ export const GestureTemplateThumbnail = (props: GestureTemplateThumbnailProps) =
     >
       <canvas
         ref={thumbRef}
-        className="gesture-thumb-canvas"
+        className={styles.thumbCanvas}
         width={THUMB_SIZE}
         height={THUMB_SIZE}
       />
       {open ? (
-        <div className="gesture-thumb-popover" role="tooltip">
+        <div className={styles.thumbPopover} role="tooltip">
           <canvas
             ref={popoverRef}
-            className="gesture-thumb-popover-canvas"
+            className={styles.thumbPopoverCanvas}
             width={POPOVER_SIZE}
             height={POPOVER_SIZE}
           />

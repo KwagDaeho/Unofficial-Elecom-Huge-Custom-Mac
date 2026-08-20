@@ -1,15 +1,18 @@
+import { Panel } from "@/components/ui/Panel";
+import { SectionHead } from "@/components/ui/SectionHead";
 import { buttonLabel } from "../../i18n";
 import { usePrefs } from "@/hooks/prefs";
 import { useSession } from "@/hooks/session";
+
+import * as styles from "./ProbePanel.css";
+
 export const ProbePanel = () => {
   const { lang, i18n } = usePrefs();
   const { report } = useSession();
   return (
-    <section className="panel">
-      <div className="section-head">
-        <h2>{i18n.probe}</h2>
-      </div>
-      <pre className="probe">
+    <Panel>
+      <SectionHead title={i18n.probe} />
+      <pre className={styles.probe}>
         {report
           ? report.ignored
             ? `${report.hex}\n${i18n.probeIgnored}`
@@ -20,6 +23,6 @@ export const ProbePanel = () => {
               }]`
           : i18n.probeEmpty}
       </pre>
-    </section>
+    </Panel>
   );
 };

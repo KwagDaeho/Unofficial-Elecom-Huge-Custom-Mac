@@ -8,27 +8,20 @@ import {
 
 import {
   appendCanvasPoint,
-  clientToCanvasPoint,
-  paintGestureCanvas,
-} from "@/domain/gesture/gestureCanvasPaint";
-import { gcLog } from "@/domain/gesture/gestureCanvasDebug";
-import {
-  emitGestureCanvasUiChange,
-  type GestureDrawPhase,
-} from "@/domain/gesture/gestureCanvasUiEvent";
-import {
   canvasRecorderInitial,
   canvasRecorderReduce,
-  type CanvasRecorderState,
-} from "@/domain/gesture/canvasRecorder";
-import {
+  clientToCanvasPoint,
+  emitGestureCanvasUiChange,
   ensureGestureCanvasChannel,
+  paintGestureCanvas,
   subscribeGestureCanvasPhase,
-} from "@/domain/gesture/gestureCanvasChannel";
+  type CanvasRecorderState,
+  type GestureDrawPhase,
+} from "@/domain/gesture";
 import { clearGestureCanvasStroke, setGestureCanvasDrawing } from "@/services/tauri";
 import type { GesturePoint } from "@/types";
 
-export type { GestureDrawPhase } from "@/domain/gesture/gestureCanvasUiEvent";
+export type { GestureDrawPhase } from "@/domain/gesture";
 
 const isClientInsideCanvas = (
   canvas: HTMLCanvasElement,
@@ -81,7 +74,6 @@ export const useGestureCanvasRecorder = (
         committedPointsRef.current = [];
       }
       scheduleAfterTauriEvent(() => {
-        gcLog("ui:notify", { phase, pointCount: points.length });
         emitGestureCanvasUiChange({ phase, points });
       });
     },
@@ -93,7 +85,6 @@ export const useGestureCanvasRecorder = (
       return;
     }
     drawingSyncRef.current = active;
-    gcLog("sync-drawing", { active });
     queueMicrotask(() => {
       void setGestureCanvasDrawing(active);
     });
@@ -120,9 +111,6 @@ export const useGestureCanvasRecorder = (
   }, [paintLive]);
 
   const endStrokeSession = useCallback(() => {
-    if (strokeSessionCleanupRef.current) {
-      gcLog("stroke-session:end");
-    }
     strokeSessionCleanupRef.current?.();
     strokeSessionCleanupRef.current = null;
   }, []);
@@ -148,7 +136,6 @@ export const useGestureCanvasRecorder = (
         return;
       }
       livePointsRef.current = next;
-      gcLog("point:append", { count: next.length, last: next[next.length - 1] });
       schedulePaint();
     },
     [schedulePaint],
@@ -156,7 +143,6 @@ export const useGestureCanvasRecorder = (
 
   const startStrokeSession = useCallback(() => {
     endStrokeSession();
-    gcLog("stroke-session:start", { mode: strokeModeRef.current });
 
     const onDocumentMove = (event: MouseEvent | PointerEvent) => {
       if (!recordingRef.current) {
@@ -232,16 +218,8 @@ export const useGestureCanvasRecorder = (
   }, [appendLivePoint, canvasRef, endStrokeSession, trackPointer]);
 
   const commitStroke = useCallback(
-    (source: string) => {
-      gcLog("commit:attempt", {
-        source,
-        recordingRef: recordingRef.current,
-        stateRecording: stateRef.current.recording,
-        liveCount: livePointsRef.current.length,
-        mode: strokeModeRef.current,
-      });
+    (_source: string) => {
       if (!recordingRef.current) {
-        gcLog("commit:skip-not-recording", { source });
         return;
       }
       recordingRef.current = false;
@@ -257,12 +235,6 @@ export const useGestureCanvasRecorder = (
         void clearGestureCanvasStroke();
         schedulePaint();
       });
-      gcLog("commit:done", {
-        source,
-        pointCount: committed.length,
-        locked: strokeLockedRef.current,
-        drawPhase: drawPhaseRef.current,
-      });
     },
     [endStrokeSession, notifyUi, schedulePaint, syncDrawing],
   );
@@ -270,8 +242,7 @@ export const useGestureCanvasRecorder = (
   commitStrokeRef.current = commitStroke;
 
   const stop = useCallback(
-    (source = "stop") => {
-      gcLog("stop", { source });
+    (_source = "stop") => {
       recordingRef.current = false;
       strokeLockedRef.current = false;
       endStrokeSession();
@@ -286,7 +257,6 @@ export const useGestureCanvasRecorder = (
   );
 
   const clear = useCallback(() => {
-    gcLog("clear");
     recordingRef.current = false;
     strokeLockedRef.current = false;
     endStrokeSession();
@@ -315,11 +285,9 @@ export const useGestureCanvasRecorder = (
   const beginPointerStroke = useCallback(
     (clientX: number, clientY: number) => {
       if (strokeLockedRef.current || drawPhaseRef.current === "done") {
-        gcLog("begin:blocked-locked");
         return;
       }
       if (recordingRef.current) {
-        gcLog("begin:blocked-already-recording", { mode: strokeModeRef.current });
         return;
       }
       const canvas = canvasRef.current;
@@ -327,13 +295,11 @@ export const useGestureCanvasRecorder = (
         return;
       }
       if (!isClientInsideCanvas(canvas, clientX, clientY)) {
-        gcLog("begin:blocked-outside-canvas");
         return;
       }
 
       const start = clientToCanvasPoint(clientX, clientY, canvas, false);
       if (!start) {
-        gcLog("begin:blocked-no-start-point");
         return;
       }
 
@@ -350,8 +316,6 @@ export const useGestureCanvasRecorder = (
           pointerId: 1,
         });
       });
-
-      gcLog("begin:pointer", { start, recordingRef: recordingRef.current });
       startStrokeSession();
       paintLive();
     },
@@ -370,7 +334,6 @@ export const useGestureCanvasRecorder = (
       event.preventDefault();
       event.stopPropagation();
       trackPointer(event.clientX, event.clientY);
-      gcLog("event:canvas-mousedown", { x: event.clientX, y: event.clientY });
       beginPointerStroke(event.clientX, event.clientY);
     },
     [beginPointerStroke, trackPointer],
@@ -392,10 +355,6 @@ export const useGestureCanvasRecorder = (
   const onCanvasMouseEnter = useCallback(
     (event: ReactMouseEvent<HTMLCanvasElement>) => {
       trackPointer(event.clientX, event.clientY);
-      gcLog("event:canvas-mouseenter", {
-        x: event.clientX,
-        y: event.clientY,
-      });
     },
     [trackPointer],
   );
@@ -403,7 +362,6 @@ export const useGestureCanvasRecorder = (
   const onCanvasMouseLeave = useCallback(
     (event: ReactMouseEvent<HTMLCanvasElement>) => {
       canvasHoverRef.current = false;
-      gcLog("event:canvas-mouseleave", { buttons: event.buttons });
       if (
         strokeModeRef.current === "pointer" &&
         recordingRef.current &&
@@ -416,7 +374,6 @@ export const useGestureCanvasRecorder = (
   );
 
   const onCanvasMouseUp = useCallback(() => {
-    gcLog("event:canvas-mouseup");
     commitStrokeRef.current("canvas:mouseup");
   }, []);
 
@@ -426,14 +383,6 @@ export const useGestureCanvasRecorder = (
 
   useEffect(() => {
     const unsubPhase = subscribeGestureCanvasPhase((phase) => {
-      gcLog("ball:phase", {
-        phase,
-        recordingRef: recordingRef.current,
-        hover: canvasHoverRef.current,
-        locked: strokeLockedRef.current,
-        drawPhase: drawPhaseRef.current,
-        lastClient: lastClientRef.current,
-      });
       if (phase === "start") {
         if (
           recordingRef.current ||
@@ -441,12 +390,10 @@ export const useGestureCanvasRecorder = (
           drawPhaseRef.current === "done" ||
           !canvasHoverRef.current
         ) {
-          gcLog("ball:start-blocked");
           return;
         }
         const start = ballStartPointRef.current();
         if (!start) {
-          gcLog("ball:start-blocked-no-pointer");
           return;
         }
         recordingRef.current = true;
@@ -457,7 +404,6 @@ export const useGestureCanvasRecorder = (
         queueMicrotask(() => {
           dispatch({ type: "start_ball", point: start });
         });
-        gcLog("ball:start", { start });
         startStrokeSession();
         paintLive();
         return;
@@ -471,7 +417,6 @@ export const useGestureCanvasRecorder = (
 
   useEffect(
     () => () => {
-      gcLog("cleanup:unmount");
       recordingRef.current = false;
       endStrokeSession();
       if (paintRafRef.current !== 0) {

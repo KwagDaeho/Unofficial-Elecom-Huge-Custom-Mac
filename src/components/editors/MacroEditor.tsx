@@ -3,7 +3,7 @@ import { useState } from "react";
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
-import { Button } from "../ui/Button";
+import { Button, Modal, Muted, Row } from "@/components/ui";
 import { MacroDelayPrompt } from "./MacroDelayPrompt";
 import { MacroKeyPrompt } from "./MacroKeyPrompt";
 import { MacroStepList } from "./MacroStepList";
@@ -64,10 +64,10 @@ export const MacroEditor = (props: MacroEditorProps) => {
       : 100;
 
   return (
-    <div className="modal-backdrop" role="presentation">
-      <div className="modal modal-wide" role="dialog" aria-modal="true">
+    <>
+      <Modal wide>
         <h2>{i18n.macroTitle}</h2>
-        <p className="muted">{i18n.macroHint}</p>
+        <Muted variant="modal">{i18n.macroHint}</Muted>
         <MacroStepList
           steps={editor.steps}
           lang={lang}
@@ -77,23 +77,23 @@ export const MacroEditor = (props: MacroEditorProps) => {
           onStepsChange={updateSteps}
           onEditStep={handleEditStep}
         />
-        <div className="row wrap">
+        <Row wrap>
           <Button variant="ghost" onClick={() => openKeyPrompt("add")}>
             {i18n.addKeystroke}
           </Button>
           <Button variant="ghost" onClick={() => setDelayPrompt({ mode: "add" })}>
             {i18n.addDelay}
           </Button>
-        </div>
-        <div className="row">
+        </Row>
+        <Row>
           <Button variant="ghost" onClick={() => setEditor(null)}>
             {i18n.cancel}
           </Button>
           <Button disabled={editor.steps.length === 0} onClick={handleSave}>
             {i18n.save}
           </Button>
-        </div>
-      </div>
+        </Row>
+      </Modal>
       {editor.keyPrompt ? (
         <MacroKeyPrompt
           title={
@@ -129,6 +129,6 @@ export const MacroEditor = (props: MacroEditorProps) => {
           onCancel={() => setDelayPrompt(null)}
         />
       ) : null}
-    </div>
+    </>
   );
 };

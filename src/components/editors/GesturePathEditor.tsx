@@ -7,30 +7,29 @@ import {
 } from "react";
 
 import {
-  MIN_RAW_PATH_LENGTH,
+  CANVAS_RECORDER_HEIGHT,
+  CANVAS_RECORDER_WIDTH,
+} from "@/constants/gestureCanvas";
+import { MIN_RAW_PATH_LENGTH } from "@/constants/gesture";
+import {
   normalizeGesturePreview,
   normalizeGestureTemplate,
   pathBendSignature,
   rawPathLength,
   significantCornerCount,
-} from "@/domain/gesture";
-import { gcLog } from "@/domain/gesture/gestureCanvasDebug";
-import {
   subscribeGestureCanvasUiChange,
   type GestureDrawPhase,
-} from "@/domain/gesture/gestureCanvasUiEvent";
-import {
-  applyGesturePathUi,
-  type GesturePathUiLabels,
-  type GesturePathUiRefs,
-} from "@/domain/gesture/gesturePathUi";
-import { useGestureCanvasRecorder } from "@/hooks/gesture/useGestureCanvasRecorder";
+} from "@/domain/gesture";
+import { useGestureCanvasRecorder } from "@/hooks/gesture";
 import type { GesturePoint } from "@/types";
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
-import { Button } from "../ui/Button";
+import { cx } from "@/utils/cx";
+import { Button, Modal, Muted, Row } from "@/components/ui";
 import type { GesturePathRecorderState } from "@/types";
+
+import * as styles from "./GesturePathEditor.css";
 
 interface GesturePathEditorProps {
   editor: GesturePathRecorderState;
@@ -41,54 +40,19 @@ export const GesturePathEditor = (props: GesturePathEditorProps) => {
   const { gestureMappings } = useProfileCtx();
   const { setEditor } = useEditor();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const statusRef = useRef<HTMLParagraphElement>(null);
-  const redrawRowRef = useRef<HTMLDivElement>(null);
-  const saveButtonRef = useRef<HTMLButtonElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
   const pointsRef = useRef<GesturePoint[]>([]);
   const stopRef = useRef<() => void>(() => {});
 
   const [drawPhase, setDrawPhase] = useState<GestureDrawPhase>("idle");
   const [points, setPoints] = useState<GesturePoint[]>([]);
 
-  const uiLabels = useMemo<GesturePathUiLabels>(
-    () => ({
-      recording: i18n.gestureShapeRecording,
-      tooShort: i18n.gestureShapeTooShort,
-      preview: i18n.gestureShapePreview,
-    }),
-    [i18n],
-  );
-
-  const uiLabelsRef = useRef(uiLabels);
-  uiLabelsRef.current = uiLabels;
-
-  const uiRefs = useCallback((): GesturePathUiRefs => {
-    return {
-      status: statusRef.current,
-      redrawRow: redrawRowRef.current,
-      saveButton: saveButtonRef.current,
-      canvas: canvasRef.current,
-      modal: modalRef.current,
-    };
-  }, []);
-
   useEffect(() => {
     return subscribeGestureCanvasUiChange(({ phase, points: nextPoints }) => {
       pointsRef.current = nextPoints;
-      applyGesturePathUi(uiRefs(), phase, nextPoints, uiLabelsRef.current);
       setDrawPhase(phase);
       setPoints(nextPoints);
-      gcLog("state:react", {
-        drawPhase: phase,
-        pointCount: nextPoints.length,
-        isDrawing: phase === "drawing",
-        strokeLocked: phase === "done" && nextPoints.length > 0,
-        statusDomPhase: statusRef.current?.dataset.phase ?? null,
-        statusDomText: statusRef.current?.textContent?.slice(0, 40) ?? null,
-      });
     });
-  }, [uiRefs]);
+  }, []);
 
   const {
     onCanvasMouseDown,
@@ -102,6 +66,18 @@ export const GesturePathEditor = (props: GesturePathEditorProps) => {
 
   const isDrawing = drawPhase === "drawing";
   const strokeLocked = drawPhase === "done" && points.length > 0;
+  const pathOk = rawPathLength(points) >= MIN_RAW_PATH_LENGTH;
+  const showRedraw = !isDrawing && points.length > 0;
+
+  const statusText = useMemo(() => {
+    if (isDrawing) {
+      return i18n.gestureShapeRecording;
+    }
+    if (!pathOk || points.length < 2) {
+      return i18n.gestureShapeTooShort;
+    }
+    return i18n.gestureShapePreview.replace("{score}", "…");
+  }, [i18n, isDrawing, pathOk, points.length]);
 
   stopRef.current = stop;
 
@@ -115,9 +91,6 @@ export const GesturePathEditor = (props: GesturePathEditorProps) => {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [setEditor]);
-
-  const pathOk = rawPathLength(points) >= MIN_RAW_PATH_LENGTH;
-  const showRedraw = !isDrawing && points.length > 0;
 
   const resetCanvas = useCallback(() => {
     clear();
@@ -145,63 +118,54 @@ export const GesturePathEditor = (props: GesturePathEditorProps) => {
   }, [drawPhase, gestureMappings, props.editor.entryId, setEditor]);
 
   return (
-    <div className="modal-backdrop modal-backdrop-plain" role="presentation">
-      <div
-        ref={modalRef}
-        className={`modal modal-wide gesture-path-modal${drawPhase === "done" ? " gesture-path-done" : ""}`}
-        role="dialog"
-        aria-modal="true"
+    <Modal
+      plainBackdrop
+      wide
+      className={cx(
+        styles.pathModal,
+        drawPhase === "done" && styles.pathDone,
+      )}
+    >
+      <h2>{i18n.gestureShapeTitle}</h2>
+      <Muted variant="modal">{i18n.gestureShapeHint}</Muted>
+      <canvas
+        ref={canvasRef}
+        className={cx(styles.canvas, strokeLocked && styles.canvasLocked)}
+        width={CANVAS_RECORDER_WIDTH}
+        height={CANVAS_RECORDER_HEIGHT}
+        aria-disabled={strokeLocked}
+        onMouseDown={onCanvasMouseDown}
+        onMouseMove={onCanvasMouseMove}
+        onMouseEnter={onCanvasMouseEnter}
+        onMouseUp={onCanvasMouseUp}
+        onMouseLeave={onCanvasMouseLeave}
+      />
+      <Muted variant="modal" className={styles.recordStatus}>
+        {statusText}
+      </Muted>
+      <Row
+        className={cx(styles.redrawRow, showRedraw && styles.redrawRowVisible)}
+        aria-hidden={!showRedraw}
       >
-        <h2>{i18n.gestureShapeTitle}</h2>
-        <p className="muted">{i18n.gestureShapeHint}</p>
-        <canvas
-          ref={canvasRef}
-          className={`gesture-record-canvas${strokeLocked ? " locked" : ""}`}
-          width={320}
-          height={220}
-          aria-disabled={strokeLocked}
-          onMouseDown={onCanvasMouseDown}
-          onMouseMove={onCanvasMouseMove}
-          onMouseEnter={onCanvasMouseEnter}
-          onMouseUp={onCanvasMouseUp}
-          onMouseLeave={onCanvasMouseLeave}
-        />
-        <p
-          ref={statusRef}
-          className="muted gesture-record-status"
-          data-phase={drawPhase}
+        <Button variant="ghost" onClick={resetCanvas} tabIndex={showRedraw ? 0 : -1}>
+          {i18n.gestureShapeRedraw}
+        </Button>
+      </Row>
+      <Row>
+        <Button
+          variant="ghost"
+          onPointerDown={(event) => {
+            event.stopPropagation();
+            closeEditor();
+          }}
+          onClick={closeEditor}
         >
-          {i18n.gestureShapeTooShort}
-        </p>
-        <div
-          ref={redrawRowRef}
-          className={`row gesture-redraw-row${showRedraw ? " visible" : ""}`}
-          aria-hidden={!showRedraw}
-        >
-          <Button variant="ghost" onClick={resetCanvas} tabIndex={showRedraw ? 0 : -1}>
-            {i18n.gestureShapeRedraw}
-          </Button>
-        </div>
-        <div className="row">
-          <Button
-            variant="ghost"
-            onPointerDown={(event) => {
-              event.stopPropagation();
-              closeEditor();
-            }}
-            onClick={closeEditor}
-          >
-            {i18n.cancel}
-          </Button>
-          <Button
-            ref={saveButtonRef}
-            disabled={!pathOk || isDrawing}
-            onClick={saveTemplate}
-          >
-            {i18n.save}
-          </Button>
-        </div>
-      </div>
-    </div>
+          {i18n.cancel}
+        </Button>
+        <Button disabled={!pathOk || isDrawing} onClick={saveTemplate}>
+          {i18n.save}
+        </Button>
+      </Row>
+    </Modal>
   );
 };

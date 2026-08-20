@@ -9,4 +9,4 @@ type WidenStrings<T> = {
 };
 
 /** Shape of ko/en string tables (keys must match across langs). */
-export type Dict = WidenStrings<typeof import("../../i18n/ko").ko>;
+export type Dict = WidenStrings<typeof import("../../i18n/locales/ko").ko>;

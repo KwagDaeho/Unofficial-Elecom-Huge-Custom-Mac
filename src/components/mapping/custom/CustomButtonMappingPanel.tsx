@@ -1,7 +1,10 @@
 import { customMappingsOf, newCustomMappingEntry } from "@/domain/profile";
 import { usePrefs, useProfileCtx } from "@/hooks";
-import { Button } from "@/components/ui";
+import { Button, Muted, Panel } from "@/components/ui";
 import { CustomMappingRow } from "./CustomMappingRow";
+import { buttonGrid } from "../button/ButtonMappingPanel.css";
+import * as styles from "./CustomButtonMappingPanel.css";
+
 export const CustomButtonMappingPanel = () => {
   const { i18n } = usePrefs();
   const { profile, customMappings } = useProfileCtx();
@@ -10,8 +13,8 @@ export const CustomButtonMappingPanel = () => {
   }
   const entries = customMappingsOf(profile);
   return (
-    <section className="panel">
-      <div className="section-head">
+    <Panel>
+      <div className={styles.sectionHeadRow}>
         <h2>{i18n.customButtonMapping}</h2>
         <Button
           size="tiny"
@@ -20,12 +23,12 @@ export const CustomButtonMappingPanel = () => {
           {i18n.customMappingAdd}
         </Button>
       </div>
-      <p className="muted custom-mapping-help">{i18n.customMappingHelp}</p>
+      <Muted variant="help">{i18n.customMappingHelp}</Muted>
       {entries.length === 0 ? (
-        <p className="muted">{i18n.customMappingEmpty}</p>
+        <Muted>{i18n.customMappingEmpty}</Muted>
       ) : (
-        <div className="button-grid custom-mapping-grid">
-          <div className="button-head">
+        <div className={buttonGrid}>
+          <div className={styles.customMappingHead}>
             <span>{i18n.customMappingTrigger}</span>
             <span>{i18n.longPressEnable}</span>
             <span>{i18n.autoClickEnable}</span>
@@ -38,6 +41,6 @@ export const CustomButtonMappingPanel = () => {
           ))}
         </div>
       )}
-    </section>
+    </Panel>
   );
 };
