@@ -12,6 +12,7 @@ export {
   gestureMappingsOf,
   newGestureMappingEntry,
 } from "./gestureMapping";
+export { gesturePreviewPoints } from "./gesturePreview";
 export {
   resolveBindingFlags,
   bindingLongPressEnabled,

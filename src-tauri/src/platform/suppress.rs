@@ -229,9 +229,13 @@ unsafe extern "C" fn tap_callback(
         etype,
         EVENT_MOUSE_MOVED | EVENT_LEFT_DRAGGED | EVENT_RIGHT_DRAGGED | EVENT_OTHER_DRAGGED
     ) {
-        if let Some(pin) = crate::platform::inject::restore_sync_pin() {
-            apply_restore_sync_motion(event, pin.x, pin.y);
-            return event;
+        if crate::platform::inject::restore_cursor_active() {
+            crate::platform::inject::maintain_restored_cursor();
+            return std::ptr::null_mut();
+        }
+        if let Some((x, y)) = cursor_lock_point() {
+            crate::platform::inject::keep_pinned_cursor();
+            return std::ptr::null_mut();
         }
     }
 
@@ -276,13 +280,6 @@ unsafe extern "C" fn tap_callback(
         return std::ptr::null_mut();
     }
     event
-}
-
-fn apply_restore_sync_motion(event: *mut std::ffi::c_void, pin_x: f64, pin_y: f64) {
-    // While the cursor was disassociated, ball HID deltas accumulate on the next
-    // mouse-moved event. Re-anchor at the pin and drop those stale deltas.
-    pin_mouse_event(event, pin_x, pin_y);
-    crate::platform::inject::finish_restore_sync();
 }
 
 fn pin_mouse_event(event: *mut std::ffi::c_void, x: f64, y: f64) {

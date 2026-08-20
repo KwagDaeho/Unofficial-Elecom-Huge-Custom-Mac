@@ -28,9 +28,12 @@ export const GestureMappingPanel = () => {
         <div className="button-grid custom-mapping-grid gesture-mapping-grid">
           <div className="button-head">
             <span>{i18n.gestureHoldKey}</span>
+            <span className="gesture-col-gap" aria-hidden="true" />
             <span>{i18n.gestureShape}</span>
+            <span className="gesture-col-gap" aria-hidden="true" />
             <span>{i18n.gestureAction}</span>
-            <span>{i18n.gestureRowActions}</span>
+            <span className="gesture-col-gap" aria-hidden="true" />
+            <span aria-hidden="true" />
           </div>
           {entries.map((entry) => (
             <GestureMappingRow key={entry.id} entry={entry} />

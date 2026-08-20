@@ -80,6 +80,8 @@ export type ProfileGestureMappingMutations = {
     template: GestureMappingEntry["template"],
     templatePathLength?: number,
     templatePreview?: GestureMappingEntry["templatePreview"],
+    templateCornerCount?: number,
+    templateBendSignature?: number,
   ) => void;
 };
 

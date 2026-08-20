@@ -34,7 +34,7 @@ static SETTINGS: Mutex<BallScrollSettings> = Mutex::new(BallScrollSettings {
 pub(crate) const TOGGLE_DEBOUNCE: Duration = Duration::from_millis(80);
 /// Absorb contact bounce so we do not unpin the cursor mid-hold.
 pub(crate) const DEACTIVATE_GRACE: Duration = Duration::from_millis(40);
-pub(crate) const BALL_MOTION_IGNORE: Duration = Duration::from_millis(250);
+pub(crate) const BALL_MOTION_IGNORE: Duration = crate::platform::inject::POST_UNPIN_BALL_IGNORE;
 
 pub(crate) fn settings() -> parking_lot::MutexGuard<'static, BallScrollSettings> {
     SETTINGS.lock()
@@ -105,6 +105,9 @@ pub fn needs_event_watch(profile: &Profile) -> bool {
 
 /// Drop HUGE ball deltas as pointer motion right after ball-scroll ends.
 pub fn ignore_ball_pointer_motion() -> bool {
+    if crate::platform::inject::restore_cursor_active() {
+        return true;
+    }
     IGNORE_BALL_MOTION_UNTIL
         .lock()
         .is_some_and(|until| Instant::now() < until)
@@ -117,10 +120,9 @@ pub(crate) fn apply_active(active: bool) {
     let was = WAS_ACTIVE.swap(active, Ordering::SeqCst);
     if active && !was {
         *IGNORE_BALL_MOTION_UNTIL.lock() = None;
-        suppress::set_suppress_motion(true);
         inject::pin_cursor();
     } else if !active && was {
-        *IGNORE_BALL_MOTION_UNTIL.lock() = Some(Instant::now() + inject::POST_UNPIN_BALL_IGNORE);
+        *IGNORE_BALL_MOTION_UNTIL.lock() = Some(Instant::now() + BALL_MOTION_IGNORE);
         inject::restore_pinned_cursor();
         suppress::set_suppress_motion(false);
     }

@@ -24,16 +24,16 @@ const BALL_GESTURE_IDLE: Duration = Duration::from_millis(80);
 #[link(name = "CoreGraphics", kind = "framework")]
 extern "C" {
     fn CGWarpMouseCursorPosition(newCursorPosition: CGPoint) -> i32;
-    fn CGAssociateMouseAndMouseCursorPosition(connected: bool) -> i32;
     fn CGSetLocalEventsSuppressionInterval(seconds: f64);
 }
 
 static CURSOR_FROZEN: AtomicBool = AtomicBool::new(false);
-static RESTORE_SYNC: Mutex<Option<(CGPoint, Instant)>> = Mutex::new(None);
+static RESTORE_CURSOR: Mutex<Option<(CGPoint, Instant)>> = Mutex::new(None);
 
-const RESTORE_SYNC_TTL: Duration = Duration::from_millis(250);
-/// Drop ball HID as pointer motion after unpin (ball-scroll + gesture hold).
-pub const POST_UNPIN_BALL_IGNORE: Duration = Duration::from_millis(350);
+const RESTORE_CURSOR_MIN: Duration = Duration::from_millis(30);
+const RESTORE_CURSOR_MAX: Duration = Duration::from_millis(80);
+/// Drop stale ball HID briefly after unpin (ball-scroll + gesture hold).
+pub const POST_UNPIN_BALL_IGNORE: Duration = Duration::from_millis(100);
 
 pub(super) fn cursor_is_pinned() -> bool {
     CURSOR_FROZEN.load(Ordering::SeqCst)
@@ -46,24 +46,27 @@ fn zero_warp_suppression() {
     }
 }
 
-fn freeze_os_cursor() {
-    zero_warp_suppression();
-    unsafe {
-        let _ = CGAssociateMouseAndMouseCursorPosition(false);
-    }
-}
-
-fn unfreeze_os_cursor() {
-    zero_warp_suppression();
-    unsafe {
-        let _ = CGAssociateMouseAndMouseCursorPosition(true);
-    }
-}
-
 fn warp_cursor(p: CGPoint) {
     zero_warp_suppression();
     unsafe {
         let _ = CGWarpMouseCursorPosition(p);
+    }
+}
+
+fn settle_cursor_at(p: CGPoint) {
+    warp_cursor(p);
+    *cursor_state().lock() = p;
+}
+
+fn post_zero_delta_mouse_at(p: CGPoint) {
+    let src = hid_source();
+    if let Ok(e) = CGEvent::new_mouse_event(src, CGEventType::MouseMoved, p, CGMouseButton::Left)
+    {
+        e.set_double_value_field(EventField::MOUSE_EVENT_DELTA_X, 0.0);
+        e.set_double_value_field(EventField::MOUSE_EVENT_DELTA_Y, 0.0);
+        e.set_integer_value_field(EventField::MOUSE_EVENT_DELTA_X, 0);
+        e.set_integer_value_field(EventField::MOUSE_EVENT_DELTA_Y, 0);
+        e.post(CGEventTapLocation::HID);
     }
 }
 
@@ -125,57 +128,91 @@ pub fn pin_cursor_gesture() {
 }
 
 fn pin_cursor_with_badge(show_badge: fn()) {
+    RESTORE_CURSOR.lock().take();
     let p = cursor_pos();
     *PINNED_CURSOR.lock() = Some(p);
     *cursor_state().lock() = p;
     CURSOR_FROZEN.store(true, Ordering::SeqCst);
-    RESTORE_SYNC.lock().take();
     crate::platform::suppress::set_cursor_lock(Some((p.x, p.y)));
-    freeze_os_cursor();
-    warp_cursor(p);
+    settle_cursor_at(p);
     show_badge();
 }
 
-/// Warp back to the pin each HID packet. Association is ignored while we
-/// are a background app, so this is what actually holds the pointer still.
+/// Warp back to the pin each HID packet while ball-scroll / gesture holds the pointer.
 pub fn keep_pinned_cursor() {
     if !CURSOR_FROZEN.load(Ordering::SeqCst) {
         return;
     }
     if let Some(p) = *PINNED_CURSOR.lock() {
-        warp_cursor(p);
-        *cursor_state().lock() = p;
+        settle_cursor_at(p);
     }
 }
 
-fn unpin_at(p: CGPoint) {
-    warp_cursor(p);
-    *cursor_state().lock() = p;
-    unfreeze_os_cursor();
-    warp_cursor(p);
-    *cursor_state().lock() = p;
-}
-
-/// Release ball-scroll / gesture pin. Re-associate at the pin and swallow stale
-/// OS mouse deltas on the first moved event (see suppress tap).
+/// Release ball-scroll / gesture pin and force the saved point for a short window.
 pub fn restore_pinned_cursor() {
     end_ball_scroll_gesture();
     super::cursor_badge::hide();
     CURSOR_FROZEN.store(false, Ordering::SeqCst);
-    let Some(p) = *PINNED_CURSOR.lock() else {
-        crate::platform::suppress::set_cursor_lock(None);
-        finish_restore_sync();
-        return;
-    };
-    warp_cursor(p);
-    *cursor_state().lock() = p;
-    *RESTORE_SYNC.lock() = Some((p, Instant::now() + RESTORE_SYNC_TTL));
     crate::platform::suppress::set_cursor_lock(None);
-    // Re-associate now; stale ball accumulation is cleared on the first moved event.
-    unfreeze_os_cursor();
-    warp_cursor(p);
-    *cursor_state().lock() = p;
+    let pin = PINNED_CURSOR.lock().take();
+    if let Some(p) = pin {
+        *RESTORE_CURSOR.lock() = Some((p, Instant::now()));
+        settle_cursor_at(p);
+        post_zero_delta_mouse_at(p);
+    } else if !crate::domain::ball_scroll::is_active()
+        && !crate::domain::gesture_mapping::session_active()
+    {
+        crate::platform::suppress::set_suppress_motion(false);
+    }
 }
+
+fn finish_restore_cursor() {
+    RESTORE_CURSOR.lock().take();
+    if !crate::domain::ball_scroll::is_active()
+        && !crate::domain::gesture_mapping::session_active()
+    {
+        crate::platform::suppress::set_suppress_motion(false);
+    }
+}
+
+pub fn restore_cursor_active() -> bool {
+    RESTORE_CURSOR.lock().is_some()
+}
+
+pub fn maintain_restored_cursor() {
+    if let Some((p, _)) = *RESTORE_CURSOR.lock() {
+        settle_cursor_at(p);
+    }
+}
+
+/// End the forced-restore window once stale ball motion has settled.
+pub fn tick_restore_cursor(hid_dx: f64, hid_dy: f64) {
+    let should_finish = RESTORE_CURSOR.lock().as_ref().is_some_and(|(_, started)| {
+        let elapsed = started.elapsed();
+        elapsed >= RESTORE_CURSOR_MAX
+            || (elapsed >= RESTORE_CURSOR_MIN && hid_dx == 0.0 && hid_dy == 0.0)
+    });
+    if should_finish {
+        finish_restore_cursor();
+    }
+}
+
+pub fn expire_restored_cursor_if_due() {
+    let due = RESTORE_CURSOR.lock().as_ref().is_some_and(|(_, started)| {
+        started.elapsed() >= RESTORE_CURSOR_MAX
+    });
+    if due {
+        finish_restore_cursor();
+    }
+}
+
+pub fn post_unpin_active() -> Option<CGPoint> {
+    None
+}
+
+pub fn maintain_post_unpin_cursor() {}
+
+pub fn expire_post_unpin_if_due() {}
 
 /// App exit: drop pin, badge, and cursor association immediately.
 pub fn release_ball_scroll_pin() {
@@ -194,51 +231,30 @@ pub fn release_ball_scroll_pin_for_quit() {
 fn release_pin_state() {
     CURSOR_FROZEN.store(false, Ordering::SeqCst);
     crate::platform::suppress::set_cursor_lock(None);
-    RESTORE_SYNC.lock().take();
+    RESTORE_CURSOR.lock().take();
     if let Some(p) = PINNED_CURSOR.lock().take() {
-        unpin_at(p);
-    } else {
-        unfreeze_os_cursor();
+        settle_cursor_at(p);
     }
+    crate::platform::suppress::set_suppress_motion(false);
 }
 
 pub fn restore_sync_pin() -> Option<CGPoint> {
-    let slot = RESTORE_SYNC.lock();
-    match slot.as_ref() {
-        Some((p, until)) if Instant::now() < *until => Some(*p),
-        _ => None,
-    }
+    None
 }
 
-pub fn finish_restore_sync() {
-    let sync_pin = RESTORE_SYNC.lock().take().map(|(p, _)| p);
-    if let Some(p) = PINNED_CURSOR.lock().take().or(sync_pin) {
-        unpin_at(p);
-    } else {
-        unfreeze_os_cursor();
-        sync_cursor_from_system();
-    }
-}
+pub fn finish_restore_sync() {}
 
-pub fn expire_restore_sync_if_due() {
-    let due = RESTORE_SYNC
-        .lock()
-        .as_ref()
-        .is_some_and(|(_, until)| Instant::now() >= *until);
-    if due {
-        finish_restore_sync();
-    }
-}
+pub fn expire_restore_sync_if_due() {}
 
 pub fn move_by(dx: f64, dy: f64) {
     if dx == 0.0 && dy == 0.0 {
         return;
     }
 
-    if let Some(p) = restore_sync_pin() {
-        finish_restore_sync();
-        warp_cursor(p);
-        *cursor_state().lock() = p;
+    if restore_cursor_active() {
+        if let Some((p, _)) = *RESTORE_CURSOR.lock() {
+            settle_cursor_at(p);
+        }
         return;
     }
 

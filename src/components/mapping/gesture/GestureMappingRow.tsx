@@ -1,4 +1,4 @@
-import { asBinding, gestureHoldLabel } from "@/domain/profile";
+import { asBinding, gestureHoldLabel, gesturePreviewPoints } from "@/domain/profile";
 import { formatActivator } from "@/i18n";
 import { usePrefs, useProfileCtx, useEditor } from "@/hooks";
 import { Button } from "@/components/ui";
@@ -40,19 +40,18 @@ export const GestureMappingRow = (props: GestureMappingRowProps) => {
           {holdLabel}
         </Button>
       </div>
+      <span className="gesture-col-gap" aria-hidden="true" />
       <GestureTemplateThumbnail
-        template={
-          entry.templatePreview && entry.templatePreview.length >= 2
-            ? entry.templatePreview
-            : entry.template
-        }
+        template={gesturePreviewPoints(entry)}
         emptyLabel={i18n.gestureShapeSet}
         previewLabel={i18n.gestureShapePreviewHint}
       />
+      <span className="gesture-col-gap" aria-hidden="true" />
       <ActionSelect
         action={binding.click}
         onPick={(value) => catalogSelection.selectGesture(entry.id, "click", value)}
       />
+      <span className="gesture-col-gap" aria-hidden="true" />
       <div className="gesture-mapping-actions">
         <Button variant="ghost" size="tiny" onClick={openRecorder}>
           {i18n.editStep}

@@ -189,7 +189,8 @@ pub(crate) fn run(
                     }
                     // Pulse (AC off): HID quiet → allow next tilt without pan==0.
                     tilt_gate.clear_pulse_latches_when_idle();
-                    inject::expire_restore_sync_if_due();
+                    inject::expire_restored_cursor_if_due();
+                    inject::maintain_restored_cursor();
                     suppress::set_suppress_motion(
                         pointer_takeover_active(
                             &held,
@@ -200,7 +201,7 @@ pub(crate) fn run(
                             &custom_maps,
                             &prev,
                             &profile_snap,
-                        ) || ball_scroll::is_active(),
+                        ),
                     );
                     continue;
                 }
@@ -327,6 +328,9 @@ pub(crate) fn run(
                     ));
 
                     ball_scroll::tick();
+                    inject::expire_restored_cursor_if_due();
+                    inject::tick_restore_cursor(parsed.dx as f64, parsed.dy as f64);
+                    inject::maintain_restored_cursor();
                         let ball_scroll_on = ball_scroll::is_active();
                         let gesture_on = gesture_mapping::session_active();
 
@@ -388,7 +392,7 @@ pub(crate) fn run(
                             &state,
                             &profile_snap,
                         );
-                        suppress::set_suppress_motion(takeover || ball_scroll_on || gesture_on);
+                        suppress::set_suppress_motion(takeover);
                         let gesture_ball_draw = capture::gesture_ball_stroke_active();
                         let (out_x, out_y) = if gesture_ball_draw {
                             (0.0, 0.0)
@@ -507,7 +511,7 @@ pub(crate) fn run(
                             &custom_maps,
                             &prev,
                             &profile_snap,
-                        ) || ball_scroll::is_active(),
+                        ),
                     );
                 }
                 Err(err) => {

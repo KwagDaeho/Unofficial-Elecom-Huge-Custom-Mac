@@ -45,6 +45,8 @@ export const withGestureMappingTemplate = (
   template: GestureMappingEntry["template"],
   templatePathLength?: number,
   templatePreview?: GestureMappingEntry["templatePreview"],
+  templateCornerCount?: number,
+  templateBendSignature?: number,
 ): Profile => ({
   ...profile,
   gestureMappings: gestureMappingsOf(profile).map((entry) =>
@@ -54,6 +56,8 @@ export const withGestureMappingTemplate = (
           template,
           templatePreview: templatePreview ?? [],
           templatePathLength: templatePathLength ?? 0,
+          templateCornerCount: templateCornerCount ?? 0,
+          templateBendSignature: templateBendSignature ?? 0,
         }
       : entry,
   ),

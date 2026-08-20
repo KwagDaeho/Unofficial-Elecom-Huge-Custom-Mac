@@ -10,7 +10,9 @@ import {
   MIN_RAW_PATH_LENGTH,
   normalizeGesturePreview,
   normalizeGestureTemplate,
+  pathBendSignature,
   rawPathLength,
+  significantCornerCount,
 } from "@/domain/gesture";
 import { gcLog } from "@/domain/gesture/gestureCanvasDebug";
 import {
@@ -136,6 +138,8 @@ export const GesturePathEditor = (props: GesturePathEditorProps) => {
       normalizeGestureTemplate(committed),
       rawPathLength(committed),
       normalizeGesturePreview(committed),
+      significantCornerCount(committed),
+      pathBendSignature(committed),
     );
     setEditor(null);
   }, [drawPhase, gestureMappings, props.editor.entryId, setEditor]);

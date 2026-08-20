@@ -160,6 +160,8 @@ export const useProfileMutations = (
     template: GestureMappingEntry["template"],
     templatePathLength?: number,
     templatePreview?: GestureMappingEntry["templatePreview"],
+    templateCornerCount?: number,
+    templateBendSignature?: number,
   ) => {
     mutateProfile((loadedProfile) =>
       withGestureMappingTemplate(
@@ -168,6 +170,8 @@ export const useProfileMutations = (
         template,
         templatePathLength,
         templatePreview,
+        templateCornerCount,
+        templateBendSignature,
       ),
     );
   };

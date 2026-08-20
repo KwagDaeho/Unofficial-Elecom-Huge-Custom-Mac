@@ -63,6 +63,8 @@ export type GestureMappingEntry = {
   template: GesturePoint[];
   templatePreview?: GesturePoint[];
   templatePathLength?: number;
+  templateCornerCount?: number;
+  templateBendSignature?: number;
   minScore?: number;
 } & ButtonBinding;
 

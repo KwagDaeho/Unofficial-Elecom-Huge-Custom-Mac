@@ -10,7 +10,7 @@ pub struct GesturePoint {
 }
 
 fn default_gesture_min_score() -> f64 {
-    0.85
+    0.88
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -24,6 +24,10 @@ pub struct GestureMappingEntry {
     pub template_path_length: f64,
     #[serde(default)]
     pub template_preview: Vec<GesturePoint>,
+    #[serde(default)]
+    pub template_corner_count: usize,
+    #[serde(default)]
+    pub template_bend_signature: i64,
     #[serde(default = "default_gesture_min_score")]
     pub min_score: f64,
     #[serde(flatten)]

@@ -8,7 +8,6 @@ import {
 
 import {
   appendCanvasPoint,
-  CANVAS_BALL_DELTA_SCALE,
   clientToCanvasPoint,
   paintGestureCanvas,
 } from "@/domain/gesture/gestureCanvasPaint";
@@ -24,7 +23,6 @@ import {
 } from "@/domain/gesture/canvasRecorder";
 import {
   ensureGestureCanvasChannel,
-  subscribeGestureCanvasDelta,
   subscribeGestureCanvasPhase,
 } from "@/domain/gesture/gestureCanvasChannel";
 import { clearGestureCanvasStroke, setGestureCanvasDrawing } from "@/services/tauri";
@@ -157,47 +155,42 @@ export const useGestureCanvasRecorder = (
     [schedulePaint],
   );
 
-  const appendClientPoint = useCallback(
-    (clientX: number, clientY: number) => {
-      const canvas = canvasRef.current;
-      if (!canvas || !recordingRef.current) {
-        return;
-      }
-      trackPointer(clientX, clientY);
-      if (!isClientInsideCanvas(canvas, clientX, clientY)) {
-        return;
-      }
-      const point = clientToCanvasPoint(clientX, clientY, canvas, false);
-      if (point) {
-        appendLivePoint(point);
-      }
-    },
-    [appendLivePoint, canvasRef, trackPointer],
-  );
-
   const startStrokeSession = useCallback(() => {
     endStrokeSession();
     gcLog("stroke-session:start", { mode: strokeModeRef.current });
 
     const onDocumentMove = (event: MouseEvent | PointerEvent) => {
-      if (strokeModeRef.current !== "pointer" || !recordingRef.current) {
-        return;
-      }
-      if (event.buttons === 0) {
-        commitStrokeRef.current("move:buttons-0");
+      if (!recordingRef.current) {
         return;
       }
       const canvas = canvasRef.current;
       if (!canvas) {
         return;
       }
-      if (!isClientInsideCanvas(canvas, event.clientX, event.clientY)) {
-        commitStrokeRef.current("move:leave-canvas");
+
+      trackPointer(event.clientX, event.clientY);
+
+      if (strokeModeRef.current === "pointer") {
+        if (event.buttons === 0) {
+          commitStrokeRef.current("move:buttons-0");
+          return;
+        }
+        if (!isClientInsideCanvas(canvas, event.clientX, event.clientY)) {
+          commitStrokeRef.current("move:leave-canvas");
+          return;
+        }
+        const point = clientToCanvasPoint(event.clientX, event.clientY, canvas, false);
+        if (point) {
+          appendLivePoint(point);
+        }
         return;
       }
-      const point = clientToCanvasPoint(event.clientX, event.clientY, canvas, false);
-      if (point) {
-        appendLivePoint(point);
+
+      if (strokeModeRef.current === "ball") {
+        const point = clientToCanvasPoint(event.clientX, event.clientY, canvas, true);
+        if (point) {
+          appendLivePoint(point);
+        }
       }
     };
 
@@ -239,7 +232,7 @@ export const useGestureCanvasRecorder = (
       document.removeEventListener("pointerup", onDocumentPointerUp);
       document.removeEventListener("pointercancel", onDocumentPointerCancel);
     };
-  }, [appendLivePoint, canvasRef, endStrokeSession]);
+  }, [appendLivePoint, canvasRef, endStrokeSession, trackPointer]);
 
   const commitStroke = useCallback(
     (source: string) => {
@@ -397,11 +390,9 @@ export const useGestureCanvasRecorder = (
       }
       if ((event.buttons & 1) === 0) {
         commitStrokeRef.current("canvas:move:buttons-0");
-        return;
       }
-      appendClientPoint(event.clientX, event.clientY);
     },
-    [appendClientPoint, trackPointer],
+    [trackPointer],
   );
 
   const onCanvasMouseEnter = useCallback(
@@ -474,30 +465,16 @@ export const useGestureCanvasRecorder = (
           dispatch({ type: "start_ball", point: start });
         });
         gcLog("ball:start", { start });
+        startStrokeSession();
         paintLive();
         return;
       }
       commitStrokeRef.current("ball:phase-end");
     });
-    const unsubDelta = subscribeGestureCanvasDelta((dx, dy) => {
-      if (
-        strokeModeRef.current !== "ball" ||
-        !recordingRef.current ||
-        !ballAccumRef.current
-      ) {
-        return;
-      }
-      ballAccumRef.current = {
-        x: ballAccumRef.current.x + dx * CANVAS_BALL_DELTA_SCALE,
-        y: ballAccumRef.current.y + dy * CANVAS_BALL_DELTA_SCALE,
-      };
-      appendLivePoint({ ...ballAccumRef.current });
-    });
     return () => {
       unsubPhase();
-      unsubDelta();
     };
-  }, [appendLivePoint, notifyUi, paintLive, syncDrawing]);
+  }, [appendLivePoint, notifyUi, paintLive, startStrokeSession, syncDrawing]);
 
   useEffect(
     () => () => {

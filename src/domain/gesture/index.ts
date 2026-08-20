@@ -10,8 +10,11 @@ export {
   normalizeGesturePreview,
   normalizeGestureTemplate,
   passesShapeChecks,
+  pathBendSignature,
   pathTurning,
   rawPathLength,
+  sharpTurnCount,
+  significantCornerCount,
 } from "./unistroke";
 export type { GesturePoint } from "./unistroke";
 export {

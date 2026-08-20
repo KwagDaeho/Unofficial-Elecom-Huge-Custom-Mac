@@ -67,6 +67,22 @@ body {
   overflow: hidden;
   width: 100%;
   background: var(--bg0);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#root,
+#root * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#root input,
+#root textarea,
+#root select,
+#root [contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /*

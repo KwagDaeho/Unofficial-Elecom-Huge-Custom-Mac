@@ -18,6 +18,17 @@ pub fn restore_sync_pin() -> Option<core_graphics::geometry::CGPoint> {
 }
 pub fn finish_restore_sync() {}
 pub fn expire_restore_sync_if_due() {}
+pub fn expire_post_unpin_if_due() {}
+pub fn maintain_post_unpin_cursor() {}
+pub fn restore_cursor_active() -> bool {
+    false
+}
+pub fn maintain_restored_cursor() {}
+pub fn expire_restored_cursor_if_due() {}
+pub fn tick_restore_cursor(_hid_dx: f64, _hid_dy: f64) {}
+pub fn post_unpin_active() -> Option<core_graphics::geometry::CGPoint> {
+    None
+}
 pub fn end_idle_ball_scroll() {}
 pub fn move_by(_dx: f64, _dy: f64) {}
 pub fn scroll(_dx_lines: i32, _dy_lines: i32) {}

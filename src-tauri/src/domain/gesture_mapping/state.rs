@@ -74,6 +74,9 @@ pub fn session_active() -> bool {
 
 /// Drop HUGE ball deltas as pointer motion right after a gesture hold ends.
 pub fn ignore_ball_pointer_motion() -> bool {
+    if crate::platform::inject::restore_cursor_active() {
+        return true;
+    }
     IGNORE_BALL_MOTION_UNTIL
         .lock()
         .is_some_and(|until| Instant::now() < until)
@@ -188,10 +191,17 @@ fn try_fire_match(session: GestureSession) {
             &session.points,
             &entry.template,
             entry.template_path_length,
+            entry.template_corner_count,
+            entry.template_bend_signature,
         ) {
             continue;
         }
-        let score = match_score(&session.points, &entry.template);
+        let score = match_score(
+            &session.points,
+            &entry.template,
+            entry.template_corner_count,
+            entry.template_bend_signature,
+        );
         if score < entry.min_score {
             continue;
         }
