@@ -10,7 +10,6 @@ static COMBO_ACTIVATOR_CAPTURE: AtomicBool = AtomicBool::new(false);
 static COMBO_TRIGGER_CAPTURE: AtomicBool = AtomicBool::new(false);
 static UI_MODAL_ACTIVE: AtomicBool = AtomicBool::new(false);
 static GESTURE_RECORD_ACTIVE: AtomicBool = AtomicBool::new(false);
-static GESTURE_RECORD_STROKE_MOVED: AtomicBool = AtomicBool::new(false);
 static GESTURE_CANVAS_DRAWING: AtomicBool = AtomicBool::new(false);
 static GESTURE_BALL_STROKE_ACTIVE: AtomicBool = AtomicBool::new(false);
 pub(crate) static TAP_STARTED: AtomicBool = AtomicBool::new(false);
@@ -94,14 +93,6 @@ pub fn set_ui_modal(active: bool) {
 
 pub fn gesture_record_active() -> bool {
     GESTURE_RECORD_ACTIVE.load(Ordering::SeqCst)
-}
-
-pub fn set_gesture_record_stroke_moved(moved: bool) {
-    GESTURE_RECORD_STROKE_MOVED.store(moved, Ordering::SeqCst);
-}
-
-pub fn gesture_record_stroke_moved() -> bool {
-    GESTURE_RECORD_STROKE_MOVED.load(Ordering::SeqCst)
 }
 
 pub fn set_gesture_canvas_drawing(active: bool) {

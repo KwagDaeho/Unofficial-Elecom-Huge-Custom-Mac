@@ -28,6 +28,5 @@ export {
 export type { CanvasRecorderAction, CanvasRecorderState, CanvasRecordMode } from "./canvasRecorder";
 export {
   ensureGestureCanvasChannel,
-  subscribeGestureCanvasDelta,
   subscribeGestureCanvasPhase,
 } from "./gestureCanvasChannel";

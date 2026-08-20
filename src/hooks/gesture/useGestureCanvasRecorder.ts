@@ -64,7 +64,6 @@ export const useGestureCanvasRecorder = (
   const strokeLockedRef = useRef(false);
 
   const livePointsRef = useRef<GesturePoint[]>([]);
-  const ballAccumRef = useRef<GesturePoint | null>(null);
   const strokeModeRef = useRef<"idle" | "pointer" | "ball">("idle");
   const paintRafRef = useRef(0);
   const drawingSyncRef = useRef(false);
@@ -179,18 +178,16 @@ export const useGestureCanvasRecorder = (
           commitStrokeRef.current("move:leave-canvas");
           return;
         }
-        const point = clientToCanvasPoint(event.clientX, event.clientY, canvas, false);
-        if (point) {
-          appendLivePoint(point);
-        }
-        return;
       }
 
-      if (strokeModeRef.current === "ball") {
-        const point = clientToCanvasPoint(event.clientX, event.clientY, canvas, true);
-        if (point) {
-          appendLivePoint(point);
-        }
+      const point = clientToCanvasPoint(
+        event.clientX,
+        event.clientY,
+        canvas,
+        strokeModeRef.current === "ball",
+      );
+      if (point) {
+        appendLivePoint(point);
       }
     };
 
@@ -250,7 +247,6 @@ export const useGestureCanvasRecorder = (
       recordingRef.current = false;
       endStrokeSession();
       strokeModeRef.current = "idle";
-      ballAccumRef.current = null;
       const committed = [...livePointsRef.current];
       livePointsRef.current = committed;
       strokeLockedRef.current = committed.length > 0;
@@ -280,7 +276,6 @@ export const useGestureCanvasRecorder = (
       strokeLockedRef.current = false;
       endStrokeSession();
       strokeModeRef.current = "idle";
-      ballAccumRef.current = null;
       notifyUi("idle", []);
       queueMicrotask(() => {
         dispatch({ type: "stop" });
@@ -296,7 +291,6 @@ export const useGestureCanvasRecorder = (
     strokeLockedRef.current = false;
     endStrokeSession();
     strokeModeRef.current = "idle";
-    ballAccumRef.current = null;
     livePointsRef.current = [];
     notifyUi("idle", []);
     queueMicrotask(() => {
@@ -459,7 +453,6 @@ export const useGestureCanvasRecorder = (
         notifyUi("drawing", []);
         syncDrawing(false);
         livePointsRef.current = [start];
-        ballAccumRef.current = { ...start };
         strokeModeRef.current = "ball";
         queueMicrotask(() => {
           dispatch({ type: "start_ball", point: start });
@@ -474,7 +467,7 @@ export const useGestureCanvasRecorder = (
     return () => {
       unsubPhase();
     };
-  }, [appendLivePoint, notifyUi, paintLive, startStrokeSession, syncDrawing]);
+  }, [notifyUi, paintLive, startStrokeSession, syncDrawing]);
 
   useEffect(
     () => () => {

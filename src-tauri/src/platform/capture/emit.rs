@@ -57,24 +57,6 @@ pub fn emit_activator_from_hid(activator: Activator) {
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct GestureCanvasDelta {
-    dx: f64,
-    dy: f64,
-}
-
-pub fn emit_gesture_canvas_delta(dx: f64, dy: f64) {
-    if !session::gesture_record_active() || !session::gesture_ball_stroke_active() {
-        return;
-    }
-    session::set_gesture_record_stroke_moved(true);
-    app_bus::emit(
-        "gesture-canvas-delta",
-        GestureCanvasDelta { dx, dy },
-    );
-}
-
-#[derive(Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
 struct GestureCanvasPhase {
     phase: String,
 }

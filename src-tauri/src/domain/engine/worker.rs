@@ -237,7 +237,6 @@ pub(crate) fn run(
                         if !capture::gesture_canvas_drawing() {
                             for id in raw_buttons.pressed_edges(prev_raw) {
                                 if id == ButtonId::Left {
-                                    capture::set_gesture_record_stroke_moved(false);
                                     capture::emit_gesture_canvas_phase("start");
                                 }
                             }
@@ -245,13 +244,11 @@ pub(crate) fn run(
                         for id in raw_buttons.released_edges(prev_raw) {
                             if id == ButtonId::Left {
                                 capture::emit_gesture_canvas_phase("end");
-                                capture::set_gesture_record_stroke_moved(false);
                                 capture::set_gesture_canvas_drawing(false);
                             }
                         }
                         if !raw_buttons.left && capture::gesture_ball_stroke_active() {
                             capture::emit_gesture_canvas_phase("end");
-                            capture::set_gesture_record_stroke_moved(false);
                             capture::set_gesture_canvas_drawing(false);
                         }
                     }
@@ -358,12 +355,6 @@ pub(crate) fn run(
                                 dx *= flatten;
                                 dy *= flatten;
                             }
-                        }
-                        if capture::gesture_ball_stroke_active()
-                            && (raw_x != 0.0 || raw_y != 0.0)
-                        {
-                            // Template canvas uses raw ball counts, not pointer speed.
-                            capture::emit_gesture_canvas_delta(raw_x, raw_y);
                         }
                         let pan_is_stream_scroll = match parsed.pan.cmp(&0) {
                             std::cmp::Ordering::Less => tilt_uses_pan_stream(

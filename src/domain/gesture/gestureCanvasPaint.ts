@@ -3,8 +3,6 @@ import type { GesturePoint } from "./unistroke";
 export const CANVAS_RECORDER_WIDTH = 320;
 export const CANVAS_RECORDER_HEIGHT = 220;
 export const CANVAS_MIN_POINT_DISTANCE = 2;
-/** HUGE ball HID counts → canvas px (template draw; not OS pointer speed). */
-export const CANVAS_BALL_DELTA_SCALE = 0.41;
 
 export const CANVAS_BG = "#ffffff";
 export const CANVAS_STROKE = "#c07bc4";
