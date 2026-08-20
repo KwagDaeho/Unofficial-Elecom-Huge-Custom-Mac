@@ -120,7 +120,7 @@ pub(crate) fn apply_active(active: bool) {
         suppress::set_suppress_motion(true);
         inject::pin_cursor();
     } else if !active && was {
-        *IGNORE_BALL_MOTION_UNTIL.lock() = Some(Instant::now() + BALL_MOTION_IGNORE);
+        *IGNORE_BALL_MOTION_UNTIL.lock() = Some(Instant::now() + inject::POST_UNPIN_BALL_IGNORE);
         inject::restore_pinned_cursor();
         suppress::set_suppress_motion(false);
     }

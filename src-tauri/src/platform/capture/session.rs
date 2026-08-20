@@ -12,6 +12,7 @@ static UI_MODAL_ACTIVE: AtomicBool = AtomicBool::new(false);
 static GESTURE_RECORD_ACTIVE: AtomicBool = AtomicBool::new(false);
 static GESTURE_RECORD_STROKE_MOVED: AtomicBool = AtomicBool::new(false);
 static GESTURE_CANVAS_DRAWING: AtomicBool = AtomicBool::new(false);
+static GESTURE_BALL_STROKE_ACTIVE: AtomicBool = AtomicBool::new(false);
 pub(crate) static TAP_STARTED: AtomicBool = AtomicBool::new(false);
 
 fn refresh_capture_active() {
@@ -34,10 +35,18 @@ fn refresh_activator_capture() {
 /// Atomically apply the full capture session (avoids FE race between invoke calls).
 pub fn apply_capture_session(session: CaptureSession) {
     let combo_was = COMBO_TRIGGER_CAPTURE.load(Ordering::SeqCst);
+    let gesture_was = GESTURE_RECORD_ACTIVE.load(Ordering::SeqCst);
     KEY_CAPTURE_WANTED.store(session.key_capture, Ordering::SeqCst);
     ACTIVATOR_CAPTURE_WANTED.store(session.activator_capture, Ordering::SeqCst);
     COMBO_TRIGGER_CAPTURE.store(session.combo_trigger, Ordering::SeqCst);
     UI_MODAL_ACTIVE.store(session.ui_modal, Ordering::SeqCst);
+
+    if gesture_was && !session.gesture_record {
+        GESTURE_CANVAS_DRAWING.store(false, Ordering::SeqCst);
+        GESTURE_BALL_STROKE_ACTIVE.store(false, Ordering::SeqCst);
+        super::emit::emit_gesture_canvas_phase("end");
+    }
+
     GESTURE_RECORD_ACTIVE.store(session.gesture_record, Ordering::SeqCst);
 
     if session.combo_trigger != combo_was {
@@ -97,10 +106,21 @@ pub fn gesture_record_stroke_moved() -> bool {
 
 pub fn set_gesture_canvas_drawing(active: bool) {
     GESTURE_CANVAS_DRAWING.store(active, Ordering::SeqCst);
+    if active {
+        GESTURE_BALL_STROKE_ACTIVE.store(false, Ordering::SeqCst);
+    }
 }
 
 pub fn gesture_canvas_drawing() -> bool {
     GESTURE_CANVAS_DRAWING.load(Ordering::SeqCst)
+}
+
+pub fn set_gesture_ball_stroke_active(active: bool) {
+    GESTURE_BALL_STROKE_ACTIVE.store(active, Ordering::SeqCst);
+}
+
+pub fn gesture_ball_stroke_active() -> bool {
+    GESTURE_BALL_STROKE_ACTIVE.load(Ordering::SeqCst)
 }
 
 pub fn combo_trigger_capture_active() -> bool {

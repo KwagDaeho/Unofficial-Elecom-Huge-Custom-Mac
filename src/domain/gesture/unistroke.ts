@@ -2,8 +2,11 @@ export type GesturePoint = { x: number; y: number };
 
 export const GESTURE_TEMPLATE_SIZE = 64;
 export const GESTURE_SQUARE_SIZE = 250;
-export const DEFAULT_GESTURE_MIN_SCORE = 0.72;
+export const DEFAULT_GESTURE_MIN_SCORE = 0.85;
 export const MIN_RAW_PATH_LENGTH = 24;
+export const MIN_PATH_LENGTH_RATIO = 0.68;
+export const MIN_TURNING_RATIO = 0.55;
+export const MIN_TEMPLATE_TURNING = 0.35;
 
 const pathLength = (points: GesturePoint[]): number => {
   let length = 0;
@@ -19,26 +22,48 @@ const resample = (points: GesturePoint[], count: number): GesturePoint[] => {
   if (points.length === 0) {
     return [];
   }
-  const interval = pathLength(points) / (count - 1);
-  let distance = 0;
+  if (points.length === 1) {
+    return Array.from({ length: count }, () => ({ ...points[0] }));
+  }
+  const totalLength = pathLength(points);
+  const interval = totalLength / (count - 1);
+  if (interval <= 0) {
+    return Array.from({ length: count }, () => ({ ...points[points.length - 1] }));
+  }
+
   const next: GesturePoint[] = [{ ...points[0] }];
-  for (let index = 1; index < points.length; index += 1) {
-    const prev = points[index - 1];
-    const current = points[index];
-    const segment = Math.hypot(current.x - prev.x, current.y - prev.y);
+  let carried = 0;
+  let index = 1;
+
+  while (index < points.length && next.length < count) {
+    const start = points[index - 1];
+    let end = points[index];
+    let dx = end.x - start.x;
+    let dy = end.y - start.y;
+    let segment = Math.hypot(dx, dy);
+
     if (segment <= 0) {
+      index += 1;
       continue;
     }
-    while (distance + segment >= interval) {
-      const ratio = (interval - distance) / segment;
-      next.push({
-        x: prev.x + ratio * (current.x - prev.x),
-        y: prev.y + ratio * (current.y - prev.y),
-      });
-      distance = 0;
+
+    while (carried + segment >= interval && next.length < count) {
+      const t = (interval - carried) / segment;
+      const sample = {
+        x: start.x + t * dx,
+        y: start.y + t * dy,
+      };
+      next.push(sample);
+      dx = end.x - sample.x;
+      dy = end.y - sample.y;
+      segment = Math.hypot(dx, dy);
+      carried = 0;
     }
-    distance += segment;
+
+    carried += segment;
+    index += 1;
   }
+
   while (next.length < count) {
     next.push({ ...points[points.length - 1] });
   }
@@ -107,56 +132,67 @@ export const normalizeGestureTemplate = (points: GesturePoint[]): GesturePoint[]
   return next;
 };
 
+/** UI preview path — same scale/center as template, but keeps drawn orientation. */
+export const normalizeGesturePreview = (points: GesturePoint[]): GesturePoint[] => {
+  if (points.length === 0) {
+    return [];
+  }
+  let next = resample(points, GESTURE_TEMPLATE_SIZE);
+  next = scaleTo(next, GESTURE_SQUARE_SIZE);
+  next = translateTo(next, centroid(next));
+  return next;
+};
+
+export const pathTurning = (points: GesturePoint[]): number => {
+  if (points.length < 3) {
+    return 0;
+  }
+  let turning = 0;
+  for (let index = 2; index < points.length; index += 1) {
+    const v1x = points[index - 1].x - points[index - 2].x;
+    const v1y = points[index - 1].y - points[index - 2].y;
+    const v2x = points[index].x - points[index - 1].x;
+    const v2y = points[index].y - points[index - 1].y;
+    const l1 = Math.hypot(v1x, v1y);
+    const l2 = Math.hypot(v2x, v2y);
+    if (l1 <= 0 || l2 <= 0) {
+      continue;
+    }
+    const dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
+    turning += Math.acos(Math.max(-1, Math.min(1, dot)));
+  }
+  return turning;
+};
+
+export const passesShapeChecks = (
+  candidateRaw: GesturePoint[],
+  template: GesturePoint[],
+  templatePathLength: number,
+): boolean => {
+  if (templatePathLength > 0) {
+    const ratio = pathLength(candidateRaw) / templatePathLength;
+    if (ratio < MIN_PATH_LENGTH_RATIO) {
+      return false;
+    }
+  }
+
+  const templateTurning = pathTurning(template);
+  if (templateTurning >= MIN_TEMPLATE_TURNING) {
+    const candidateTurning = pathTurning(normalizeGestureTemplate(candidateRaw));
+    if (candidateTurning / templateTurning < MIN_TURNING_RATIO) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 const vectorize = (points: GesturePoint[]): number[] => {
   const values: number[] = [];
   for (const point of points) {
     values.push(point.x, point.y);
   }
   return values;
-};
-
-const optimalAngle = (candidate: number[], template: number[]): number => {
-  let a = -Math.PI / 4;
-  let b = Math.PI / 4;
-  const delta = Math.PI / 90;
-  let x1 = a + (b - a) / 3;
-  let f1 = angleDistanceAt(candidate, template, x1);
-  let x2 = b - (b - a) / 3;
-  let f2 = angleDistanceAt(candidate, template, x2);
-  while (Math.abs(b - a) > delta) {
-    if (f1 < f2) {
-      b = x2;
-      x2 = x1;
-      f2 = f1;
-      x1 = a + (b - a) / 3;
-      f1 = angleDistanceAt(candidate, template, x1);
-    } else {
-      a = x1;
-      x1 = x2;
-      f1 = f2;
-      x2 = b - (b - a) / 3;
-      f2 = angleDistanceAt(candidate, template, x2);
-    }
-  }
-  return (a + b) / 2;
-};
-
-const angleDistanceAt = (
-  candidate: number[],
-  template: number[],
-  angle: number,
-): number => {
-  const cos = Math.cos(angle);
-  const sin = Math.sin(angle);
-  let sum = 0;
-  for (let index = 0; index < candidate.length; index += 2) {
-    const x = candidate[index] * cos - candidate[index + 1] * sin;
-    const y = candidate[index] * sin + candidate[index + 1] * cos;
-    const dx = template[index] - x;
-    const dy = template[index + 1] - y;
-    sum += dx * dx + dy * dy;
-  }
-  return sum;
 };
 
 export const matchGestureScore = (
@@ -169,15 +205,10 @@ export const matchGestureScore = (
   const candidate = normalizeGestureTemplate(candidateRaw);
   const candidateVector = vectorize(candidate);
   const templateVector = vectorize(template);
-  const angle = optimalAngle(candidateVector, templateVector);
-  const cos = Math.cos(angle);
-  const sin = Math.sin(angle);
   let sum = 0;
   for (let index = 0; index < candidateVector.length; index += 2) {
-    const x = candidateVector[index] * cos - candidateVector[index + 1] * sin;
-    const y = candidateVector[index] * sin + candidateVector[index + 1] * cos;
-    const dx = templateVector[index] - x;
-    const dy = templateVector[index + 1] - y;
+    const dx = templateVector[index] - candidateVector[index];
+    const dy = templateVector[index + 1] - candidateVector[index + 1];
     sum += dx * dx + dy * dy;
   }
   const halfDiagonal = 0.5 * Math.hypot(GESTURE_SQUARE_SIZE, GESTURE_SQUARE_SIZE);

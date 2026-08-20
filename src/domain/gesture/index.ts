@@ -2,9 +2,15 @@ export {
   DEFAULT_GESTURE_MIN_SCORE,
   GESTURE_SQUARE_SIZE,
   GESTURE_TEMPLATE_SIZE,
+  MIN_PATH_LENGTH_RATIO,
   MIN_RAW_PATH_LENGTH,
+  MIN_TEMPLATE_TURNING,
+  MIN_TURNING_RATIO,
   matchGestureScore,
+  normalizeGesturePreview,
   normalizeGestureTemplate,
+  passesShapeChecks,
+  pathTurning,
   rawPathLength,
 } from "./unistroke";
 export type { GesturePoint } from "./unistroke";

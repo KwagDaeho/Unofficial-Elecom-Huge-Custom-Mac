@@ -63,7 +63,7 @@ struct GestureCanvasDelta {
 }
 
 pub fn emit_gesture_canvas_delta(dx: f64, dy: f64) {
-    if !session::gesture_record_active() {
+    if !session::gesture_record_active() || !session::gesture_ball_stroke_active() {
         return;
     }
     session::set_gesture_record_stroke_moved(true);
@@ -82,6 +82,11 @@ struct GestureCanvasPhase {
 pub fn emit_gesture_canvas_phase(phase: &str) {
     if !session::gesture_record_active() {
         return;
+    }
+    if phase == "start" {
+        session::set_gesture_ball_stroke_active(true);
+    } else if phase == "end" {
+        session::set_gesture_ball_stroke_active(false);
     }
     app_bus::emit(
         "gesture-canvas-phase",

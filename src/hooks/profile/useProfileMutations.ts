@@ -158,9 +158,17 @@ export const useProfileMutations = (
   const updateGestureTemplate = (
     entryId: string,
     template: GestureMappingEntry["template"],
+    templatePathLength?: number,
+    templatePreview?: GestureMappingEntry["templatePreview"],
   ) => {
     mutateProfile((loadedProfile) =>
-      withGestureMappingTemplate(loadedProfile, entryId, template),
+      withGestureMappingTemplate(
+        loadedProfile,
+        entryId,
+        template,
+        templatePathLength,
+        templatePreview,
+      ),
     );
   };
 

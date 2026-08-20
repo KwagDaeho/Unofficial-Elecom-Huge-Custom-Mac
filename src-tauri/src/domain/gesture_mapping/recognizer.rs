@@ -2,6 +2,9 @@ use crate::domain::profile::GesturePoint;
 
 const TEMPLATE_SIZE: usize = 64;
 const SQUARE_SIZE: f64 = 250.0;
+pub const MIN_PATH_LENGTH_RATIO: f64 = 0.68;
+pub const MIN_TURNING_RATIO: f64 = 0.55;
+pub const MIN_TEMPLATE_TURNING: f64 = 0.35;
 
 fn path_length(points: &[GesturePoint]) -> f64 {
     let mut length = 0.0;
@@ -17,28 +20,46 @@ fn resample(points: &[GesturePoint], count: usize) -> Vec<GesturePoint> {
     if points.is_empty() {
         return Vec::new();
     }
-    let interval = path_length(points) / (count as f64 - 1.0);
-    let mut distance = 0.0;
+    if points.len() == 1 {
+        return vec![points[0].clone(); count];
+    }
+    let total_length = path_length(points);
+    let interval = total_length / (count as f64 - 1.0);
+    if interval <= f64::EPSILON {
+        return vec![points[points.len() - 1].clone(); count];
+    }
+
     let mut next = vec![points[0].clone()];
-    for index in 1..points.len() {
-        let prev = &points[index - 1];
-        let current = &points[index];
-        let dx = current.x - prev.x;
-        let dy = current.y - prev.y;
-        let segment = (dx * dx + dy * dy).sqrt();
+    let mut carried = 0.0;
+    let mut index = 1;
+
+    while index < points.len() && next.len() < count {
+        let start = &points[index - 1];
+        let end = &points[index];
+        let mut dx = end.x - start.x;
+        let mut dy = end.y - start.y;
+        let mut segment = (dx * dx + dy * dy).sqrt();
+
         if segment <= f64::EPSILON {
+            index += 1;
             continue;
         }
-        while distance + segment >= interval {
-            let ratio = (interval - distance) / segment;
-            next.push(GesturePoint {
-                x: prev.x + ratio * dx,
-                y: prev.y + ratio * dy,
-            });
-            distance = 0.0;
+
+        while carried + segment >= interval && next.len() < count {
+            let t = (interval - carried) / segment;
+            let sx = start.x + t * dx;
+            let sy = start.y + t * dy;
+            next.push(GesturePoint { x: sx, y: sy });
+            dx = end.x - sx;
+            dy = end.y - sy;
+            segment = (dx * dx + dy * dy).sqrt();
+            carried = 0.0;
         }
-        distance += segment;
+
+        carried += segment;
+        index += 1;
     }
+
     while next.len() < count {
         next.push(points[points.len() - 1].clone());
     }
@@ -119,6 +140,50 @@ pub fn normalize_template(points: &[GesturePoint]) -> Vec<GesturePoint> {
     next
 }
 
+pub fn path_turning(points: &[GesturePoint]) -> f64 {
+    if points.len() < 3 {
+        return 0.0;
+    }
+    let mut turning = 0.0;
+    for index in 2..points.len() {
+        let v1x = points[index - 1].x - points[index - 2].x;
+        let v1y = points[index - 1].y - points[index - 2].y;
+        let v2x = points[index].x - points[index - 1].x;
+        let v2y = points[index].y - points[index - 1].y;
+        let l1 = (v1x * v1x + v1y * v1y).sqrt();
+        let l2 = (v2x * v2x + v2y * v2y).sqrt();
+        if l1 <= f64::EPSILON || l2 <= f64::EPSILON {
+            continue;
+        }
+        let dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
+        turning += dot.clamp(-1.0, 1.0).acos();
+    }
+    turning
+}
+
+pub fn passes_shape_checks(
+    candidate_raw: &[GesturePoint],
+    template: &[GesturePoint],
+    template_path_length: f64,
+) -> bool {
+    if template_path_length > f64::EPSILON {
+        let ratio = path_length(candidate_raw) / template_path_length;
+        if ratio < MIN_PATH_LENGTH_RATIO {
+            return false;
+        }
+    }
+
+    let template_turning = path_turning(template);
+    if template_turning >= MIN_TEMPLATE_TURNING {
+        let candidate_turning = path_turning(&normalize_template(candidate_raw));
+        if candidate_turning / template_turning < MIN_TURNING_RATIO {
+            return false;
+        }
+    }
+
+    true
+}
+
 fn vectorize(points: &[GesturePoint]) -> Vec<f64> {
     let mut values = Vec::with_capacity(points.len() * 2);
     for point in points {
@@ -128,46 +193,6 @@ fn vectorize(points: &[GesturePoint]) -> Vec<f64> {
     values
 }
 
-fn angle_distance_at(candidate: &[f64], template: &[f64], angle: f64) -> f64 {
-    let cos = angle.cos();
-    let sin = angle.sin();
-    let mut sum = 0.0;
-    for index in (0..candidate.len()).step_by(2) {
-        let x = candidate[index] * cos - candidate[index + 1] * sin;
-        let y = candidate[index] * sin + candidate[index + 1] * cos;
-        let dx = template[index] - x;
-        let dy = template[index + 1] - y;
-        sum += dx * dx + dy * dy;
-    }
-    sum
-}
-
-fn optimal_angle(candidate: &[f64], template: &[f64]) -> f64 {
-    let mut a = -std::f64::consts::FRAC_PI_4;
-    let mut b = std::f64::consts::FRAC_PI_4;
-    let delta = std::f64::consts::PI / 90.0;
-    let mut x1 = a + (b - a) / 3.0;
-    let mut f1 = angle_distance_at(candidate, template, x1);
-    let mut x2 = b - (b - a) / 3.0;
-    let mut f2 = angle_distance_at(candidate, template, x2);
-    while (b - a).abs() > delta {
-        if f1 < f2 {
-            b = x2;
-            x2 = x1;
-            f2 = f1;
-            x1 = a + (b - a) / 3.0;
-            f1 = angle_distance_at(candidate, template, x1);
-        } else {
-            a = x1;
-            x1 = x2;
-            f1 = f2;
-            x2 = b - (b - a) / 3.0;
-            f2 = angle_distance_at(candidate, template, x2);
-        }
-    }
-    (a + b) / 2.0
-}
-
 pub fn match_score(candidate_raw: &[GesturePoint], template: &[GesturePoint]) -> f64 {
     if candidate_raw.len() < 2 || template.len() < 2 {
         return 0.0;
@@ -175,15 +200,10 @@ pub fn match_score(candidate_raw: &[GesturePoint], template: &[GesturePoint]) ->
     let candidate = normalize_template(candidate_raw);
     let candidate_vector = vectorize(&candidate);
     let template_vector = vectorize(template);
-    let angle = optimal_angle(&candidate_vector, &template_vector);
-    let cos = angle.cos();
-    let sin = angle.sin();
     let mut sum = 0.0;
     for index in (0..candidate_vector.len()).step_by(2) {
-        let x = candidate_vector[index] * cos - candidate_vector[index + 1] * sin;
-        let y = candidate_vector[index] * sin + candidate_vector[index + 1] * cos;
-        let dx = template_vector[index] - x;
-        let dy = template_vector[index + 1] - y;
+        let dx = template_vector[index] - candidate_vector[index];
+        let dy = template_vector[index + 1] - candidate_vector[index + 1];
         sum += dx * dx + dy * dy;
     }
     let half_diagonal = 0.5 * (SQUARE_SIZE * SQUARE_SIZE * 2.0).sqrt();

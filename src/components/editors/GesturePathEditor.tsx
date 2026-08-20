@@ -3,193 +3,196 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
 
 import {
   MIN_RAW_PATH_LENGTH,
-  matchGestureScore,
+  normalizeGesturePreview,
   normalizeGestureTemplate,
   rawPathLength,
 } from "@/domain/gesture";
+import { gcLog } from "@/domain/gesture/gestureCanvasDebug";
 import {
-  CANVAS_RECORDER_HEIGHT,
-  CANVAS_RECORDER_WIDTH,
-} from "@/domain/gesture/canvasRecorder";
+  subscribeGestureCanvasUiChange,
+  type GestureDrawPhase,
+} from "@/domain/gesture/gestureCanvasUiEvent";
+import {
+  applyGesturePathUi,
+  type GesturePathUiLabels,
+  type GesturePathUiRefs,
+} from "@/domain/gesture/gesturePathUi";
 import { useGestureCanvasRecorder } from "@/hooks/gesture/useGestureCanvasRecorder";
+import type { GesturePoint } from "@/types";
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
 import { Button } from "../ui/Button";
-import type { GesturePoint, GesturePathRecorderState } from "@/types";
+import type { GesturePathRecorderState } from "@/types";
 
 interface GesturePathEditorProps {
   editor: GesturePathRecorderState;
 }
-
-const CANVAS_BG = "#ffffff";
-const CANVAS_STROKE = "#c07bc4";
-const CANVAS_GUIDE = "#6b6270";
-
-const drawPath = (
-  context: CanvasRenderingContext2D,
-  points: GesturePoint[],
-  stroke: string,
-) => {
-  if (points.length < 2) {
-    return;
-  }
-  context.strokeStyle = stroke;
-  context.lineWidth = 2.5;
-  context.lineCap = "round";
-  context.lineJoin = "round";
-  context.beginPath();
-  context.moveTo(points[0].x, points[0].y);
-  for (let index = 1; index < points.length; index += 1) {
-    context.lineTo(points[index].x, points[index].y);
-  }
-  context.stroke();
-};
 
 export const GesturePathEditor = (props: GesturePathEditorProps) => {
   const { i18n } = usePrefs();
   const { gestureMappings } = useProfileCtx();
   const { setEditor } = useEditor();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const {
-    recording,
-    points,
-    onCanvasPointerDown,
-    onCanvasPointerMove,
-    onCanvasPointerEnd,
-    stop,
-    clear,
-  } = useGestureCanvasRecorder(canvasRef);
+  const statusRef = useRef<HTMLParagraphElement>(null);
+  const redrawRowRef = useRef<HTMLDivElement>(null);
+  const saveButtonRef = useRef<HTMLButtonElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const pointsRef = useRef<GesturePoint[]>([]);
+  const stopRef = useRef<() => void>(() => {});
 
-  const paint = useCallback(
-    (nextPoints: GesturePoint[]) => {
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        return;
-      }
-      const context = canvas.getContext("2d");
-      if (!context) {
-        return;
-      }
-      context.clearRect(0, 0, CANVAS_RECORDER_WIDTH, CANVAS_RECORDER_HEIGHT);
-      context.fillStyle = CANVAS_BG;
-      context.fillRect(0, 0, CANVAS_RECORDER_WIDTH, CANVAS_RECORDER_HEIGHT);
-      if (nextPoints.length === 0) {
-        context.fillStyle = CANVAS_GUIDE;
-        context.font = "13px sans-serif";
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillText(
-          i18n.gestureShapeHint,
-          CANVAS_RECORDER_WIDTH / 2,
-          CANVAS_RECORDER_HEIGHT / 2,
-          CANVAS_RECORDER_WIDTH - 24,
-        );
-        return;
-      }
-      if (nextPoints.length === 1) {
-        context.fillStyle = CANVAS_STROKE;
-        context.beginPath();
-        context.arc(nextPoints[0].x, nextPoints[0].y, 3, 0, Math.PI * 2);
-        context.fill();
-      }
-      drawPath(context, nextPoints, CANVAS_STROKE);
-    },
-    [i18n.gestureShapeHint],
+  const [drawPhase, setDrawPhase] = useState<GestureDrawPhase>("idle");
+  const [points, setPoints] = useState<GesturePoint[]>([]);
+
+  const uiLabels = useMemo<GesturePathUiLabels>(
+    () => ({
+      recording: i18n.gestureShapeRecording,
+      tooShort: i18n.gestureShapeTooShort,
+      preview: i18n.gestureShapePreview,
+    }),
+    [i18n],
   );
 
+  const uiLabelsRef = useRef(uiLabels);
+  uiLabelsRef.current = uiLabels;
+
+  const uiRefs = useCallback((): GesturePathUiRefs => {
+    return {
+      status: statusRef.current,
+      redrawRow: redrawRowRef.current,
+      saveButton: saveButtonRef.current,
+      canvas: canvasRef.current,
+      modal: modalRef.current,
+    };
+  }, []);
+
   useEffect(() => {
-    paint(points);
-  }, [paint, points]);
+    return subscribeGestureCanvasUiChange(({ phase, points: nextPoints }) => {
+      pointsRef.current = nextPoints;
+      applyGesturePathUi(uiRefs(), phase, nextPoints, uiLabelsRef.current);
+      setDrawPhase(phase);
+      setPoints(nextPoints);
+      gcLog("state:react", {
+        drawPhase: phase,
+        pointCount: nextPoints.length,
+        isDrawing: phase === "drawing",
+        strokeLocked: phase === "done" && nextPoints.length > 0,
+        statusDomPhase: statusRef.current?.dataset.phase ?? null,
+        statusDomText: statusRef.current?.textContent?.slice(0, 40) ?? null,
+      });
+    });
+  }, [uiRefs]);
+
+  const {
+    onCanvasMouseDown,
+    onCanvasMouseMove,
+    onCanvasMouseEnter,
+    onCanvasMouseLeave,
+    onCanvasMouseUp,
+    stop,
+    clear,
+  } = useGestureCanvasRecorder(canvasRef, i18n.gestureShapeHint);
+
+  const isDrawing = drawPhase === "drawing";
+  const strokeLocked = drawPhase === "done" && points.length > 0;
+
+  stopRef.current = stop;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        stop();
+        stopRef.current();
         setEditor(null);
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [setEditor, stop]);
+  }, [setEditor]);
 
   const pathOk = rawPathLength(points) >= MIN_RAW_PATH_LENGTH;
-  const previewScore = useMemo(() => {
-    if (recording || !pathOk || points.length < 2) {
-      return 0;
+  const showRedraw = !isDrawing && points.length > 0;
+
+  const resetCanvas = useCallback(() => {
+    clear();
+  }, [clear]);
+
+  const closeEditor = useCallback(() => {
+    resetCanvas();
+    setEditor(null);
+  }, [resetCanvas, setEditor]);
+
+  const saveTemplate = useCallback(() => {
+    const committed = pointsRef.current;
+    if (rawPathLength(committed) < MIN_RAW_PATH_LENGTH || drawPhase === "drawing") {
+      return;
     }
-    return matchGestureScore(points, normalizeGestureTemplate(points));
-  }, [recording, pathOk, points]);
-  const showRedraw = !recording && points.length > 0;
+    gestureMappings.updateTemplate(
+      props.editor.entryId,
+      normalizeGestureTemplate(committed),
+      rawPathLength(committed),
+      normalizeGesturePreview(committed),
+    );
+    setEditor(null);
+  }, [drawPhase, gestureMappings, props.editor.entryId, setEditor]);
 
   return (
-    <div className="modal-backdrop" role="presentation">
-      <div className="modal modal-wide" role="dialog" aria-modal="true">
+    <div className="modal-backdrop modal-backdrop-plain" role="presentation">
+      <div
+        ref={modalRef}
+        className={`modal modal-wide gesture-path-modal${drawPhase === "done" ? " gesture-path-done" : ""}`}
+        role="dialog"
+        aria-modal="true"
+      >
         <h2>{i18n.gestureShapeTitle}</h2>
         <p className="muted">{i18n.gestureShapeHint}</p>
         <canvas
           ref={canvasRef}
-          className="gesture-record-canvas"
-          width={CANVAS_RECORDER_WIDTH}
-          height={CANVAS_RECORDER_HEIGHT}
-          onPointerDown={onCanvasPointerDown}
-          onPointerMove={onCanvasPointerMove}
-          onPointerUp={onCanvasPointerEnd}
-          onPointerCancel={onCanvasPointerEnd}
-          onPointerLeave={(event) => {
-            if (event.buttons === 0 && recording) {
-              stop();
-            }
-          }}
+          className={`gesture-record-canvas${strokeLocked ? " locked" : ""}`}
+          width={320}
+          height={220}
+          aria-disabled={strokeLocked}
+          onMouseDown={onCanvasMouseDown}
+          onMouseMove={onCanvasMouseMove}
+          onMouseEnter={onCanvasMouseEnter}
+          onMouseUp={onCanvasMouseUp}
+          onMouseLeave={onCanvasMouseLeave}
         />
-        <p className="muted gesture-record-status">
-          {recording
-            ? i18n.gestureShapeRecording
-            : pathOk
-              ? i18n.gestureShapePreview.replace(
-                  "{score}",
-                  Math.round(previewScore * 100).toString(),
-                )
-              : i18n.gestureShapeTooShort}
+        <p
+          ref={statusRef}
+          className="muted gesture-record-status"
+          data-phase={drawPhase}
+        >
+          {i18n.gestureShapeTooShort}
         </p>
-        {showRedraw ? (
-          <div className="row">
-            <Button variant="ghost" onClick={clear}>
-              {i18n.gestureShapeRedraw}
-            </Button>
-          </div>
-        ) : null}
+        <div
+          ref={redrawRowRef}
+          className={`row gesture-redraw-row${showRedraw ? " visible" : ""}`}
+          aria-hidden={!showRedraw}
+        >
+          <Button variant="ghost" onClick={resetCanvas} tabIndex={showRedraw ? 0 : -1}>
+            {i18n.gestureShapeRedraw}
+          </Button>
+        </div>
         <div className="row">
           <Button
             variant="ghost"
             onPointerDown={(event) => {
               event.stopPropagation();
-              clear();
-              setEditor(null);
+              closeEditor();
             }}
-            onClick={() => {
-              clear();
-              setEditor(null);
-            }}
+            onClick={closeEditor}
           >
             {i18n.cancel}
           </Button>
           <Button
-            disabled={!pathOk || recording}
-            onClick={() => {
-              if (!pathOk || recording) {
-                return;
-              }
-              gestureMappings.updateTemplate(
-                props.editor.entryId,
-                normalizeGestureTemplate(points),
-              );
-              setEditor(null);
-            }}
+            ref={saveButtonRef}
+            disabled={!pathOk || isDrawing}
+            onClick={saveTemplate}
           >
             {i18n.save}
           </Button>

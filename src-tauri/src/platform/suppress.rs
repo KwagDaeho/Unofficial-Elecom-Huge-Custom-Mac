@@ -279,14 +279,9 @@ unsafe extern "C" fn tap_callback(
 }
 
 fn apply_restore_sync_motion(event: *mut std::ffi::c_void, pin_x: f64, pin_y: f64) {
-    unsafe {
-        let dx = CGEventGetDoubleValueField(event, EventField::MOUSE_EVENT_DELTA_X);
-        let dy = CGEventGetDoubleValueField(event, EventField::MOUSE_EVENT_DELTA_Y);
-        CGEventSetLocation(
-            event,
-            core_graphics::geometry::CGPoint::new(pin_x + dx, pin_y + dy),
-        );
-    }
+    // While the cursor was disassociated, ball HID deltas accumulate on the next
+    // mouse-moved event. Re-anchor at the pin and drop those stale deltas.
+    pin_mouse_event(event, pin_x, pin_y);
     crate::platform::inject::finish_restore_sync();
 }
 

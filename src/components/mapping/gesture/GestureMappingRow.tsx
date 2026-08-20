@@ -2,7 +2,8 @@ import { asBinding, gestureHoldLabel } from "@/domain/profile";
 import { formatActivator } from "@/i18n";
 import { usePrefs, useProfileCtx, useEditor } from "@/hooks";
 import { Button } from "@/components/ui";
-import { BindingRow } from "../button/BindingRow";
+import { ActionSelect } from "../button/ActionSelect";
+import { GestureTemplateThumbnail } from "./GestureTemplateThumbnail";
 import type { GestureMappingEntry } from "@/types";
 
 interface GestureMappingRowProps {
@@ -20,10 +21,8 @@ export const GestureMappingRow = (props: GestureMappingRowProps) => {
     (activator) => formatActivator(activator, lang),
     i18n.gestureHoldKeySet,
   );
-  const gestureLabel =
-    entry.template.length > 0
-      ? i18n.gestureShapeRecorded
-      : i18n.gestureShapeSet;
+  const openRecorder = () =>
+    setEditor({ kind: "gesture_path_recorder", entryId: entry.id });
 
   return (
     <div className="custom-mapping-row gesture-mapping-row">
@@ -41,27 +40,23 @@ export const GestureMappingRow = (props: GestureMappingRowProps) => {
           {holdLabel}
         </Button>
       </div>
-      <div className="combo-trigger">
-        <Button
-          size="tiny"
-          onClick={() =>
-            setEditor({ kind: "gesture_path_recorder", entryId: entry.id })
-          }
-        >
-          {gestureLabel}
-        </Button>
-      </div>
-      <BindingRow
-        target={{ kind: "gesture", id: entry.id }}
-        binding={binding}
-        label={null}
-        hideLabel
-        onFlags={(patch) => gestureMappings.updateFlags(entry.id, patch)}
-        onPick={(slot, value) =>
-          catalogSelection.selectGesture(entry.id, slot, value)
+      <GestureTemplateThumbnail
+        template={
+          entry.templatePreview && entry.templatePreview.length >= 2
+            ? entry.templatePreview
+            : entry.template
         }
+        emptyLabel={i18n.gestureShapeSet}
+        previewLabel={i18n.gestureShapePreviewHint}
       />
-      <div className="custom-mapping-remove">
+      <ActionSelect
+        action={binding.click}
+        onPick={(value) => catalogSelection.selectGesture(entry.id, "click", value)}
+      />
+      <div className="gesture-mapping-actions">
+        <Button variant="ghost" size="tiny" onClick={openRecorder}>
+          {i18n.editStep}
+        </Button>
         <Button
           variant="ghost"
           size="tiny"

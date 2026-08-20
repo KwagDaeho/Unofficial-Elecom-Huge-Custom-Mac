@@ -8,6 +8,7 @@ pub fn left_down_at_cursor() {}
 pub fn left_up_at_cursor() {}
 pub fn left_drag_at_cursor() {}
 pub fn pin_cursor() {}
+pub fn pin_cursor_gesture() {}
 pub fn restore_pinned_cursor() {}
 pub fn release_ball_scroll_pin() {}
 pub fn release_ball_scroll_pin_for_quit() {}

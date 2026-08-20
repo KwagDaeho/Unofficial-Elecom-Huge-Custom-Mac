@@ -135,24 +135,129 @@
 .gesture-mapping-grid .button-head,
 .gesture-mapping-row {
   grid-template-columns:
-    minmax(6.5rem, 9rem) minmax(6.5rem, 9rem) 5.5rem 7rem minmax(0, 1fr)
-    minmax(0, 1fr) 3.5rem;
+    max-content
+    2.75rem
+    minmax(0, 1fr)
+    auto;
+  column-gap: 6px;
+  row-gap: 8px;
+}
+
+.gesture-mapping-grid .button-head > span:nth-child(2) {
+  justify-self: start;
+}
+
+.gesture-mapping-row .combo-trigger {
+  justify-self: start;
+}
+
+.gesture-thumb {
+  position: relative;
+  justify-self: start;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+  cursor: zoom-in;
+}
+
+.gesture-thumb-empty {
+  display: grid;
+  place-items: center;
+  cursor: default;
+  background: color-mix(in srgb, var(--accent-soft) 70%, #ffffff);
+}
+
+.gesture-thumb-empty-mark {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.gesture-thumb-canvas,
+.gesture-thumb-popover-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.gesture-thumb-popover {
+  position: absolute;
+  z-index: 20;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel, #1a171c);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
+  pointer-events: none;
+}
+
+.gesture-thumb-popover-canvas {
+  width: 160px;
+  height: 160px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.gesture-mapping-actions {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.gesture-mapping-grid .button-head > span:last-child {
+  text-align: right;
 }
 
 .gesture-record-canvas {
   width: 100%;
   max-width: 320px;
+  height: auto;
+  aspect-ratio: 320 / 220;
   border-radius: 8px;
-  border: 2px solid #c07bc4;
+  outline: 2px solid #c07bc4;
+  outline-offset: 0;
   background: #ffffff;
   touch-action: none;
   cursor: crosshair;
   display: block;
 }
 
+.gesture-record-canvas.locked {
+  cursor: default;
+  pointer-events: none;
+}
+
 .gesture-record-status {
   margin: 0;
   font-size: 0.8rem;
+}
+
+.gesture-path-modal {
+  pointer-events: auto;
+}
+
+.gesture-path-done {
+  transform: translateZ(0);
+}
+
+.gesture-redraw-row {
+  min-height: 2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.gesture-redraw-row.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .ball-scroll-badge {

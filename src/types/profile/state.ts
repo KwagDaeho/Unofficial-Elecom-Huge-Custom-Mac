@@ -78,6 +78,8 @@ export type ProfileGestureMappingMutations = {
   updateTemplate: (
     entryId: string,
     template: GestureMappingEntry["template"],
+    templatePathLength?: number,
+    templatePreview?: GestureMappingEntry["templatePreview"],
   ) => void;
 };
 

@@ -248,6 +248,11 @@ pub(crate) fn run(
                                 capture::set_gesture_canvas_drawing(false);
                             }
                         }
+                        if !raw_buttons.left && capture::gesture_ball_stroke_active() {
+                            capture::emit_gesture_canvas_phase("end");
+                            capture::set_gesture_record_stroke_moved(false);
+                            capture::set_gesture_canvas_drawing(false);
+                        }
                     }
 
                     let now = Instant::now();
@@ -286,17 +291,6 @@ pub(crate) fn run(
                             .map(|d| d.as_millis())
                             .unwrap_or(0),
                     });
-
-                    if capture::gesture_record_active()
-                        && !capture::gesture_canvas_drawing()
-                        && state.left
-                        && (parsed.dx != 0 || parsed.dy != 0)
-                    {
-                        capture::emit_gesture_canvas_delta(
-                            parsed.dx as f64,
-                            parsed.dy as f64,
-                        );
-                    }
 
                     let shared = inject::shared_pointer_mode();
 
@@ -339,7 +333,8 @@ pub(crate) fn run(
                         // Shared: OS moves cursor (Dock). Speed ≥ 1 — extras only when
                     // faster than 1× (dx-raw). Skip extras on wheel/pan reports.
                     {
-                        let ignore_ball = ball_scroll::ignore_ball_pointer_motion();
+                        let ignore_ball = ball_scroll::ignore_ball_pointer_motion()
+                            || gesture_mapping::ignore_ball_pointer_motion();
                         let raw_x = if ignore_ball {
                             0.0
                         } else {
@@ -359,6 +354,12 @@ pub(crate) fn run(
                                 dx *= flatten;
                                 dy *= flatten;
                             }
+                        }
+                        if capture::gesture_ball_stroke_active()
+                            && (raw_x != 0.0 || raw_y != 0.0)
+                        {
+                            // Template canvas uses raw ball counts, not pointer speed.
+                            capture::emit_gesture_canvas_delta(raw_x, raw_y);
                         }
                         let pan_is_stream_scroll = match parsed.pan.cmp(&0) {
                             std::cmp::Ordering::Less => tilt_uses_pan_stream(
@@ -388,10 +389,8 @@ pub(crate) fn run(
                             &profile_snap,
                         );
                         suppress::set_suppress_motion(takeover || ball_scroll_on || gesture_on);
-                        let gesture_canvas_draw = capture::gesture_record_active()
-                            && state.left
-                            && !capture::gesture_canvas_drawing();
-                        let (out_x, out_y) = if gesture_canvas_draw {
+                        let gesture_ball_draw = capture::gesture_ball_stroke_active();
+                        let (out_x, out_y) = if gesture_ball_draw {
                             (0.0, 0.0)
                         } else if ball_scroll_on || gesture_on {
                             if gesture_on {
@@ -595,6 +594,14 @@ fn note_huge_activators(prev: ButtonState, state: ButtonState) {
     }
     // Gesture record L edges are handled on raw HID buttons in the worker loop.
     if capture::gesture_record_active() {
+        if !capture::gesture_ball_stroke_active() && !capture::gesture_canvas_drawing() {
+            for id in state.pressed_edges(prev) {
+                if id == ButtonId::Left {
+                    inject::click_at_cursor();
+                    return;
+                }
+            }
+        }
         return;
     }
     if capture::ui_modal_active() {

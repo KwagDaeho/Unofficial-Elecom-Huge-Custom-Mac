@@ -32,7 +32,14 @@ const ACCENT_G: f64 = 123.0 / 255.0;
 const ACCENT_B: f64 = 196.0 / 255.0;
 
 const RING_VIEW_CLASS: &str = "ElecomHugeBallScrollRingView";
+const GESTURE_VIEW_CLASS: &str = "ElecomHugeGestureBadgeView";
 const PANEL_CLASS: &str = "ElecomHugeBallScrollPanel";
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum BadgeStyle {
+    BallScrollRing,
+    GestureFilled,
+}
 /// `NSWindowStyleMaskNonactivatingPanel`
 const NONACTIVATING_PANEL: u64 = 1 << 7;
 /// `kCGSOrderAbove`
@@ -46,6 +53,7 @@ extern "C" {
 }
 
 static WINDOW: Mutex<Option<usize>> = Mutex::new(None);
+static STYLE: Mutex<BadgeStyle> = Mutex::new(BadgeStyle::BallScrollRing);
 static RAISING: AtomicBool = AtomicBool::new(false);
 static CURSOR_HOOKED: AtomicBool = AtomicBool::new(false);
 static CURSOR_BLOB: Mutex<Option<CursorBlob>> = Mutex::new(None);
@@ -64,6 +72,12 @@ struct CursorBlob {
 }
 
 pub fn show() {
+    *STYLE.lock() = BadgeStyle::BallScrollRing;
+    app_bus::run_on_main(|| unsafe { show_on_main() });
+}
+
+pub fn show_gesture() {
+    *STYLE.lock() = BadgeStyle::GestureFilled;
     app_bus::run_on_main(|| unsafe { show_on_main() });
 }
 
@@ -122,7 +136,12 @@ unsafe fn show_on_main() {
     );
 
     let frame = NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(RING, RING));
-    let view: id = msg_send![ring_view_class(), alloc];
+    let style = *STYLE.lock();
+    let view_class = match style {
+        BadgeStyle::BallScrollRing => ring_view_class(),
+        BadgeStyle::GestureFilled => gesture_view_class(),
+    };
+    let view: id = msg_send![view_class, alloc];
     let view: id = msg_send![view, initWithFrame: frame];
     let _: () = msg_send![view, setWantsLayer: NO];
     win.setContentView_(view);
@@ -130,7 +149,7 @@ unsafe fn show_on_main() {
     win.setOpaque_(NO);
     win.setBackgroundColor_(NSColor::clearColor(nil));
     win.orderFrontRegardless();
-    apply_ring_shape(win);
+    apply_badge_shape(win, style);
     win.setLevel_(i64::from(shielding_level()));
     win.orderFrontRegardless();
     raise_window_server(win);
@@ -194,6 +213,26 @@ fn panel_class() -> &'static Class {
     Class::get(PANEL_CLASS).expect(PANEL_CLASS)
 }
 
+fn gesture_view_class() -> &'static Class {
+    if let Some(cls) = Class::get(GESTURE_VIEW_CLASS) {
+        return cls;
+    }
+    let mut decl = ClassDecl::new(GESTURE_VIEW_CLASS, class!(NSView)).expect(GESTURE_VIEW_CLASS);
+    unsafe {
+        decl.add_method(
+            sel!(drawRect:),
+            draw_gesture_filled as extern "C" fn(&Object, Sel, NSRect),
+        );
+        decl.add_method(sel!(isOpaque), no_bool as extern "C" fn(&Object, Sel) -> BOOL);
+        decl.add_method(
+            sel!(wantsLayer),
+            no_bool as extern "C" fn(&Object, Sel) -> BOOL,
+        );
+    }
+    decl.register();
+    Class::get(GESTURE_VIEW_CLASS).expect(GESTURE_VIEW_CLASS)
+}
+
 fn ring_view_class() -> &'static Class {
     if let Some(cls) = Class::get(RING_VIEW_CLASS) {
         return cls;
@@ -216,6 +255,92 @@ fn ring_view_class() -> &'static Class {
 
 extern "C" fn no_bool(_this: &Object, _cmd: Sel) -> BOOL {
     NO
+}
+
+extern "C" fn draw_gesture_filled(_this: &Object, _cmd: Sel, _dirty: NSRect) {
+    unsafe {
+        let purple = NSColor::colorWithCalibratedRed_green_blue_alpha_(
+            nil, ACCENT_R, ACCENT_G, ACCENT_B, 1.0,
+        );
+        let purple_dark = NSColor::colorWithCalibratedRed_green_blue_alpha_(
+            nil,
+            ACCENT_R * 0.55,
+            ACCENT_G * 0.55,
+            ACCENT_B * 0.55,
+            1.0,
+        );
+        let purple_light = NSColor::colorWithCalibratedRed_green_blue_alpha_(
+            nil,
+            (ACCENT_R + 0.22).min(1.0),
+            (ACCENT_G + 0.22).min(1.0),
+            (ACCENT_B + 0.22).min(1.0),
+            0.85,
+        );
+        let white = NSColor::colorWithCalibratedRed_green_blue_alpha_(nil, 1.0, 1.0, 1.0, 0.92);
+
+        let inset = 2.0;
+        let span = RING - inset * 2.0;
+        let rect = NSRect::new(NSPoint::new(inset, inset), NSSize::new(span, span));
+        let fill: id = msg_send![class!(NSBezierPath), bezierPathWithOvalInRect: rect];
+        let _: () = msg_send![purple, setFill];
+        let _: () = msg_send![fill, fill];
+
+        // Subtle inner shadow along the bottom edge.
+        let shadow_rect = NSRect::new(
+            NSPoint::new(inset + 1.0, inset + 1.0),
+            NSSize::new(span - 2.0, span * 0.45),
+        );
+        let shadow: id = msg_send![class!(NSBezierPath), bezierPathWithOvalInRect: shadow_rect];
+        let _: () = msg_send![purple_dark, setFill];
+        let _: () = msg_send![shadow, fill];
+
+        // Top highlight arc.
+        let highlight_rect = NSRect::new(
+            NSPoint::new(inset + 3.0, inset + span * 0.42),
+            NSSize::new(span - 6.0, span * 0.42),
+        );
+        let highlight: id = msg_send![class!(NSBezierPath), bezierPathWithOvalInRect: highlight_rect];
+        let _: () = msg_send![purple_light, setFill];
+        let _: () = msg_send![highlight, fill];
+
+        // Embossed gesture-stroke icon (squiggle) at center.
+        let cx = RING / 2.0;
+        let cy = RING / 2.0;
+        let icon: id = msg_send![class!(NSBezierPath), bezierPath];
+        let _: () = msg_send![icon, moveToPoint: NSPoint::new(cx - 9.0, cy + 1.0)];
+        let _: () = msg_send![
+            icon,
+            curveToPoint: NSPoint::new(cx - 1.0, cy - 8.0)
+            controlPoint1: NSPoint::new(cx - 6.0, cy - 2.0)
+            controlPoint2: NSPoint::new(cx - 3.0, cy - 7.0)
+        ];
+        let _: () = msg_send![
+            icon,
+            curveToPoint: NSPoint::new(cx + 9.0, cy + 2.0)
+            controlPoint1: NSPoint::new(cx + 2.0, cy - 6.0)
+            controlPoint2: NSPoint::new(cx + 5.0, cy + 4.0)
+        ];
+        let _: () = msg_send![icon, setLineWidth: 2.4];
+        let _: () = msg_send![icon, setLineCapStyle: 1i64]; // round
+        let _: () = msg_send![icon, setLineJoinStyle: 1i64]; // round
+
+        let shadow_icon: id = msg_send![icon, copy];
+        let _: () = msg_send![
+            shadow_icon,
+            transformUsingAffineTransform: affine_translate(0.6, -0.7)
+        ];
+        let _: () = msg_send![purple_dark, setStroke];
+        let _: () = msg_send![shadow_icon, stroke];
+
+        let _: () = msg_send![white, setStroke];
+        let _: () = msg_send![icon, stroke];
+    }
+}
+
+unsafe fn affine_translate(dx: f64, dy: f64) -> id {
+    let t: id = msg_send![class!(NSAffineTransform), transform];
+    let _: () = msg_send![t, translateXBy: dx yBy: dy];
+    t
 }
 
 extern "C" fn draw_ring(_this: &Object, _cmd: Sel, _dirty: NSRect) {
@@ -287,7 +412,7 @@ unsafe fn window_id(win: id) -> Option<u32> {
     (wid > 0).then_some(wid as u32)
 }
 
-unsafe fn apply_ring_shape(win: id) -> bool {
+unsafe fn apply_badge_shape(win: id, style: BadgeStyle) -> bool {
     let Some(wid) = window_id(win) else {
         return false;
     };
@@ -307,7 +432,10 @@ unsafe fn apply_ring_shape(win: id) -> bool {
     };
     let release = load_sym::<CgsRelease>(b"CGSReleaseRegion\0");
 
-    let rects = ring_scanlines();
+    let rects = match style {
+        BadgeStyle::BallScrollRing => ring_scanlines(),
+        BadgeStyle::GestureFilled => filled_circle_scanlines(RING),
+    };
     if rects.is_empty() {
         return false;
     }
@@ -340,6 +468,28 @@ unsafe fn raise_window_server(win: id) {
     if let Some(order) = first_sym::<SlsOrder>(&[b"SLSOrderWindow\0", b"CGSOrderWindow\0"]) {
         let _ = order(cid, wid, ORDER_ABOVE, 0);
     }
+}
+
+fn filled_circle_scanlines(diameter: f64) -> Vec<NSRect> {
+    let cx = diameter / 2.0;
+    let cy = diameter / 2.0;
+    let r = diameter / 2.0;
+    let mut rects = Vec::new();
+    let mut y = 0.0;
+    while y < diameter {
+        let dy = (y + 0.5) - cy;
+        let dy2 = dy * dy;
+        let r2 = r * r;
+        if dy2 < r2 {
+            let half = (r2 - dy2).sqrt();
+            rects.push(NSRect::new(
+                NSPoint::new(cx - half, y),
+                NSSize::new(half * 2.0, 1.0),
+            ));
+        }
+        y += 1.0;
+    }
+    rects
 }
 
 fn ring_scanlines() -> Vec<NSRect> {

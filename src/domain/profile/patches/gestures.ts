@@ -43,10 +43,19 @@ export const withGestureMappingTemplate = (
   profile: Profile,
   entryId: string,
   template: GestureMappingEntry["template"],
+  templatePathLength?: number,
+  templatePreview?: GestureMappingEntry["templatePreview"],
 ): Profile => ({
   ...profile,
   gestureMappings: gestureMappingsOf(profile).map((entry) =>
-    entry.id === entryId ? { ...entry, template } : entry,
+    entry.id === entryId
+      ? {
+          ...entry,
+          template,
+          templatePreview: templatePreview ?? [],
+          templatePathLength: templatePathLength ?? 0,
+        }
+      : entry,
   ),
 });
 

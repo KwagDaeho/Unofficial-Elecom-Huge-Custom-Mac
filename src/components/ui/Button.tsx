@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import type { ButtonSize, ButtonVariant } from "@/types";
 interface ButtonProps
   extends Omit<
@@ -10,7 +10,7 @@ interface ButtonProps
   size?: ButtonSize;
   onClick?: () => void;
 }
-export const Button = (props: ButtonProps) => {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
   const variant = props.variant !== undefined ? props.variant : "default";
   const size = props.size !== undefined ? props.size : "default";
   const className = [
@@ -22,6 +22,7 @@ export const Button = (props: ButtonProps) => {
   const { children, variant: _variant, size: _size, onClick, ...rest } = props;
   return (
     <button
+      ref={ref}
       type="button"
       className={className.length > 0 ? className : undefined}
       onClick={onClick}
@@ -30,4 +31,5 @@ export const Button = (props: ButtonProps) => {
       {children}
     </button>
   );
-};
+});
+Button.displayName = "Button";

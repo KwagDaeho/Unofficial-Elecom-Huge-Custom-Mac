@@ -1,12 +1,18 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 100;
   display: grid;
   place-items: center;
   padding: 20px;
   background: rgba(20, 12, 24, 0.5);
   backdrop-filter: blur(4px);
+}
+
+/* WKWebView: backdrop-filter can break hover/cursor after focus restore */
+.modal-backdrop-plain {
+  backdrop-filter: none;
+  background: rgba(20, 12, 24, 0.62);
 }
 
 .modal {

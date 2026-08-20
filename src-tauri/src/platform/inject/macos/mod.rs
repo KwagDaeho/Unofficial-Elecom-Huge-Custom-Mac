@@ -18,9 +18,10 @@ pub use mouse::{left_down_at_cursor, left_drag_at_cursor, left_up_at_cursor};
 pub use mouse::{mouse_down, mouse_up};
 pub use pointer::{
     end_idle_ball_scroll, expire_restore_sync_if_due, finish_restore_sync, keep_pinned_cursor,
-    move_by, pin_cursor, release_ball_scroll_pin, release_ball_scroll_pin_for_quit,
-    restore_pinned_cursor, restore_sync_pin, scroll_ball, scroll_by_units_ex,
-    scroll_notches_ex, set_shared_pointer_mode, shared_pointer_mode, sync_cursor_from_system,
+    move_by, pin_cursor, pin_cursor_gesture, release_ball_scroll_pin,
+    release_ball_scroll_pin_for_quit, restore_pinned_cursor, restore_sync_pin,
+    scroll_ball, scroll_by_units_ex, scroll_notches_ex, set_shared_pointer_mode,
+    shared_pointer_mode, sync_cursor_from_system, POST_UNPIN_BALL_IGNORE,
 };
 // Extra scroll helpers kept public for API parity with the former monolith.
 #[allow(unused_imports)]

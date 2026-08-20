@@ -34,3 +34,9 @@ pub fn set_ui_modal(active: bool) {
 pub fn set_gesture_canvas_drawing(active: bool) {
     capture::set_gesture_canvas_drawing(active);
 }
+
+#[tauri::command]
+pub fn clear_gesture_canvas_stroke() {
+    capture::set_gesture_canvas_drawing(false);
+    capture::set_gesture_ball_stroke_active(false);
+}

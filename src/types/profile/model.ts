@@ -61,6 +61,8 @@ export type GestureMappingEntry = {
   id: string;
   holdActivator: Activator | null;
   template: GesturePoint[];
+  templatePreview?: GesturePoint[];
+  templatePathLength?: number;
   minScore?: number;
 } & ButtonBinding;
 

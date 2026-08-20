@@ -32,6 +32,8 @@ static CURSOR_FROZEN: AtomicBool = AtomicBool::new(false);
 static RESTORE_SYNC: Mutex<Option<(CGPoint, Instant)>> = Mutex::new(None);
 
 const RESTORE_SYNC_TTL: Duration = Duration::from_millis(250);
+/// Drop ball HID as pointer motion after unpin (ball-scroll + gesture hold).
+pub const POST_UNPIN_BALL_IGNORE: Duration = Duration::from_millis(350);
 
 pub(super) fn cursor_is_pinned() -> bool {
     CURSOR_FROZEN.load(Ordering::SeqCst)
@@ -114,6 +116,15 @@ pub fn sync_cursor_from_system() {
 
 /// Freeze the on-screen pointer so ball-as-scroll HID deltas cannot walk it.
 pub fn pin_cursor() {
+    pin_cursor_with_badge(super::cursor_badge::show);
+}
+
+/// Freeze pointer while recording a gesture path — filled purple badge.
+pub fn pin_cursor_gesture() {
+    pin_cursor_with_badge(super::cursor_badge::show_gesture);
+}
+
+fn pin_cursor_with_badge(show_badge: fn()) {
     let p = cursor_pos();
     *PINNED_CURSOR.lock() = Some(p);
     *cursor_state().lock() = p;
@@ -122,7 +133,7 @@ pub fn pin_cursor() {
     crate::platform::suppress::set_cursor_lock(Some((p.x, p.y)));
     freeze_os_cursor();
     warp_cursor(p);
-    super::cursor_badge::show();
+    show_badge();
 }
 
 /// Warp back to the pin each HID packet. Association is ignored while we
@@ -145,8 +156,8 @@ fn unpin_at(p: CGPoint) {
     *cursor_state().lock() = p;
 }
 
-/// Release ball-scroll pin. Stay disassociated until the first real motion
-/// re-bases from the pin — otherwise accumulated HID deltas teleport the cursor.
+/// Release ball-scroll / gesture pin. Re-associate at the pin and swallow stale
+/// OS mouse deltas on the first moved event (see suppress tap).
 pub fn restore_pinned_cursor() {
     end_ball_scroll_gesture();
     super::cursor_badge::hide();
@@ -160,6 +171,10 @@ pub fn restore_pinned_cursor() {
     *cursor_state().lock() = p;
     *RESTORE_SYNC.lock() = Some((p, Instant::now() + RESTORE_SYNC_TTL));
     crate::platform::suppress::set_cursor_lock(None);
+    // Re-associate now; stale ball accumulation is cleared on the first moved event.
+    unfreeze_os_cursor();
+    warp_cursor(p);
+    *cursor_state().lock() = p;
 }
 
 /// App exit: drop pin, badge, and cursor association immediately.
@@ -220,16 +235,14 @@ pub fn move_by(dx: f64, dy: f64) {
         return;
     }
 
-    // Real HID mice move the cursor only via the event stream. CGWarp is
-    // invisible to Dock / menu-bar auto-hide and is what made chrome ignore
-    // us. Exclusive-seize already removes the hardware reports, so we must
-    // look like a normal mouse: HID-source MouseMoved (+ deltas) only.
-    let from = if let Some(p) = restore_sync_pin() {
+    if let Some(p) = restore_sync_pin() {
         finish_restore_sync();
-        p
-    } else {
-        cursor_pos()
-    };
+        warp_cursor(p);
+        *cursor_state().lock() = p;
+        return;
+    }
+
+    let from = cursor_pos();
     let point = clamp_to_displays(CGPoint::new(from.x + dx, from.y + dy));
     *cursor_state().lock() = point;
 
