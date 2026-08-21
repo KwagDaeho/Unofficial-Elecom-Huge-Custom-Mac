@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here.
 
+## [1.3.1] — 2026-08-21
+
+### Fixed
+
+- **Gesture profile sync** — HID worker inner loop now refreshes gesture mappings and OS event watch like the outer reconnect loop.
+- **Gesture shutdown** — pinned cursor is restored on app exit when a gesture session is active.
+
+### Changed
+
+- **README** — feature tables, architecture/performance notes, and v1.3.1 download links (EN/KO).
+- **Editor components** — split into feature subdirs (`macro/`, `gesture/`, `openApp/`, …), shared activator modal, extracted drag/canvas hooks.
+- **Rust** — `domain/watch.rs` consolidates OS event tap predicate; removed unused gesture HID helpers.
+
 ## [1.3.0] — 2026-08-20
 
 ### Added

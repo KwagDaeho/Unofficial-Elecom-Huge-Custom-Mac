@@ -1,11 +1,11 @@
-import { CustomKeyEditor } from "./CustomKeyEditor";
-import { MacroEditor } from "./MacroEditor";
-import { OpenAppEditor } from "./OpenAppEditor";
-import { ActivatorEditor } from "./ActivatorEditor";
-import { ComboActivatorEditor } from "./ComboActivatorEditor";
-import { GestureHoldActivatorEditor } from "./GestureHoldActivatorEditor";
-import { GesturePathEditor } from "./GesturePathEditor";
 import { useEditor } from "@/hooks/editor";
+
+import { BallScrollActivatorEditor } from "./ballScroll";
+import { ComboActivatorEditor } from "./combo";
+import { CustomKeyEditor } from "./customKey";
+import { GestureHoldActivatorEditor, GesturePathEditor } from "./gesture";
+import { MacroEditor } from "./macro";
+import { OpenAppEditor } from "./openApp";
 
 export const EditorHost = () => {
   const { editor } = useEditor();
@@ -20,7 +20,7 @@ export const EditorHost = () => {
     case "open_app":
       return <OpenAppEditor editor={editor} />;
     case "ball_scroll_activator":
-      return <ActivatorEditor editor={editor} />;
+      return <BallScrollActivatorEditor editor={editor} />;
     case "gesture_hold_activator":
       return <GestureHoldActivatorEditor editor={editor} />;
     case "gesture_path_recorder":

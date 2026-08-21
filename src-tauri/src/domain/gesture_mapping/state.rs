@@ -139,14 +139,6 @@ pub fn on_os_up(activator: &Activator, is_repeat: bool) -> bool {
     handled
 }
 
-pub fn note_huge_down(id: crate::domain::device::ButtonId) -> bool {
-    on_os_down(&Activator::Huge { button: id }, false)
-}
-
-pub fn note_huge_up(id: crate::domain::device::ButtonId) -> bool {
-    on_os_up(&Activator::Huge { button: id }, false)
-}
-
 pub fn note_huge_edges(prev: crate::domain::device::ButtonState, state: crate::domain::device::ButtonState) {
     for id in state.pressed_edges(prev) {
         let activator = Activator::Huge { button: id };

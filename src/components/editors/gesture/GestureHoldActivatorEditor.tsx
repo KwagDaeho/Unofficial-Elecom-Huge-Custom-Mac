@@ -1,14 +1,9 @@
 import { activatorRejectedMessage } from "@/domain/editors";
 import { usePrefs } from "@/hooks/prefs";
 import { useEditor } from "@/hooks/editor";
-import {
-  Button,
-  ChordPreview,
-  Modal,
-  Muted,
-  Row,
-} from "@/components/ui";
 import type { GestureHoldActivatorState } from "@/types";
+
+import { ActivatorCaptureModal } from "../shared";
 
 interface GestureHoldActivatorEditorProps {
   editor: GestureHoldActivatorState;
@@ -29,15 +24,12 @@ export const GestureHoldActivatorEditor = (
     rejectedMessage !== null ? rejectedMessage : i18n.gestureHoldKeyWaiting;
 
   return (
-    <Modal>
-      <h2>{i18n.gestureHoldKeyTitle}</h2>
-      <Muted variant="modal">{i18n.gestureHoldKeyHint}</Muted>
-      <ChordPreview>{statusMessage}</ChordPreview>
-      <Row>
-        <Button variant="ghost" onClick={() => setEditor(null)}>
-          {i18n.cancel}
-        </Button>
-      </Row>
-    </Modal>
+    <ActivatorCaptureModal
+      title={i18n.gestureHoldKeyTitle}
+      hint={i18n.gestureHoldKeyHint}
+      statusMessage={statusMessage}
+      cancelLabel={i18n.cancel}
+      onCancel={() => setEditor(null)}
+    />
   );
 };

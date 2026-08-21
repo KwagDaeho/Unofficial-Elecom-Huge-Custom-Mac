@@ -4,10 +4,11 @@ import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
 import { Button, Modal, Muted, Row } from "@/components/ui";
+import type { MacroEditorState, MacroStep } from "@/types";
+
 import { MacroDelayPrompt } from "./MacroDelayPrompt";
 import { MacroKeyPrompt } from "./MacroKeyPrompt";
 import { MacroStepList } from "./MacroStepList";
-import type { MacroEditorState, MacroStep } from "@/types";
 
 interface MacroEditorProps {
   editor: MacroEditorState;

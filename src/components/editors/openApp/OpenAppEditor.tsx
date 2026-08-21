@@ -3,9 +3,9 @@ import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
 import { Button, Modal, Muted, Row, SrOnly } from "@/components/ui";
-import { OpenAppPickerContent } from "./OpenAppPickerContent";
 import type { InstalledAppWithIcon, OpenAppEditorState } from "@/types";
 
+import { OpenAppPicker } from "./OpenAppPicker";
 import * as styles from "./OpenAppEditor.css";
 
 interface OpenAppEditorProps {
@@ -54,7 +54,7 @@ export const OpenAppEditor = (props: OpenAppEditorProps) => {
           }
         />
       </label>
-      <OpenAppPickerContent
+      <OpenAppPicker
         editor={editor}
         apps={filteredApps}
         loadingLabel={i18n.openAppLoading}

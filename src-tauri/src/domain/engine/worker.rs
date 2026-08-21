@@ -11,6 +11,7 @@ use parking_lot::Mutex;
 use crate::domain::ball_scroll;
 use crate::domain::custom_mapping::{self, CustomMaps};
 use crate::domain::gesture_mapping;
+use crate::domain::watch;
 use crate::domain::device::{ButtonId, ButtonState, DeviceInfo, ParsedReport};
 use crate::domain::engine::input::{
     binding_of, fire_due_key_repeats, fire_due_long_presses, fire_due_scroll_repeats,
@@ -56,10 +57,7 @@ pub(crate) fn run(
         ball_scroll::sync_from_profile(&profile_snap);
         custom_mapping::sync_from_profile(&profile_snap);
         gesture_mapping::sync_from_profile(&profile_snap);
-        if ball_scroll::needs_event_watch(&profile_snap)
-            || custom_mapping::uses_os_watch()
-            || gesture_mapping::needs_event_watch(&profile_snap)
-        {
+        if watch::needs_os_event_watch(&profile_snap) {
             capture::ensure_watch_tap();
         }
         if !profile_snap.enabled {
@@ -123,7 +121,8 @@ pub(crate) fn run(
             let profile_snap = profile.lock().clone();
             ball_scroll::sync_from_profile(&profile_snap);
             custom_mapping::sync_from_profile(&profile_snap);
-            if profile_snap.ball_scroll.uses_os_watch() || custom_mapping::uses_os_watch() {
+            gesture_mapping::sync_from_profile(&profile_snap);
+            if watch::needs_os_event_watch(&profile_snap) {
                 capture::ensure_watch_tap();
             }
             if !profile_snap.enabled {

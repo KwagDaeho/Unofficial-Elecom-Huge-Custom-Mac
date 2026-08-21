@@ -1,5 +1,5 @@
 use crate::app::state::AppState;
-use crate::domain::ball_scroll;
+use crate::domain::watch;
 use crate::platform::capture;
 use tauri::{
     image::Image,
@@ -43,7 +43,7 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
 
     capture::register_app_handle(app.handle().clone());
     let profile = app.state::<AppState>().engine.profile();
-    if ball_scroll::needs_event_watch(&profile) {
+    if watch::needs_os_event_watch(&profile) {
         capture::ensure_watch_tap();
     }
     let show_i = MenuItem::with_id(app, "show", "Open Elecom Huge Custom", true, None::<&str>)?;

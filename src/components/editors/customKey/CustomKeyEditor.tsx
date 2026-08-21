@@ -2,11 +2,14 @@ import { formatKeyChord } from "@/i18n";
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
-import { KeyChordModal } from "./KeyChordModal";
 import type { CustomKeyEditorState } from "@/types";
+
+import { KeyChordModal } from "../shared";
+
 interface CustomKeyEditorProps {
   editor: CustomKeyEditorState;
 }
+
 export const CustomKeyEditor = (props: CustomKeyEditorProps) => {
   const { lang, i18n } = usePrefs();
   const { mappings } = useProfileCtx();
@@ -16,6 +19,7 @@ export const CustomKeyEditor = (props: CustomKeyEditorProps) => {
     editor.draft.length > 0
       ? formatKeyChord(editor.draft, lang)
       : i18n.customKeyWaiting;
+
   return (
     <KeyChordModal
       copy={{

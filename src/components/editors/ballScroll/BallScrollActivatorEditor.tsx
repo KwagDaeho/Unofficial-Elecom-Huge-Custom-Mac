@@ -1,20 +1,15 @@
 import { activatorRejectedMessage } from "@/domain/editors";
 import { usePrefs } from "@/hooks/prefs";
 import { useEditor } from "@/hooks/editor";
-import {
-  Button,
-  ChordPreview,
-  Modal,
-  Muted,
-  Row,
-} from "@/components/ui";
 import type { ActivatorEditorState } from "@/types";
 
-interface ActivatorEditorProps {
+import { ActivatorCaptureModal } from "../shared";
+
+interface BallScrollActivatorEditorProps {
   editor: ActivatorEditorState;
 }
 
-export const ActivatorEditor = (props: ActivatorEditorProps) => {
+export const BallScrollActivatorEditor = (props: BallScrollActivatorEditorProps) => {
   const { i18n } = usePrefs();
   const { setEditor } = useEditor();
   const editor = props.editor;
@@ -29,17 +24,16 @@ export const ActivatorEditor = (props: ActivatorEditorProps) => {
     rejectedMessage !== null ? rejectedMessage : i18n.activatorWaiting;
 
   return (
-    <Modal>
-      <h2>
-        {i18n.activatorTitle} · {slotLabel}
-      </h2>
-      <Muted variant="modal">{i18n.activatorHint}</Muted>
-      <ChordPreview>{statusMessage}</ChordPreview>
-      <Row>
-        <Button variant="ghost" onClick={() => setEditor(null)}>
-          {i18n.cancel}
-        </Button>
-      </Row>
-    </Modal>
+    <ActivatorCaptureModal
+      title={
+        <>
+          {i18n.activatorTitle} · {slotLabel}
+        </>
+      }
+      hint={i18n.activatorHint}
+      statusMessage={statusMessage}
+      cancelLabel={i18n.cancel}
+      onCancel={() => setEditor(null)}
+    />
   );
 };

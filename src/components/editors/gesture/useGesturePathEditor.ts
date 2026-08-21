@@ -1,15 +1,5 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import {
-  CANVAS_RECORDER_HEIGHT,
-  CANVAS_RECORDER_WIDTH,
-} from "@/constants/gestureCanvas";
 import { MIN_RAW_PATH_LENGTH } from "@/constants/gesture";
 import {
   normalizeGesturePreview,
@@ -21,21 +11,16 @@ import {
   type GestureDrawPhase,
 } from "@/domain/gesture";
 import { useGestureCanvasRecorder } from "@/hooks/gesture";
-import type { GesturePoint } from "@/types";
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
-import { cx } from "@/utils/cx";
-import { Button, Modal, Muted, Row } from "@/components/ui";
-import type { GesturePathRecorderState } from "@/types";
+import type { GesturePoint } from "@/types";
 
-import * as styles from "./GesturePathEditor.css";
-
-interface GesturePathEditorProps {
-  editor: GesturePathRecorderState;
+interface UseGesturePathEditorOptions {
+  entryId: string;
 }
 
-export const GesturePathEditor = (props: GesturePathEditorProps) => {
+export const useGesturePathEditor = (options: UseGesturePathEditorOptions) => {
   const { i18n } = usePrefs();
   const { gestureMappings } = useProfileCtx();
   const { setEditor } = useEditor();
@@ -54,20 +39,14 @@ export const GesturePathEditor = (props: GesturePathEditorProps) => {
     });
   }, []);
 
-  const {
-    onCanvasMouseDown,
-    onCanvasMouseMove,
-    onCanvasMouseEnter,
-    onCanvasMouseLeave,
-    onCanvasMouseUp,
-    stop,
-    clear,
-  } = useGestureCanvasRecorder(canvasRef, i18n.gestureShapeHint);
+  const { stop, clear, ...canvasHandlers } = useGestureCanvasRecorder(
+    canvasRef,
+    i18n.gestureShapeHint,
+  );
 
   const isDrawing = drawPhase === "drawing";
   const strokeLocked = drawPhase === "done" && points.length > 0;
   const pathOk = rawPathLength(points) >= MIN_RAW_PATH_LENGTH;
-  const showRedraw = !isDrawing && points.length > 0;
 
   const statusText = useMemo(() => {
     if (isDrawing) {
@@ -107,7 +86,7 @@ export const GesturePathEditor = (props: GesturePathEditorProps) => {
       return;
     }
     gestureMappings.updateTemplate(
-      props.editor.entryId,
+      options.entryId,
       normalizeGestureTemplate(committed),
       rawPathLength(committed),
       normalizeGesturePreview(committed),
@@ -115,57 +94,19 @@ export const GesturePathEditor = (props: GesturePathEditorProps) => {
       pathBendSignature(committed),
     );
     setEditor(null);
-  }, [drawPhase, gestureMappings, props.editor.entryId, setEditor]);
+  }, [drawPhase, gestureMappings, options.entryId, setEditor]);
 
-  return (
-    <Modal
-      plainBackdrop
-      wide
-      className={cx(
-        styles.pathModal,
-        drawPhase === "done" && styles.pathDone,
-      )}
-    >
-      <h2>{i18n.gestureShapeTitle}</h2>
-      <Muted variant="modal">{i18n.gestureShapeHint}</Muted>
-      <canvas
-        ref={canvasRef}
-        className={cx(styles.canvas, strokeLocked && styles.canvasLocked)}
-        width={CANVAS_RECORDER_WIDTH}
-        height={CANVAS_RECORDER_HEIGHT}
-        aria-disabled={strokeLocked}
-        onMouseDown={onCanvasMouseDown}
-        onMouseMove={onCanvasMouseMove}
-        onMouseEnter={onCanvasMouseEnter}
-        onMouseUp={onCanvasMouseUp}
-        onMouseLeave={onCanvasMouseLeave}
-      />
-      <Muted variant="modal" className={styles.recordStatus}>
-        {statusText}
-      </Muted>
-      <Row
-        className={cx(styles.redrawRow, showRedraw && styles.redrawRowVisible)}
-        aria-hidden={!showRedraw}
-      >
-        <Button variant="ghost" onClick={resetCanvas} tabIndex={showRedraw ? 0 : -1}>
-          {i18n.gestureShapeRedraw}
-        </Button>
-      </Row>
-      <Row>
-        <Button
-          variant="ghost"
-          onPointerDown={(event) => {
-            event.stopPropagation();
-            closeEditor();
-          }}
-          onClick={closeEditor}
-        >
-          {i18n.cancel}
-        </Button>
-        <Button disabled={!pathOk || isDrawing} onClick={saveTemplate}>
-          {i18n.save}
-        </Button>
-      </Row>
-    </Modal>
-  );
+  return {
+    canvasRef,
+    canvasHandlers,
+    drawPhase,
+    isDrawing,
+    strokeLocked,
+    pathOk,
+    hasStroke: points.length > 0,
+    statusText,
+    resetCanvas,
+    closeEditor,
+    saveTemplate,
+  };
 };

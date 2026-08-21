@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from "react";
-import { comboFromDraft } from "@/domain/profile";
-import { chordIsValid } from "@/domain/profile";
+
+import { chordIsValid, comboFromDraft } from "@/domain/profile";
 import {
   buildComboErrorMessage,
   buildComboPreview,
@@ -8,11 +8,14 @@ import {
 import { usePrefs } from "@/hooks/prefs";
 import { useProfileCtx } from "@/hooks/profile";
 import { useEditor } from "@/hooks/editor";
-import { KeyChordModal } from "./KeyChordModal";
 import type { ComboEditorState } from "@/types";
+
+import { KeyChordModal } from "../shared";
+
 interface ComboActivatorEditorProps {
   editor: ComboEditorState;
 }
+
 export const ComboActivatorEditor = (props: ComboActivatorEditorProps) => {
   const { lang, i18n } = usePrefs();
   const { customMappings } = useProfileCtx();
@@ -49,6 +52,7 @@ export const ComboActivatorEditor = (props: ComboActivatorEditorProps) => {
       saveCombo();
     }
   };
+
   return (
     <KeyChordModal
       copy={{

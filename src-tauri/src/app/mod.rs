@@ -5,6 +5,8 @@ use crate::app::state::AppState;
 use crate::commands;
 use crate::constants::BUNDLE_ID;
 use crate::domain::ball_scroll;
+use crate::domain::gesture_mapping;
+use crate::domain::watch;
 use crate::domain::engine::Engine;
 use crate::platform::suppress;
 use crate::persistence::{instance_lock, profile_store};
@@ -91,6 +93,7 @@ pub fn run() {
                         state.engine.request_stop();
                     }
                     ball_scroll::shutdown();
+                    gesture_mapping::shutdown();
                     capture::apply_capture_session(capture::CaptureSession::OFF);
                     suppress::clear_suppress();
                     if let Some(state) = app_handle.try_state::<AppState>() {

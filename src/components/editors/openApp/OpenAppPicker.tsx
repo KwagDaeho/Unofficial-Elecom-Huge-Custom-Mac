@@ -1,10 +1,10 @@
 import type { InstalledAppWithIcon, OpenAppEditorState } from "@/types";
 import { Muted } from "@/components/ui";
+
 import { OpenAppList } from "./OpenAppList";
+import * as styles from "./OpenAppPicker.css";
 
-import * as styles from "./OpenAppPickerContent.css";
-
-interface OpenAppPickerContentProps {
+interface OpenAppPickerProps {
   editor: OpenAppEditorState;
   apps: InstalledAppWithIcon[];
   loadingLabel: string;
@@ -13,7 +13,7 @@ interface OpenAppPickerContentProps {
   onSelect: (app: InstalledAppWithIcon) => void;
 }
 
-export const OpenAppPickerContent = (props: OpenAppPickerContentProps) => {
+export const OpenAppPicker = (props: OpenAppPickerProps) => {
   if (props.editor.loading) {
     return <Muted>{props.loadingLabel}</Muted>;
   }

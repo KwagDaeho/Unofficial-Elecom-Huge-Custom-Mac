@@ -6,7 +6,7 @@
 > **비공식.** ELECOM 공식 소프트웨어가 아닙니다.  
 > ELECOM과 무관한 개인 제작물입니다.
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.2.1)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.2.1/Unofficial-Elecom-Huge-Custom-Mac-1.3.0-aarch64.dmg)
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.3.1)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.3.1/Unofficial-Elecom-Huge-Custom-Mac-1.3.1-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
 **Contact**
@@ -40,20 +40,39 @@ Supported languages: Korean / English
 Custom remapper for the **ELECOM HUGE** trackball on macOS.  
 A small always-on menu bar app instead of the official Mouse Assistant.
 
-- Raw HID so **Fn1–3** work (macOS hides them)
-- Button remaps, pointer/scroll settings
-- Menu bar + launch at login
+The app reads raw HID reports so **Fn1–Fn3** and other HUGE-specific buttons work even though macOS normally hides them. Remaps apply while the app is running; closing the window keeps it alive in the menu bar.
+
+### Features (v1.3.1)
+
+| Area | What you can do |
+|---|---|
+| **Button mapping** | Remap Left / Right / Middle / Fn1–3 to clicks, keys, scroll, tilt, long-press, auto-click, open app, or macro |
+| **Custom mapping** | Modifier + HUGE button chords (e.g. ⌘ + Left) with isolated keystrokes — no OS click leakage |
+| **Gesture mapping** | Hold a key or button, draw a path on the ball or in the canvas recorder, bind to an action; direction-aware shape matching |
+| **Ball scroll** | Turn ball motion into scroll while a toggle/hold activator is active; invert axes and tune speed |
+| **Pointer & scroll** | Separate move/scroll speed, scroll direction toggles, hardware-independent from the DPI switch |
+| **Macro editor** | Multi-step macros with drag-to-reorder keystrokes and delays |
+| **System** | Menu bar tray, launch at login, Korean/English UI, light/dark theme |
+
+### How it works
+
+- **Frontend (React + Tauri)** — profile editor, mapping UI, gesture canvas recorder, i18n
+- **Rust runtime** — dedicated HID worker thread (~40 ms read timeout), OS event tap for keyboard/mouse activators, in-process gesture recognizer (Unistroke-style scoring)
+- **Shared pointer mode** — remapped clicks are swallowed at the OS level so WindowServer keeps cursor control (Dock auto-hide friendly)
+- **Low idle cost** — when remap is off or the device is unplugged, the worker sleeps and only enumerates HID periodically
+
+Gesture templates are recorded in the UI, normalized once, and matched at runtime on the Rust side with the same geometry rules as the TypeScript preview/tests.
 
 ### Requirements
 
 - macOS 12+ (Monterey or later)
 - ELECOM HUGE wired (`M-HT1URBK`) or wireless dongle (`M-HT1DRBK`)
-- GitHub DMG (v1.3.0): Apple Silicon (M1+)
+- GitHub DMG (v1.3.1): Apple Silicon (M1+)
 - Building from source: Node 20+, Rust (stable)
 
-### Coverage (v1.3.0)
+### Coverage (v1.3.1)
 
-| | v1.3.0 DMG | From source |
+| | v1.3.1 DMG | From source |
 |---|---|---|
 | Apple Silicon, macOS 12+ | ✓ | ✓ |
 | Intel Mac, macOS 12+ | — | ✓ |
@@ -64,12 +83,12 @@ A small always-on menu bar app instead of the official Mouse Assistant.
 - **15 Sequoia+:** **System Settings → Privacy & Security → Open Anyway**
 - **Accessibility** required · **15+** may also need **Input Monitoring**
 
-**Development / test environment (v1.3.0)**  
+**Development / test environment (v1.3.1)**  
 macOS 26.5.2 (25F84) · M3 Pro · arm64
 
 ### Run the app
 
-1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.3.0-aarch64.dmg).
+1. Download the [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.3.1-aarch64.dmg).
 2. Open the DMG and drag **Elecom Huge Custom** to **Applications**.
 3. **Eject** the mounted disk.
 4. Open the app from **Applications**.
@@ -85,7 +104,7 @@ You need [Xcode Command Line Tools](https://developer.apple.com/download/all/?q=
 ```bash
 git clone https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac.git
 cd Unofficial-Elecom-Huge-Custom-Mac
-git checkout v1.3.0
+git checkout v1.3.1
 
 export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"
 npm install
@@ -136,11 +155,19 @@ npm install
 npm run tauri:dev
 ```
 
+Run tests:
+
+```bash
+npm test
+npm run build
+```
+
 ### Notes
 
 - Remaps apply while the app is running (close window → stays in menu bar).
 - Hardware DPI switch is independent of in-app speed.
 - Huge Plus (`M-HT1MRBK`) is not supported.
+- Gesture recording: draw on the canvas modal, or hold the gesture key and move the ball; Esc cancels.
 
 ### License
 
@@ -157,20 +184,39 @@ MIT — see [LICENSE](./LICENSE).
 macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.  
 공식 Mouse Assistant 대신, 메뉴 바에 상주하는 작은 앱으로 동작합니다.
 
-- macOS가 숨기는 **Fn1–3**까지 Raw HID로 인식
-- 버튼 리맵, 포인터/스크롤 설정
-- 메뉴 바 + 로그인 시 자동 실행
+macOS가 숨기는 **Fn1–3** 등 HUGE 전용 버튼까지 Raw HID로 읽습니다. 창을 닫아도 메뉴 바에 남아 있는 동안 리맵이 유지됩니다.
+
+### 기능 (v1.3.1)
+
+| 영역 | 설명 |
+|---|---|
+| **버튼 매핑** | Left / Right / Middle / Fn1–3 → 클릭, 키, 스크롤, 틸트, 롱프레스, 오토클릭, 앱 열기, 매크로 |
+| **커스텀 매핑** | 수정키 + HUGE 버튼 조합 (예: ⌘ + Left). OS 기본 클릭이 새는 문제 없이 키 입력만 전달 |
+| **제스처 매핑** | 홀딩키를 누른 채 볼을 움직이거나 캔버스에서 경로를 그려 동작에 연결. 방향·형태 인식 매칭 |
+| **볼 스크롤** | 토글/홀드 활성키 동안 볼 움직임을 스크롤로 변환. 축 반전·속도 조절 |
+| **포인터·스크롤** | 이동/스크롤 속도, 스크롤 방향. 본체 DPI 스위치와 별개 |
+| **매크로 편집기** | 키 입력·딜레이 단계를 드래그로 재정렬 |
+| **시스템** | 메뉴 바, 로그인 시 자동 실행, 한/영 UI, 라이트/다크 테마 |
+
+### 동작 방식
+
+- **프론트엔드 (React + Tauri)** — 프로필 편집, 매핑 UI, 제스처 캔버스, i18n
+- **Rust 런타임** — HID 전용 워커 스레드, OS 이벤트 탭(키보드/마우스 활성키), 제스처 인식기(Unistroke 계열)
+- **공유 포인터 모드** — 리맵된 클릭은 OS 레벨에서 삼켜 WindowServer가 커서를 유지 (Dock 자동 숨김 호환)
+- **유휴 부하 최소화** — 리맵 OFF 또는 장치 미연결 시 주기적으로 HID만 확인
+
+제스처 템플릿은 UI에서 한 번 정규화되어 저장되고, 런타임 매칭은 Rust에서 TS 미리보기/테스트와 같은 기하 규칙을 사용합니다.
 
 ### 요구 사항
 
 - macOS 12+ (Monterey 이상)
 - ELECOM HUGE 유선 (`M-HT1URBK`) 또는 무선 동글 (`M-HT1DRBK`)
-- GitHub DMG (v1.3.0): Apple Silicon (M1 이상)
+- GitHub DMG (v1.3.1): Apple Silicon (M1 이상)
 - 소스 빌드: Node 20+, Rust (stable)
 
-### 지원 범위 (v1.3.0)
+### 지원 범위 (v1.3.1)
 
-| | v1.3.0 DMG | 소스 빌드 |
+| | v1.3.1 DMG | 소스 빌드 |
 |---|---|---|
 | Apple Silicon, macOS 12+ | ✓ | ✓ |
 | Intel Mac, macOS 12+ | — | ✓ |
@@ -181,12 +227,12 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 - **15 Sequoia 이상:** **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**
 - **손쉬운 사용** 필수 · 15+에서는 **입력 모니터링**도 필요할 수 있음
 
-**개발·테스트 환경 (v1.3.0)**  
+**개발·테스트 환경 (v1.3.1)**  
 macOS 26.5.2 (25F84) · M3 Pro · arm64
 
 ### 앱 실행
 
-1. [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.3.0-aarch64.dmg)를 다운로드합니다.
+1. [macOS DMG](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest/download/Unofficial-Elecom-Huge-Custom-Mac-1.3.1-aarch64.dmg)를 다운로드합니다.
 2. DMG를 열고 **Elecom Huge Custom**을 **Applications(응용 프로그램)**으로 드래그합니다.
 3. 마운트된 디스크 아이콘을 **추출**합니다.
 4. **응용 프로그램**에서 앱을 엽니다.
@@ -202,7 +248,7 @@ macOS 26.5.2 (25F84) · M3 Pro · arm64
 ```bash
 git clone https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac.git
 cd Unofficial-Elecom-Huge-Custom-Mac
-git checkout v1.3.0
+git checkout v1.3.1
 
 export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"
 npm install
@@ -253,11 +299,19 @@ npm install
 npm run tauri:dev
 ```
 
+테스트:
+
+```bash
+npm test
+npm run build
+```
+
 ### 참고
 
 - 창을 닫아도 메뉴 바에 남아 있는 동안 리맵이 유지됩니다.
 - 본체 DPI 스위치와 앱 안 속도 설정은 별개입니다.
 - Huge Plus (`M-HT1MRBK`)는 지원하지 않습니다.
+- 제스처 등록: 캔버스 모달에서 그리거나, 홀딩키를 누른 채 볼을 움직이세요. Esc로 취소.
 
 ### 라이선스
 
