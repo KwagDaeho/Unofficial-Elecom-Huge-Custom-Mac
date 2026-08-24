@@ -47,9 +47,15 @@ function syncReadme(source) {
 
   let next = source;
 
+  // Badge URL contains `(vX.Y.Z)` — do not use `[^)]*` on the whole markdown link.
   next = next.replace(
-    /\[!\[Download for macOS\]\([^)]*\)\]\([^)]*\)/,
-    `[![Download for macOS](${badgeUrl})](${dmgUrl})`,
+    /https:\/\/img\.shields\.io\/badge\/Download-macOS%20DMG%20\(v[\d.]+\)-0A7EA4\?style=for-the-badge&logo=apple&logoColor=white/g,
+    `https://img.shields.io/badge/Download-macOS%20DMG%20(${encodeURIComponent(versionTag)})-0A7EA4?style=for-the-badge&logo=apple&logoColor=white`,
+  );
+
+  next = next.replace(
+    /https:\/\/github\.com\/KwagDaeho\/Unofficial-Elecom-Huge-Custom-Mac\/releases\/download\/v[\d.]+\/Unofficial-Elecom-Huge-Custom-Mac-[\d.]+-aarch64\.dmg/g,
+    dmgUrl,
   );
 
   next = next.replace(
@@ -60,6 +66,9 @@ function syncReadme(source) {
   next = next.replace(/git checkout v[\d.]+/g, `git checkout ${versionTag}`);
 
   next = next.replace(/GitHub DMG \(v[\d.]+\)/g, `GitHub DMG (${versionTag})`);
+
+  next = next.replace(/### Features \(v[\d.]+\)/g, `### Features (${versionTag})`);
+  next = next.replace(/### 기능 \(v[\d.]+\)/g, `### 기능 (${versionTag})`);
 
   next = next.replace(
     /\*\*Development \/ test environment \(v[\d.]+\)\*\*/g,

@@ -6,7 +6,7 @@
 > **비공식.** ELECOM 공식 소프트웨어가 아닙니다.  
 > ELECOM과 무관한 개인 제작물입니다.
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.3.1)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.3.1/Unofficial-Elecom-Huge-Custom-Mac-1.3.2-aarch64.dmg)
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20DMG%20(v1.3.2)-0A7EA4?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/download/v1.3.2/Unofficial-Elecom-Huge-Custom-Mac-1.3.2-aarch64.dmg)
 [![All releases](https://img.shields.io/badge/Releases-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/KwagDaeho/Unofficial-Elecom-Huge-Custom-Mac/releases/latest)
 
 **Contact**
@@ -42,7 +42,7 @@ A small always-on menu bar app instead of the official Mouse Assistant.
 
 The app reads raw HID reports so **Fn1–Fn3** and other HUGE-specific buttons work even though macOS normally hides them. Remaps apply while the app is running; closing the window keeps it alive in the menu bar.
 
-### Features (v1.3.1)
+### Features (v1.3.2)
 
 | Area | What you can do |
 |---|---|
@@ -186,7 +186,7 @@ macOS용 **ELECOM HUGE** 트랙볼 커스텀 리매퍼입니다.
 
 macOS가 숨기는 **Fn1–3** 등 HUGE 전용 버튼까지 Raw HID로 읽습니다. 창을 닫아도 메뉴 바에 남아 있는 동안 리맵이 유지됩니다.
 
-### 기능 (v1.3.1)
+### 기능 (v1.3.2)
 
 | 영역 | 설명 |
 |---|---|
