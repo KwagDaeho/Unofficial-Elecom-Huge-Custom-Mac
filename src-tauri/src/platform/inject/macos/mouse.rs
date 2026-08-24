@@ -72,7 +72,8 @@ fn cg_button(button: &MouseClickButton) -> (CGEventType, CGEventType, CGMouseBut
 
 pub fn mouse_down(button: &MouseClickButton) {
     let (down, _, cg_btn, number, other) = cg_button(button);
-    let Some(src) = if other { hid_source() } else { source() } else {
+    let src = if other { hid_source() } else { source() };
+    let Some(src) = src else {
         log::warn!("mouse_down: CGEventSource unavailable");
         return;
     };
@@ -92,7 +93,8 @@ pub fn mouse_down(button: &MouseClickButton) {
 
 pub fn mouse_up(button: &MouseClickButton) {
     let (_, up, cg_btn, number, other) = cg_button(button);
-    let Some(src) = if other { hid_source() } else { source() } else {
+    let src = if other { hid_source() } else { source() };
+    let Some(src) = src else {
         log::warn!("mouse_up: CGEventSource unavailable");
         return;
     };
@@ -117,7 +119,8 @@ pub fn mouse_up(button: &MouseClickButton) {
 
 pub(super) fn click_once(button: &MouseClickButton, click_state: i64) {
     let (down, up, cg_btn, number, other) = cg_button(button);
-    let Some(src) = if other { hid_source() } else { source() } else {
+    let src = if other { hid_source() } else { source() };
+    let Some(src) = src else {
         log::warn!("click_once: CGEventSource unavailable");
         return;
     };
