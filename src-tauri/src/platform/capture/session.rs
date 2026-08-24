@@ -13,6 +13,8 @@ static GESTURE_RECORD_ACTIVE: AtomicBool = AtomicBool::new(false);
 static GESTURE_CANVAS_DRAWING: AtomicBool = AtomicBool::new(false);
 static GESTURE_BALL_STROKE_ACTIVE: AtomicBool = AtomicBool::new(false);
 pub(crate) static TAP_STARTED: AtomicBool = AtomicBool::new(false);
+pub(crate) static KEY_CAPTURE_TAP_PORT: std::sync::atomic::AtomicPtr<std::ffi::c_void> =
+    std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
 fn refresh_capture_active() {
     let active = KEY_CAPTURE_WANTED.load(Ordering::SeqCst)

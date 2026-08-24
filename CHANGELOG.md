@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here.
 
+## [1.3.2] — 2026-08-24
+
+### Fixed
+
+- **Intermittent quit/crash** — CGEvent tap paths no longer panic when `CGEventSource` creation fails; inject is skipped instead.
+- **Key-capture tap** — re-enable after macOS disables the tap (timeout); runloop source failure no longer panics the thread.
+- **HID worker** — panic is caught and logged instead of silently killing the remapper thread.
+
+### Changed
+
+- **Diagnostics** — Rust panics append to `~/Library/Logs/Elecom Huge Custom/rust-panic.log`.
+
 ## [1.3.1] — 2026-08-21
 
 ### Fixed

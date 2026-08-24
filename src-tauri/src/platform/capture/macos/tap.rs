@@ -23,6 +23,11 @@ pub(crate) unsafe extern "C" fn tap_callback(
     event: CGEventRef,
     _user: *mut c_void,
 ) -> CGEventRef {
+    if etype == 0xFFFF_FFFE || etype == 0xFFFF_FFFF {
+        super::reenable_key_capture_tap();
+        return event;
+    }
+
     if session::capture_active() {
         let combo = session::combo_trigger_capture();
         if etype == KEY_UP {

@@ -179,22 +179,31 @@ fn keystroke_with_source(src: &CGEventSource, keys: &[String]) {
 }
 
 pub(super) fn keystroke(keys: &[String]) {
-    keystroke_with_source(&super::source(), keys);
+    let Some(src) = super::source() else {
+        return;
+    };
+    keystroke_with_source(&src, keys);
 }
 
 /// Keystroke via a private event source — ignores combined-session modifier state
 /// so a held Control/Option does not pollute Cmd+Space etc.
 pub fn keystroke_isolated(keys: &[String]) {
     use core_graphics::event_source::CGEventSourceStateID;
-    let src = CGEventSource::new(CGEventSourceStateID::Private)
-        .unwrap_or_else(|_| super::source());
+    let Some(src) = CGEventSource::new(CGEventSourceStateID::Private)
+        .ok()
+        .or_else(super::source)
+    else {
+        return;
+    };
     keystroke_with_source(&src, keys);
 }
 
 /// Release tracked chord modifiers/keys so injected actions are not polluted
 /// (e.g. Control held → right-click; Control+Command+Space → emoji picker).
 pub fn release_chord_hold(modifiers: &[String], keys: &[String]) {
-    let src = super::source();
+    let Some(src) = super::source() else {
+        return;
+    };
     let mut accumulated = CGEventFlags::empty();
     let mod_flags: Vec<CGEventFlags> = modifiers
         .iter()

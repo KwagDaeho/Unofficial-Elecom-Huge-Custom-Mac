@@ -42,18 +42,30 @@ use std::sync::OnceLock;
 
 use crate::domain::profile::MouseClickButton;
 
-fn source() -> CGEventSource {
-    CGEventSource::new(CGEventSourceStateID::CombinedSessionState).expect("CGEventSource")
+pub(super) fn source() -> Option<CGEventSource> {
+    CGEventSource::new(CGEventSourceStateID::CombinedSessionState)
+        .ok()
+        .or_else(|| {
+            log::warn!("CombinedSession CGEventSource failed; trying HID");
+            CGEventSource::new(CGEventSourceStateID::HIDSystemState).ok()
+        })
+        .or_else(|| {
+            log::error!("CGEventSource unavailable");
+            None
+        })
 }
 
 /// Hardware-like source — middle / other buttons are more reliable with this.
-fn hid_source() -> CGEventSource {
-    CGEventSource::new(CGEventSourceStateID::HIDSystemState).unwrap_or_else(|_| source())
+pub(super) fn hid_source() -> Option<CGEventSource> {
+    CGEventSource::new(CGEventSourceStateID::HIDSystemState)
+        .ok()
+        .or_else(source)
 }
 
 fn cursor_pos() -> CGPoint {
-    CGEvent::new(source())
-        .map(|e| e.location())
+    source()
+        .and_then(|src| CGEvent::new(src).ok())
+        .map(|event| event.location())
         .unwrap_or(CGPoint::new(0.0, 0.0))
 }
 

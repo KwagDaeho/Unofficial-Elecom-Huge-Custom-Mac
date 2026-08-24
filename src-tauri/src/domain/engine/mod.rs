@@ -4,6 +4,7 @@ mod worker;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread::{self, JoinHandle};
+use std::panic::{catch_unwind, AssertUnwindSafe};
 
 use parking_lot::Mutex;
 
@@ -68,9 +69,17 @@ impl Engine {
         let last_report = Arc::clone(&self.last_report);
         let connected = Arc::clone(&self.connected);
 
-        let handle = thread::spawn(move || {
-            worker::run(profile, running, last_report, connected);
-        });
+        let handle = thread::Builder::new()
+            .name("huge-hid-worker".into())
+            .spawn(move || {
+                let result = catch_unwind(AssertUnwindSafe(|| {
+                    worker::run(profile, running, last_report, connected);
+                }));
+                if result.is_err() {
+                    log::error!("HID worker thread panicked");
+                }
+            })
+            .expect("spawn HID worker");
 
         *self.worker.lock() = Some(handle);
     }
@@ -86,7 +95,10 @@ impl Engine {
 
     pub fn join_worker(&self) {
         if let Some(handle) = self.worker.lock().take() {
-            let _ = handle.join();
+            match handle.join() {
+                Ok(()) => {}
+                Err(_) => log::error!("HID worker thread panicked on join"),
+            }
         }
     }
 }

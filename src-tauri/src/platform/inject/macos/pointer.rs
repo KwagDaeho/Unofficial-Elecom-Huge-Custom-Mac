@@ -59,7 +59,9 @@ fn settle_cursor_at(p: CGPoint) {
 }
 
 fn post_zero_delta_mouse_at(p: CGPoint) {
-    let src = hid_source();
+    let Some(src) = hid_source() else {
+        return;
+    };
     if let Ok(e) = CGEvent::new_mouse_event(src, CGEventType::MouseMoved, p, CGMouseButton::Left)
     {
         e.set_double_value_field(EventField::MOUSE_EVENT_DELTA_X, 0.0);
@@ -269,7 +271,9 @@ pub fn move_by(dx: f64, dy: f64) {
         None,
     ));
 
-    let src = hid_source();
+    let Some(src) = hid_source() else {
+        return;
+    };
     if let Ok(e) = CGEvent::new_mouse_event(src, etype, point, cg_btn) {
         e.set_double_value_field(EventField::MOUSE_EVENT_DELTA_X, dx);
         e.set_double_value_field(EventField::MOUSE_EVENT_DELTA_Y, dy);
@@ -447,7 +451,9 @@ fn post_scroll_gesture(dx_px: i32, dy_px: i32, continuous: bool, phase: Option<i
     if dx_px == 0 && dy_px == 0 && phase != Some(PHASE_ENDED) {
         return;
     }
-    let src = hid_source();
+    let Some(src) = hid_source() else {
+        return;
+    };
     // 2 wheels whenever horizontal or a 2-axis gesture is in play.
     let wheel_count = if phase.is_some() || dx_px != 0 { 2 } else { 1 };
     let dy_lines = ((dy_px as f64) / 10.0).round() as i32;
@@ -516,7 +522,9 @@ fn scroll_with_unit(dx: i32, dy: i32, unit: u32) {
     if dx == 0 && dy == 0 {
         return;
     }
-    let src = hid_source();
+    let Some(src) = hid_source() else {
+        return;
+    };
     if let Ok(e) = CGEvent::new_scroll_event(
         src,
         unit,

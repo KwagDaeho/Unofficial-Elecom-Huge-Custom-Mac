@@ -9,6 +9,25 @@ mod tap;
 pub use combo::{clear_combo_held, combo_held_parts};
 
 #[cfg(target_os = "macos")]
+pub(crate) fn reenable_key_capture_tap() {
+    use core_foundation::mach_port::CFMachPortRef;
+    use std::ffi::c_void;
+    use std::sync::atomic::Ordering;
+
+    use super::session::KEY_CAPTURE_TAP_PORT;
+
+    #[link(name = "CoreGraphics", kind = "framework")]
+    extern "C" {
+        fn CGEventTapEnable(tap: CFMachPortRef, enable: bool);
+    }
+
+    let port = KEY_CAPTURE_TAP_PORT.load(Ordering::SeqCst);
+    if !port.is_null() {
+        unsafe { CGEventTapEnable(port as CFMachPortRef, true) };
+    }
+}
+
+#[cfg(target_os = "macos")]
 pub fn ensure_tap_thread() {
     use core_foundation::base::TCFType;
     use core_foundation::mach_port::{CFMachPort, CFMachPortRef};
@@ -16,7 +35,7 @@ pub fn ensure_tap_thread() {
     use std::ffi::c_void;
     use std::sync::atomic::Ordering;
 
-    use super::session::TAP_STARTED;
+    use super::session::{KEY_CAPTURE_TAP_PORT, TAP_STARTED};
     use keycodes::{
         mask_bit, CGEventMask, CGEventRef, CGEventTapProxy, LEFT_DOWN, LEFT_UP, OTHER_DOWN,
         OTHER_UP, RIGHT_DOWN, RIGHT_UP, KEY_DOWN, KEY_UP, FLAGS_CHANGED,
@@ -75,16 +94,25 @@ pub fn ensure_tap_thread() {
                 return;
             }
 
+            KEY_CAPTURE_TAP_PORT.store(port as *mut c_void, Ordering::SeqCst);
+
             let mach = unsafe { CFMachPort::wrap_under_create_rule(port) };
-            let source = mach
-                .create_runloop_source(0)
-                .expect("CFMachPortCreateRunLoopSource");
-            let rl = CFRunLoop::get_current();
-            rl.add_source(&source, unsafe { kCFRunLoopCommonModes });
-            unsafe { CGEventTapEnable(port, true) };
-            log::info!("key-capture event tap ready");
-            CFRunLoop::run_current();
-            let _keep = (mach, source);
+            match mach.create_runloop_source(0) {
+                Ok(source) => {
+                    let rl = CFRunLoop::get_current();
+                    rl.add_source(&source, unsafe { kCFRunLoopCommonModes });
+                    unsafe { CGEventTapEnable(port, true) };
+                    log::info!("key-capture event tap ready");
+                    CFRunLoop::run_current();
+                    let _keep = (mach, source);
+                }
+                Err(()) => {
+                    log::warn!("key-capture tap runloop source failed");
+                }
+            }
+
+            KEY_CAPTURE_TAP_PORT.store(std::ptr::null_mut(), Ordering::SeqCst);
+            TAP_STARTED.store(false, Ordering::SeqCst);
         })
         .expect("spawn key-capture-tap");
 }

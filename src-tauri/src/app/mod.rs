@@ -11,12 +11,35 @@ use crate::domain::engine::Engine;
 use crate::platform::suppress;
 use crate::persistence::{instance_lock, profile_store};
 use crate::platform::capture;
+use std::io::Write;
 use std::sync::Arc;
 use std::sync::Once;
 use tauri::{Manager, WindowEvent};
 
+fn install_panic_hook() {
+    std::panic::set_hook(Box::new(|info| {
+        let line = format!("{info}\n");
+        log::error!("panic: {info}");
+        if let Some(path) = dirs::home_dir()
+            .map(|home| home.join("Library/Logs/Elecom Huge Custom/rust-panic.log"))
+        {
+            if let Some(parent) = path.parent() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+            if let Ok(mut file) = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(path)
+            {
+                let _ = file.write_all(line.as_bytes());
+            }
+        }
+    }));
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    install_panic_hook();
     let _ = env_logger::try_init();
 
     let Some(instance_lock) = instance_lock::acquire_instance_lock() else {

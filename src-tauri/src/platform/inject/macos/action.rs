@@ -56,7 +56,9 @@ fn app_switcher() {
         return;
     }
     // Hold ⌘ briefly so the switcher can appear.
-    let src = source();
+    let Some(src) = source() else {
+        return;
+    };
     post_key(&src, 0x37, true, CGEventFlags::CGEventFlagCommand);
     std::thread::sleep(std::time::Duration::from_millis(20));
     post_key(&src, 0x30, true, CGEventFlags::CGEventFlagCommand);
@@ -157,7 +159,9 @@ fn move_space(left: bool) {
 
     // Fallback: CGEvent with Control (+ Function bit, as Spaces hotkeys often expect).
     let code: u16 = if left { 0x7b } else { 0x7c };
-    let src = source();
+    let Some(src) = source() else {
+        return;
+    };
     let ctrl = CGEventFlags::CGEventFlagControl;
     let flags = ctrl | CGEventFlags::CGEventFlagSecondaryFn;
     post_key(&src, 0x3b, true, ctrl);
@@ -235,7 +239,9 @@ fn show_desktop() {
         return;
     }
     // CGEvent fallback with SecondaryFn (laptop F-keys).
-    let src = source();
+    let Some(src) = source() else {
+        return;
+    };
     let flags = CGEventFlags::CGEventFlagSecondaryFn;
     post_key(&src, 0x3f, true, flags);
     std::thread::sleep(std::time::Duration::from_millis(10));

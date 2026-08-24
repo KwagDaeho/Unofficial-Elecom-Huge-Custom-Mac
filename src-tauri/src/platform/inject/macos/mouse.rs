@@ -72,7 +72,10 @@ fn cg_button(button: &MouseClickButton) -> (CGEventType, CGEventType, CGMouseBut
 
 pub fn mouse_down(button: &MouseClickButton) {
     let (down, _, cg_btn, number, other) = cg_button(button);
-    let src = if other { hid_source() } else { source() };
+    let Some(src) = if other { hid_source() } else { source() } else {
+        log::warn!("mouse_down: CGEventSource unavailable");
+        return;
+    };
     let pos = {
         let mut p = cursor_state().lock();
         *p = cursor_pos();
@@ -89,7 +92,10 @@ pub fn mouse_down(button: &MouseClickButton) {
 
 pub fn mouse_up(button: &MouseClickButton) {
     let (_, up, cg_btn, number, other) = cg_button(button);
-    let src = if other { hid_source() } else { source() };
+    let Some(src) = if other { hid_source() } else { source() } else {
+        log::warn!("mouse_up: CGEventSource unavailable");
+        return;
+    };
     let pos = {
         let mut p = cursor_state().lock();
         *p = cursor_pos();
@@ -111,7 +117,10 @@ pub fn mouse_up(button: &MouseClickButton) {
 
 pub(super) fn click_once(button: &MouseClickButton, click_state: i64) {
     let (down, up, cg_btn, number, other) = cg_button(button);
-    let src = if other { hid_source() } else { source() };
+    let Some(src) = if other { hid_source() } else { source() } else {
+        log::warn!("click_once: CGEventSource unavailable");
+        return;
+    };
     let pos = {
         let mut p = cursor_state().lock();
         *p = cursor_pos();
@@ -142,7 +151,9 @@ pub(super) fn double_click() {
 /// Post a left click at the cursor for webview UI (HUGE L → modal buttons).
 pub fn click_at_cursor() {
     let pos = cursor_pos();
-    let src = source();
+    let Some(src) = source() else {
+        return;
+    };
     if let Ok(down) = CGEvent::new_mouse_event(
         src.clone(),
         CGEventType::LeftMouseDown,
@@ -167,7 +178,9 @@ pub fn click_at_cursor() {
 /// Hold left button at cursor (gesture canvas drag start).
 pub fn left_down_at_cursor() {
     let pos = cursor_pos();
-    let src = source();
+    let Some(src) = source() else {
+        return;
+    };
     if let Ok(down) = CGEvent::new_mouse_event(
         src,
         CGEventType::LeftMouseDown,
@@ -182,7 +195,9 @@ pub fn left_down_at_cursor() {
 /// Release left button at cursor (gesture canvas drag end).
 pub fn left_up_at_cursor() {
     let pos = cursor_pos();
-    let src = source();
+    let Some(src) = source() else {
+        return;
+    };
     if let Ok(up) = CGEvent::new_mouse_event(
         src,
         CGEventType::LeftMouseUp,
@@ -197,7 +212,9 @@ pub fn left_up_at_cursor() {
 /// Notify webview of drag while left is held (ball moved during gesture record).
 pub fn left_drag_at_cursor() {
     let pos = cursor_pos();
-    let src = source();
+    let Some(src) = source() else {
+        return;
+    };
     if let Ok(drag) = CGEvent::new_mouse_event(
         src,
         CGEventType::LeftMouseDragged,
