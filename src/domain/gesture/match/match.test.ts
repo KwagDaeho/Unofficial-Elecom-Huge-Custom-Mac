@@ -1,221 +1,209 @@
 import { describe, expect, it } from "vitest";
 
-import { DEFAULT_GESTURE_MIN_SCORE, GESTURE_TEMPLATE_SIZE } from "@/constants/gesture";
-import { gesturePreviewPoints } from "@/domain/profile/gesture";
-import type { GestureMappingEntry } from "@/types";
-
+import { DEFAULT_GESTURE_MIN_SCORE } from "@/constants/gesture";
 import {
-  normalizeGesturePreview,
-  normalizeGestureTemplate,
-  pathBendSignature,
-  rawPathLength,
-  significantCornerCount,
-} from "../template";
-import { matchGestureScore } from "./matchScore";
-import { passesShapeChecks } from "./shapeChecks";
+  extractGestureVector,
+  matchGestureVector,
+  passesGestureVectorChecks,
+} from "@/domain/gesture";
+import type { GesturePoint } from "@/types";
 
-const makeVShape = (): { x: number; y: number }[] => {
-  const points: { x: number; y: number }[] = [];
-  for (let index = 0; index <= 12; index += 1) {
-    points.push({ x: 125 - index * 2.5, y: 50 + index * 7.5 });
-  }
-  for (let index = 1; index <= 12; index += 1) {
-    points.push({ x: 100 + index * 5, y: 140 });
+const line = (
+  start: GesturePoint,
+  end: GesturePoint,
+  steps = 12,
+): GesturePoint[] => {
+  const points: GesturePoint[] = [];
+  for (let index = 0; index <= steps; index += 1) {
+    const t = index / steps;
+    points.push({
+      x: start.x + (end.x - start.x) * t,
+      y: start.y + (end.y - start.y) * t,
+    });
   }
   return points;
 };
 
-const makeStaircase = (): { x: number; y: number }[] => {
-  const points: { x: number; y: number }[] = [];
-  for (let index = 0; index <= 10; index += 1) {
-    points.push({ x: 40 + index * 10, y: 40 });
-  }
-  for (let index = 1; index <= 8; index += 1) {
-    points.push({ x: 140, y: 40 + index * 10 });
-  }
-  for (let index = 1; index <= 10; index += 1) {
-    points.push({ x: 140 + index * 10, y: 120 });
-  }
-  for (let index = 1; index <= 8; index += 1) {
-    points.push({ x: 240, y: 120 + index * 10 });
-  }
-  return points;
-};
-
-const makeLShape = (): { x: number; y: number }[] => {
-  const points: { x: number; y: number }[] = [];
-  for (let index = 0; index <= 20; index += 1) {
-    points.push({ x: 40 + index * 8, y: 60 });
-  }
-  for (let index = 1; index <= 12; index += 1) {
-    points.push({ x: 200, y: 60 + index * 8 });
-  }
-  return points;
-};
-
-const makeReverseLShape = (): { x: number; y: number }[] => {
-  const points: { x: number; y: number }[] = [];
-  for (let index = 0; index <= 12; index += 1) {
-    points.push({ x: 80, y: 40 + index * 8 });
-  }
-  for (let index = 1; index <= 16; index += 1) {
-    points.push({ x: 80 + index * 8, y: 136 });
-  }
-  return points;
-};
-
-describe("normalizeGestureTemplate", () => {
-  it("resamples a long horizontal stroke without hanging", () => {
-    const points = Array.from({ length: 12 }, (_, index) => ({
-      x: 91 + index * 8,
-      y: 121,
-    }));
-
-    const started = performance.now();
-    const template = normalizeGestureTemplate(points);
-    const elapsed = performance.now() - started;
-
-    expect(template).toHaveLength(GESTURE_TEMPLATE_SIZE);
-    expect(elapsed).toBeLessThan(50);
+describe("extractGestureVector", () => {
+  it("extracts an L-shape as two segments", () => {
+    const points = [
+      ...line({ x: 0, y: 0 }, { x: 80, y: 0 }),
+      ...line({ x: 80, y: 0 }, { x: 80, y: 80 }).slice(1),
+    ];
+    const vector = extractGestureVector(points);
+    expect(vector.directions).toEqual([0, 6]);
+    expect(vector.segmentLengths).toHaveLength(2);
+    expect(vector.segmentLengths[0]! + vector.segmentLengths[1]!).toBeCloseTo(1, 5);
   });
 
-  it("scores a stroke against itself", () => {
-    const points = Array.from({ length: 12 }, (_, index) => ({
-      x: 91 + index * 8,
-      y: 121,
-    }));
-    const template = normalizeGestureTemplate(points);
-    const score = matchGestureScore(points, template);
-    expect(score).toBeGreaterThan(0.9);
-  });
-});
+  it("extracts an L-shape drawn with 2px canvas steps", () => {
+    const append = (
+      points: GesturePoint[],
+      point: GesturePoint,
+      minDistance = 2,
+    ): GesturePoint[] => {
+      const last = points[points.length - 1];
+      if (last && Math.hypot(point.x - last.x, point.y - last.y) < minDistance) {
+        return points;
+      }
+      return [...points, point];
+    };
 
-describe("normalizeGesturePreview", () => {
-  it("keeps canvas proportions for an L-shaped stroke", () => {
-    const raw = makeLShape();
-    const preview = normalizeGesturePreview(raw);
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minY = Infinity;
-    let maxY = -Infinity;
-    for (const point of preview) {
-      minX = Math.min(minX, point.x);
-      maxX = Math.max(maxX, point.x);
-      minY = Math.min(minY, point.y);
-      maxY = Math.max(maxY, point.y);
+    let points: GesturePoint[] = [{ x: 40, y: 80 }];
+    for (let x = 40; x <= 200; x += 2.5) {
+      points = append(points, { x, y: 80 });
     }
-    expect(maxX - minX).toBeGreaterThan(80);
-    expect(maxY - minY).toBeGreaterThan(40);
-    expect(significantCornerCount(preview)).toBeGreaterThan(0);
+    for (let y = 80; y <= 160; y += 2.5) {
+      points = append(points, { x: 200, y });
+    }
+
+    const vector = extractGestureVector(points);
+    expect(vector.directions).toEqual([0, 6]);
+    expect(Math.round((vector.segmentLengths[0] ?? 0) * 100)).toBeGreaterThan(40);
+    expect(Math.round((vector.segmentLengths[1] ?? 0) * 100)).toBeGreaterThan(20);
   });
 });
 
-describe("gesturePreviewPoints", () => {
-  it("falls back to template when preview lost corners", () => {
-    const raw = makeLShape();
-    const entry = {
-      id: "test",
-      template: normalizeGestureTemplate(raw),
-      templatePreview: Array.from({ length: 12 }, (_, index) => ({
-        x: 40 + index * 8,
-        y: 60,
-      })),
-      templateCornerCount: significantCornerCount(raw),
-      templatePathLength: rawPathLength(raw),
-      holdActivator: null,
-      click: { type: "default" },
-      longPress: { type: "disabled" },
-      longPressEnabled: false,
-      autoClick: false,
-    } satisfies GestureMappingEntry;
-
-    const picked = gesturePreviewPoints(entry);
-    expect(significantCornerCount(picked)).toBeGreaterThan(0);
-    expect(picked).toEqual(entry.template);
-  });
-});
-
-describe("passesShapeChecks", () => {
-  it("accepts a full V and rejects partial or wrong shapes", () => {
-    const vPoints = makeVShape();
-    const template = normalizeGestureTemplate(vPoints);
-    const templatePathLength = rawPathLength(vPoints);
-    const templateCornerCount = significantCornerCount(vPoints);
-    const templateBendSignature = pathBendSignature(vPoints);
-    const shapeMeta = [
-      templatePathLength,
-      templateCornerCount,
-      templateBendSignature,
-    ] as const;
-
-    expect(
-      passesShapeChecks(vPoints, template, ...shapeMeta),
-    ).toBe(true);
-    expect(
-      matchGestureScore(vPoints, template, templateCornerCount, templateBendSignature),
-    ).toBeGreaterThan(
-      DEFAULT_GESTURE_MIN_SCORE,
-    );
-
-    const upperLeftLeg = vPoints.slice(0, 13);
-    expect(
-      passesShapeChecks(upperLeftLeg, template, ...shapeMeta),
-    ).toBe(false);
-
-    const horizontalLeft = Array.from({ length: 20 }, (_, index) => ({
-      x: 150 - index * 5,
-      y: 100,
-    }));
-    expect(
-      passesShapeChecks(horizontalLeft, template, ...shapeMeta),
-    ).toBe(false);
-
-    const mirroredV = vPoints.map((point) => ({
-      x: 250 - point.x,
-      y: point.y,
-    }));
-    expect(
-      passesShapeChecks(mirroredV, template, ...shapeMeta),
-    ).toBe(false);
-  });
-
-  it("rejects a diagonal stroke against a staircase template", () => {
-    const stairs = makeStaircase();
-    const template = normalizeGestureTemplate(stairs);
-    const templatePathLength = rawPathLength(stairs);
-
-    const diagonal = Array.from({ length: 24 }, (_, index) => ({
-      x: 40 + index * 8,
-      y: 40 + index * 6,
-    }));
-
-    expect(
-      passesShapeChecks(diagonal, template, templatePathLength),
-    ).toBe(false);
-    expect(matchGestureScore(diagonal, template)).toBeLessThan(
+describe("matchGestureVector", () => {
+  it("matches similar L-shapes with high score", () => {
+    const templatePoints = [
+      ...line({ x: 0, y: 0 }, { x: 100, y: 0 }),
+      ...line({ x: 100, y: 0 }, { x: 100, y: 70 }).slice(1),
+    ];
+    const candidatePoints = [
+      ...line({ x: 0, y: 0 }, { x: 90, y: 5 }),
+      ...line({ x: 90, y: 5 }, { x: 92, y: 65 }).slice(1),
+    ];
+    const template = extractGestureVector(templatePoints);
+    const candidate = extractGestureVector(candidatePoints);
+    expect(passesGestureVectorChecks(candidate, template)).toBe(true);
+    expect(matchGestureVector(candidate, template)).toBeGreaterThanOrEqual(
       DEFAULT_GESTURE_MIN_SCORE,
     );
   });
 
-  it("rejects a straight vertical stroke against an L-shaped template", () => {
-    const reverseL = makeReverseLShape();
-    const template = normalizeGestureTemplate(reverseL);
-    const shapeMeta = [
-      rawPathLength(reverseL),
-      significantCornerCount(reverseL),
-      pathBendSignature(reverseL),
-    ] as const;
+  it("rejects opposite directions", () => {
+    const template = extractGestureVector(
+      line({ x: 0, y: 0 }, { x: 100, y: 0 }),
+    );
+    const candidate = extractGestureVector(
+      line({ x: 0, y: 0 }, { x: -100, y: 0 }),
+    );
+    expect(matchGestureVector(candidate, template)).toBeLessThan(0.5);
+  });
 
-    const vertical = Array.from({ length: 24 }, (_, index) => ({
-      x: 80,
-      y: 40 + index * 8,
-    }));
+  it("rejects strokes that are too short", () => {
+    const template = extractGestureVector(
+      line({ x: 0, y: 0 }, { x: 100, y: 0 }),
+    );
+    const candidate = extractGestureVector(
+      line({ x: 0, y: 0 }, { x: 10, y: 0 }),
+    );
+    expect(passesGestureVectorChecks(candidate, template)).toBe(false);
+  });
 
-    expect(
-      passesShapeChecks(vertical, template, ...shapeMeta),
-    ).toBe(false);
-    expect(matchGestureScore(vertical, template, shapeMeta[1], shapeMeta[2])).toBeLessThan(
+  it("accepts adjacent diagonal drift for a horizontal template", () => {
+    const template = extractGestureVector(
+      line({ x: 0, y: 0 }, { x: 100, y: 0 }),
+    );
+    const candidate = extractGestureVector(
+      line({ x: 0, y: 0 }, { x: 100, y: -18 }),
+    );
+    expect(passesGestureVectorChecks(candidate, template)).toBe(true);
+    expect(matchGestureVector(candidate, template)).toBeGreaterThanOrEqual(
       DEFAULT_GESTURE_MIN_SCORE,
     );
+  });
+
+  it("accepts ratio drift on an L-shape", () => {
+    const template = extractGestureVector([
+      ...line({ x: 0, y: 0 }, { x: 100, y: 0 }),
+      ...line({ x: 100, y: 0 }, { x: 100, y: 60 }).slice(1),
+    ]);
+    const candidate = extractGestureVector([
+      ...line({ x: 0, y: 0 }, { x: 110, y: 0 }),
+      ...line({ x: 110, y: 0 }, { x: 110, y: 40 }).slice(1),
+    ]);
+    expect(matchGestureVector(candidate, template)).toBeGreaterThanOrEqual(
+      DEFAULT_GESTURE_MIN_SCORE,
+    );
+  });
+
+  it("accepts a V-shape drawn with a cardinal corner (SE, S, E, NE)", () => {
+    const template = extractGestureVector([
+      ...line({ x: 0, y: 0 }, { x: 70, y: 70 }),
+      ...line({ x: 70, y: 70 }, { x: 140, y: 0 }).slice(1),
+    ]);
+    expect(template.directions).toEqual([7, 1]);
+
+    const candidate = extractGestureVector([
+      ...line({ x: 0, y: 0 }, { x: 50, y: 50 }),
+      ...line({ x: 50, y: 50 }, { x: 50, y: 62 }).slice(1),
+      ...line({ x: 50, y: 62 }, { x: 62, y: 62 }).slice(1),
+      ...line({ x: 62, y: 62 }, { x: 130, y: 8 }).slice(1),
+    ]);
+    expect(passesGestureVectorChecks(candidate, template)).toBe(true);
+    expect(matchGestureVector(candidate, template)).toBeGreaterThanOrEqual(
+      DEFAULT_GESTURE_MIN_SCORE,
+    );
+  });
+
+  it("accepts explicit cardinal steps between V diagonals", () => {
+    const template = {
+      directions: [7, 1],
+      segmentLengths: [0.5, 0.5],
+      totalLength: 100,
+    };
+    const candidate = {
+      directions: [7, 6, 0, 1],
+      segmentLengths: [0.42, 0.04, 0.04, 0.5],
+      totalLength: 100,
+    };
+    expect(matchGestureVector(candidate, template)).toBeGreaterThanOrEqual(
+      DEFAULT_GESTURE_MIN_SCORE,
+    );
+  });
+
+  it("accepts a V-shape drawn as S then E at the corner", () => {
+    const template = extractGestureVector([
+      ...line({ x: 0, y: 0 }, { x: 70, y: 70 }),
+      ...line({ x: 70, y: 70 }, { x: 140, y: 0 }).slice(1),
+    ]);
+    const candidate = extractGestureVector([
+      ...line({ x: 0, y: 0 }, { x: 60, y: 60 }),
+      ...line({ x: 60, y: 60 }, { x: 60, y: 72 }).slice(1),
+      ...line({ x: 60, y: 72 }, { x: 135, y: 5 }).slice(1),
+    ]);
+    expect(matchGestureVector(candidate, template)).toBeGreaterThanOrEqual(
+      DEFAULT_GESTURE_MIN_SCORE,
+    );
+  });
+
+  it("rejects lowercase y (SW, NE, SE) against V (SE, NE)", () => {
+    const template = {
+      directions: [7, 1],
+      segmentLengths: [0.5, 0.5],
+      totalLength: 100,
+    };
+    const candidate = {
+      directions: [5, 1, 7],
+      segmentLengths: [0.33, 0.34, 0.33],
+      totalLength: 100,
+    };
+    expect(matchGestureVector(candidate, template)).toBe(0);
+  });
+
+  it("rejects uppercase Y (SE, NE, SW) against V (SE, NE)", () => {
+    const template = {
+      directions: [7, 1],
+      segmentLengths: [0.5, 0.5],
+      totalLength: 100,
+    };
+    const candidate = {
+      directions: [7, 1, 5],
+      segmentLengths: [0.33, 0.34, 0.33],
+      totalLength: 100,
+    };
+    expect(matchGestureVector(candidate, template)).toBe(0);
   });
 });

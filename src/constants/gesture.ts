@@ -1,17 +1,26 @@
-/** Shared with Rust runtime (`recognizer.rs`, `gesture.rs`, `state.rs`). Keep in sync. */
-export const GESTURE_TEMPLATE_SIZE = 64;
-export const GESTURE_SQUARE_SIZE = 250;
-export const GESTURE_PREVIEW_POINT_COUNT = 48;
-export const DEFAULT_GESTURE_MIN_SCORE = 0.88;
-export const MIN_RAW_PATH_LENGTH = 24;
+/** Shared with Rust runtime (`vector.rs`, `gesture.rs`, `state.rs`). Keep in sync. */
 
-/** Used by TS match tests mirroring Rust shape checks. */
-export const MIN_PATH_LENGTH_RATIO = 0.75;
-export const MIN_TURNING_RATIO = 0.85;
-export const MIN_TEMPLATE_TURNING = 0.35;
-export const MIN_CORNER_ANGLE = Math.PI / 5;
-export const MAX_CORNER_COUNT_DIFF_RATIO = 0.25;
-export const MIN_CORNER_AXIS_RATIO = 0.28;
-export const MAX_BEARING_DELTA = Math.PI / 3;
-export const SIMPLIFY_EPSILON_RATIO = 0.04;
-export const MIN_SIMPLIFY_EPSILON = 3;
+export const DEFAULT_GESTURE_MIN_SCORE = 0.62;
+export const MIN_RAW_PATH_LENGTH = 24;
+export const MIN_PATH_LENGTH_RATIO = 0.65;
+
+/** Ignore short adjacent-octant jitter at corners (not whole edges). */
+export const MIN_VECTOR_SEGMENT_LENGTH = 4;
+
+/** Drop / merge segments shorter than this share of total length. */
+export const MIN_SEGMENT_LENGTH_RATIO = 0.08;
+
+/** Direction vs length score blend. */
+export const DIRECTION_SCORE_WEIGHT = 0.55;
+export const LENGTH_SCORE_WEIGHT = 0.45;
+
+/** Exact octant = 1.0; adjacent octant (↗ for →) is nearly as good. */
+export const ADJACENT_DIRECTION_MATCH_SCORE = 0.95;
+
+/** log-ratio tolerance per aligned segment (≈ ±75%). */
+export const LENGTH_RATIO_TOLERANCE = 1.05;
+
+export const MIN_GESTURE_SEGMENTS = 1;
+
+/** Thumbnail / legacy preview helpers. */
+export const GESTURE_PREVIEW_POINT_COUNT = 48;

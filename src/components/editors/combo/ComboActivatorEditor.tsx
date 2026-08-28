@@ -43,6 +43,15 @@ export const ComboActivatorEditor = (props: ComboActivatorEditorProps) => {
     customMappings.updateActivator(editor.entryId, combo);
     setEditor(null);
   };
+  const resetTrigger = () => {
+    setEditor({
+      ...editor,
+      phase: "capture",
+      draftChord: [],
+      draftButton: null,
+      rejected: null,
+    });
+  };
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
       setEditor(null);
@@ -67,6 +76,8 @@ export const ComboActivatorEditor = (props: ComboActivatorEditorProps) => {
         tilt: i18n.activatorRejectedTilt,
       })}
       saveDisabled={combo === null}
+      resetLabel={i18n.customMappingTriggerReset}
+      onReset={resetTrigger}
       handlers={{
         onCancel: () => setEditor(null),
         onSave: combo !== null ? saveCombo : undefined,

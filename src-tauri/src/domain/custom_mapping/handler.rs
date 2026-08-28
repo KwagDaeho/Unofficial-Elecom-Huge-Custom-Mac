@@ -1,11 +1,11 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::Ordering;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use crate::domain::device::{ButtonId, ButtonState};
 use crate::domain::engine::input::{
     apply_binding_press, apply_binding_release, cancel_regular_binding,
-    fire_due_key_repeats_for, fire_due_long_presses_for, take_due_scroll_repeats_for,
+    fire_due_key_repeats_for, take_due_scroll_repeats_for,
     ActionRepeat, PendingHold, ScrollRepeat,
 };
 use crate::domain::profile::{Action, ButtonBinding, Profile};
@@ -101,6 +101,9 @@ fn reconcile_held_chords(
         cancel_regular_binding(id, profile, pending, held, scroll_repeats, key_repeats);
         maps.active.insert(id, entry.id.clone());
         ACTIVE_BUTTONS.lock().insert(id);
+        if state::uses_os_watch() {
+            super::chord::note_os_button_swallowed(id);
+        }
         fire_custom_press(
             entry.id.clone(),
             id,
@@ -180,6 +183,9 @@ pub fn handle_transitions(
         skip_press.insert(id);
         maps.active.insert(id, entry.id.clone());
         ACTIVE_BUTTONS.lock().insert(id);
+        if state::uses_os_watch() {
+            super::chord::note_os_button_swallowed(id);
+        }
         fire_custom_press(entry.id, id, &entry.binding, profile, maps);
     }
 
@@ -189,17 +195,31 @@ pub fn handle_transitions(
 }
 
 pub fn fire_due_ticks(maps: &mut CustomMaps, profile: &Profile, threshold: Duration) {
-    fire_due_long_presses_for(
-        &mut maps.pending,
-        &mut maps.held,
-        &profile.pointer,
-        threshold,
-        |entry_id| {
-            entry_by_id(entry_id)
+    let now = Instant::now();
+    let due: Vec<(String, Action)> = maps
+        .pending
+        .iter_mut()
+        .filter_map(|(entry_id, hold)| {
+            if hold.long_fired || now.duration_since(hold.started) < threshold {
+                return None;
+            }
+            hold.long_fired = true;
+            if hold.long_press.is_noop() {
+                return None;
+            }
+            let button = entry_by_id(entry_id)
                 .map(|e| e.activator.button)
-                .unwrap_or(ButtonId::Left)
-        },
-    );
+                .unwrap_or(ButtonId::Left);
+            let mods = super::state::effective_sorted_modifiers();
+            inject::with_chord_action(&mods, || {
+                inject::press_action(button, &hold.long_press, &profile.pointer);
+            });
+            Some((entry_id.clone(), hold.long_press.clone()))
+        })
+        .collect();
+    for (entry_id, action) in due {
+        maps.held.insert(entry_id, action);
+    }
     let (dx, dy) = take_due_scroll_repeats_for(&mut maps.scroll_repeats);
     if dx != 0 || dy != 0 {
         inject::scroll_by_units_ex(dx, dy, &profile.pointer, true);
@@ -245,7 +265,7 @@ pub fn pointer_takeover_active(maps: &CustomMaps, down: &ButtonState, profile: &
         if maps.active.contains_key(&id) {
             let b = &entry.binding;
             if b.uses_auto_click()
-                || b.uses_long_press()
+                || b.waits_for_long_press()
                 || !remap::action_is_native_for(id, &b.click)
             {
                 return true;

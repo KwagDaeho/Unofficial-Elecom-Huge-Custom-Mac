@@ -383,14 +383,26 @@ pub(crate) fn run(
                             &profile_snap,
                         );
                         suppress::set_suppress_motion(takeover);
-                        let gesture_ball_draw = capture::gesture_ball_stroke_active();
-                        let (out_x, out_y) = if gesture_ball_draw {
-                            (0.0, 0.0)
-                        } else if ball_scroll_on || gesture_on {
+                        let gesture_record_draw = capture::gesture_record_active()
+                            && capture::gesture_ball_stroke_active();
+                        let (out_x, out_y) = if ball_scroll_on {
                             if gesture_on {
                                 gesture_mapping::record_motion(raw_x, raw_y);
                             }
                             (0.0, 0.0)
+                        } else if gesture_on || gesture_record_draw {
+                            if gesture_on {
+                                gesture_mapping::record_motion(raw_x, raw_y);
+                            }
+                            if shared && !takeover {
+                                if scrolling {
+                                    (0.0, 0.0)
+                                } else {
+                                    (dx - raw_x, dy - raw_y)
+                                }
+                            } else {
+                                (dx, dy)
+                            }
                         } else if shared && !takeover {
                             if scrolling {
                                 (0.0, 0.0)
@@ -402,6 +414,16 @@ pub(crate) fn run(
                         };
                         if out_x != 0.0 || out_y != 0.0 {
                             inject::move_by(out_x, out_y);
+                        }
+                        let gesture_stroke =
+                            gesture_on || gesture_record_draw;
+                        if gesture_stroke
+                            && (raw_x != 0.0
+                                || raw_y != 0.0
+                                || out_x != 0.0
+                                || out_y != 0.0)
+                        {
+                            inject::append_gesture_record_cursor_point();
                         }
                     }
 

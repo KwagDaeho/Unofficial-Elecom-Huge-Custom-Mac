@@ -1,4 +1,8 @@
 import { splitChord } from "../chord";
+import {
+  mouseButtonEventNumber,
+  normalizeActivator,
+} from "../mouseButton";
 import type {
   Activator,
   BallScrollSettings,
@@ -27,9 +31,13 @@ export const ballScrollOf = (
       : DEFAULT_BALL_SCROLL;
   return {
     toggleEnabled: merged.toggleEnabled,
-    toggleActivator: merged.toggleActivator,
+    toggleActivator: merged.toggleActivator
+      ? normalizeActivator(merged.toggleActivator)
+      : null,
     holdEnabled: merged.holdEnabled,
-    holdActivator: merged.holdActivator,
+    holdActivator: merged.holdActivator
+      ? normalizeActivator(merged.holdActivator)
+      : null,
     invertVertical: merged.invertVertical === true,
     invertHorizontal: merged.invertHorizontal === true,
     speed:
@@ -51,7 +59,9 @@ export const activatorsEqual = (
     return left.name === right.name;
   }
   if (left.type === "mouse" && right.type === "mouse") {
-    return left.button === right.button;
+    return (
+      mouseButtonEventNumber(left.button) === mouseButtonEventNumber(right.button)
+    );
   }
   if (left.type === "huge" && right.type === "huge") {
     return left.button === right.button;

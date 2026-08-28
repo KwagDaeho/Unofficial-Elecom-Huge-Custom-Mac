@@ -1,20 +1,18 @@
-import { significantCornerCount } from "@/domain/gesture/template";
+import { vectorToPreviewPoints } from "@/domain/gesture/vector";
+import { resolveGestureVector } from "@/domain/gesture/vector/resolve";
 import type { GestureMappingEntry, GesturePoint } from "@/types";
+
+const PREVIEW_SIZE = 160;
 
 /** Pick stroke points for mapping-row thumbnails / hover preview. */
 export const gesturePreviewPoints = (entry: GestureMappingEntry): GesturePoint[] => {
-  const { template, templatePreview, templateCornerCount } = entry;
-  if (templatePreview && templatePreview.length >= 2) {
-    const previewCorners = significantCornerCount(templatePreview);
-    const cornerCount = templateCornerCount ?? 0;
-    const expectedCorners =
-      cornerCount > 0 ? cornerCount : significantCornerCount(template);
-    if (expectedCorners === 0 || previewCorners >= expectedCorners) {
-      return templatePreview;
-    }
+  const vector = resolveGestureVector(entry);
+  if (vector.directions.length >= 1) {
+    return vectorToPreviewPoints(
+      vector.directions,
+      vector.segmentLengths,
+      PREVIEW_SIZE,
+    );
   }
-  if (template.length >= 2) {
-    return template;
-  }
-  return templatePreview ?? [];
+  return entry.templatePreview ?? entry.template ?? [];
 };

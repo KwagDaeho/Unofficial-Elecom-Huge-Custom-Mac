@@ -35,8 +35,13 @@ impl ButtonBinding {
         }
     }
 
+    /// Hold past threshold before firing click on release.
+    pub fn waits_for_long_press(&self) -> bool {
+        self.long_press_enabled && !self.auto_click
+    }
+
     pub fn uses_long_press(&self) -> bool {
-        self.long_press_enabled && !self.auto_click && !self.long_press.is_noop()
+        self.waits_for_long_press() && !self.long_press.is_noop()
     }
 
     pub fn uses_auto_click(&self) -> bool {

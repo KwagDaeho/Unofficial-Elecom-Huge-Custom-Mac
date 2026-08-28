@@ -1,4 +1,14 @@
-export type MouseClickButton = "left" | "right" | "middle" | "back" | "forward";
+export type StandardMouseClickButton =
+  | "left"
+  | "right"
+  | "middle"
+  | "back"
+  | "forward";
+
+/** Standard buttons or a CGEvent button number (Karabiner `buttonN`). */
+export type MouseClickButton =
+  | StandardMouseClickButton
+  | { type: "other"; number: number };
 
 export type SystemCommand =
   | "mission_control"

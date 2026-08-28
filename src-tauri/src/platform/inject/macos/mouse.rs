@@ -67,6 +67,13 @@ fn cg_button(button: &MouseClickButton) -> (CGEventType, CGEventType, CGMouseBut
             4,
             true,
         ),
+        MouseClickButton::Other { number } => (
+            CGEventType::OtherMouseDown,
+            CGEventType::OtherMouseUp,
+            CGMouseButton::Left,
+            i64::from(*number),
+            true,
+        ),
     }
 }
 

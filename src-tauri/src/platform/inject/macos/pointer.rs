@@ -124,9 +124,9 @@ pub fn pin_cursor() {
     pin_cursor_with_badge(super::cursor_badge::show);
 }
 
-/// Freeze pointer while recording a gesture path — filled purple badge.
+/// Gesture hold: show the purple badge but keep the cursor free (unlike ball-scroll pin).
 pub fn pin_cursor_gesture() {
-    pin_cursor_with_badge(super::cursor_badge::show_gesture);
+    super::cursor_badge::show_gesture();
 }
 
 fn pin_cursor_with_badge(show_badge: fn()) {

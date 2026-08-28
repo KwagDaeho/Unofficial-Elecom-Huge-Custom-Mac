@@ -18,7 +18,7 @@ import {
   type CanvasRecorderState,
   type GestureDrawPhase,
 } from "@/domain/gesture";
-import { clearGestureCanvasStroke, setGestureCanvasDrawing } from "@/services/tauri";
+import { clearGestureCanvasStroke, setGestureCanvasDrawing, syncGestureRecordCursor } from "@/services/tauri";
 import type { GesturePoint } from "@/types";
 
 export type { GestureDrawPhase } from "@/domain/gesture";
@@ -137,6 +137,11 @@ export const useGestureCanvasRecorder = (
       }
       livePointsRef.current = next;
       schedulePaint();
+      if (recordingRef.current) {
+        queueMicrotask(() => {
+          void syncGestureRecordCursor();
+        });
+      }
     },
     [schedulePaint],
   );

@@ -67,6 +67,11 @@ pub fn emit_gesture_canvas_phase(phase: &str) {
     }
     if phase == "start" {
         session::set_gesture_ball_stroke_active(true);
+        #[cfg(target_os = "macos")]
+        {
+            crate::platform::inject::clear_gesture_record_overlay_stroke();
+            crate::platform::inject::append_gesture_record_cursor_point();
+        }
     } else if phase == "end" {
         session::set_gesture_ball_stroke_active(false);
     }

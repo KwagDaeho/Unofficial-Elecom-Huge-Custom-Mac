@@ -1,5 +1,4 @@
 use std::sync::atomic::{AtomicBool, Ordering};
-
 use std::time::{Duration, Instant};
 
 use parking_lot::Mutex;
@@ -7,7 +6,10 @@ use parking_lot::Mutex;
 use crate::domain::profile::{Activator, GestureMappingEntry, GesturePoint, PointerSettings, Profile};
 use crate::platform::inject;
 
-use super::recognizer::{match_score, passes_shape_checks, raw_path_length};
+use super::vector::{
+    extract_gesture_vector, match_vector, passes_vector_checks, raw_path_length,
+    resolve_entry_vector, DEFAULT_GESTURE_MIN_SCORE, MIN_RAW_PATH_LENGTH, MIN_GESTURE_SEGMENTS,
+};
 
 static ENTRIES: Mutex<Vec<GestureMappingEntry>> = Mutex::new(Vec::new());
 static POINTER: Mutex<PointerSettings> = Mutex::new(PointerSettings {
@@ -26,11 +28,8 @@ static HOLD_DOWN: AtomicBool = AtomicBool::new(false);
 static SESSION: Mutex<Option<GestureSession>> = Mutex::new(None);
 static IGNORE_BALL_MOTION_UNTIL: Mutex<Option<Instant>> = Mutex::new(None);
 
-const MIN_RAW_PATH_LENGTH: f64 = 24.0;
-/// Match ball-scroll: drop inertial ball HID right after gesture hold ends.
-const BALL_MOTION_IGNORE: Duration = crate::platform::inject::POST_UNPIN_BALL_IGNORE;
-/// Match canvas template recording: ball HID counts overshoot visual stroke.
 const RECORD_BALL_DELTA_SCALE: f64 = 0.45;
+const BALL_MOTION_IGNORE: Duration = crate::platform::inject::POST_UNPIN_BALL_IGNORE;
 
 struct GestureSession {
     hold: Activator,
@@ -72,7 +71,6 @@ pub fn session_active() -> bool {
     HOLD_DOWN.load(Ordering::SeqCst)
 }
 
-/// Drop HUGE ball deltas as pointer motion right after a gesture hold ends.
 pub fn ignore_ball_pointer_motion() -> bool {
     if crate::platform::inject::restore_cursor_active() {
         return true;
@@ -116,6 +114,9 @@ pub fn on_os_down(activator: &Activator, is_repeat: bool) -> bool {
         hold: activator.clone(),
         points: vec![GesturePoint { x: 0.0, y: 0.0 }],
     });
+    inject::clear_gesture_record_overlay_stroke();
+    inject::set_gesture_record_overlay_active(true);
+    inject::append_gesture_record_cursor_point();
     inject::pin_cursor_gesture();
     should_swallow(activator)
 }
@@ -133,6 +134,7 @@ pub fn on_os_up(activator: &Activator, is_repeat: bool) -> bool {
     }
     HOLD_DOWN.store(false, Ordering::SeqCst);
     *IGNORE_BALL_MOTION_UNTIL.lock() = Some(Instant::now() + BALL_MOTION_IGNORE);
+    inject::set_gesture_record_overlay_active(false);
     inject::restore_pinned_cursor();
     let handled = should_swallow(activator);
     try_fire_match(session);
@@ -173,28 +175,23 @@ pub fn record_motion(dx: f64, dy: f64) {
 }
 
 fn try_fire_match(session: GestureSession) {
-    if raw_path_length(&session.points) < MIN_RAW_PATH_LENGTH {
+    let candidate = extract_gesture_vector(&session.points);
+    if candidate.directions.len() < MIN_GESTURE_SEGMENTS
+        || raw_path_length(&session.points) < MIN_RAW_PATH_LENGTH
+    {
         return;
     }
+
     let candidates = entries_for_hold(&session.hold);
     let mut best: Option<(&GestureMappingEntry, f64)> = None;
     for entry in &candidates {
-        if !passes_shape_checks(
-            &session.points,
-            &entry.template,
-            entry.template_path_length,
-            entry.template_corner_count,
-            entry.template_bend_signature,
-        ) {
+        let template = resolve_entry_vector(entry);
+        if template.directions.is_empty() || !passes_vector_checks(&candidate, &template) {
             continue;
         }
-        let score = match_score(
-            &session.points,
-            &entry.template,
-            entry.template_corner_count,
-            entry.template_bend_signature,
-        );
-        if score < entry.min_score {
+        let score = match_vector(&candidate, &template);
+        let threshold = entry.min_score.min(DEFAULT_GESTURE_MIN_SCORE);
+        if score < threshold {
             continue;
         }
         if best.map(|(_, current)| score > current).unwrap_or(true) {
@@ -211,6 +208,7 @@ fn try_fire_match(session: GestureSession) {
 fn end_session(restore_cursor: bool) {
     HOLD_DOWN.store(false, Ordering::SeqCst);
     SESSION.lock().take();
+    inject::set_gesture_record_overlay_active(false);
     if restore_cursor {
         *IGNORE_BALL_MOTION_UNTIL.lock() = Some(Instant::now() + BALL_MOTION_IGNORE);
         inject::restore_pinned_cursor();

@@ -113,7 +113,7 @@ fn action_needs_pointer_takeover(id: ButtonId, action: &Action) -> bool {
 fn physical_button_needs_takeover(id: ButtonId, profile: &Profile) -> bool {
     let b = binding_of(profile, id);
     b.uses_auto_click()
-        || b.uses_long_press()
+        || b.waits_for_long_press()
         || !remap::action_is_native_for(id, &b.click)
 }
 
@@ -185,6 +185,9 @@ pub(crate) fn fire_due_long_presses_for<K, F>(
                 return None;
             }
             hold.long_fired = true;
+            if hold.long_press.is_noop() {
+                return None;
+            }
             let id = inject_id(key);
             inject::press_action(id, &hold.long_press, pointer);
             Some((key.clone(), hold.long_press.clone()))
@@ -438,7 +441,7 @@ pub(crate) fn apply_binding_press<K>(
         return;
     }
 
-    if binding.uses_long_press() {
+    if binding.waits_for_long_press() {
         pending.insert(
             state_key,
             PendingHold {

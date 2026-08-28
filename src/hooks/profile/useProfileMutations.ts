@@ -16,6 +16,7 @@ import {
   withMappingSlot,
   withPointerPatch,
 } from "@/domain/profile";
+import { normalizeActivator } from "@/domain/profile/mouseButton";
 import { applyCatalogSelection } from "@/services/catalogSelection";
 import type {
   Action,
@@ -88,11 +89,12 @@ export const useProfileMutations = (
     slot: BallScrollSlot,
     activator: Activator,
   ) => {
+    const next = normalizeActivator(activator);
     if (slot === "toggle") {
-      updateBallScroll({ toggleActivator: activator, toggleEnabled: true });
+      updateBallScroll({ toggleActivator: next, toggleEnabled: true });
       return;
     }
-    updateBallScroll({ holdActivator: activator, holdEnabled: true });
+    updateBallScroll({ holdActivator: next, holdEnabled: true });
   };
 
   const updateCustomMappingFlags = (
@@ -151,27 +153,27 @@ export const useProfileMutations = (
     holdActivator: Activator,
   ) => {
     mutateProfile((loadedProfile) =>
-      withGestureMappingHoldActivator(loadedProfile, entryId, holdActivator),
+      withGestureMappingHoldActivator(
+        loadedProfile,
+        entryId,
+        normalizeActivator(holdActivator),
+      ),
     );
   };
 
   const updateGestureTemplate = (
     entryId: string,
-    template: GestureMappingEntry["template"],
-    templatePathLength?: number,
-    templatePreview?: GestureMappingEntry["templatePreview"],
-    templateCornerCount?: number,
-    templateBendSignature?: number,
+    templateDirections: number[],
+    templateSegmentLengths: number[],
+    templatePathLength: number,
   ) => {
     mutateProfile((loadedProfile) =>
       withGestureMappingTemplate(
         loadedProfile,
         entryId,
-        template,
+        templateDirections,
+        templateSegmentLengths,
         templatePathLength,
-        templatePreview,
-        templateCornerCount,
-        templateBendSignature,
       ),
     );
   };

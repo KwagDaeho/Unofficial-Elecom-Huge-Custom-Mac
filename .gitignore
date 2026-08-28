@@ -41,6 +41,9 @@ pnpm-debug.log*
 # Cursor / local agent junk
 .cursor/
 
+# Local app monitor logs (also in ~/Library/Logs/Elecom Huge Custom/monitor/)
+.monitor-*.log
+
 # Test / coverage
 coverage/
 *.lcov

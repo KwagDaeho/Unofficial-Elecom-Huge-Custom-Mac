@@ -1,4 +1,4 @@
-import { formatKeyChord } from "@/i18n";
+import { formatKeyChord, mouseClickLabel } from "@/i18n";
 import type { Lang, MacroStep } from "@/types";
 export const formatMacroStepLabel = (step: MacroStep, lang: Lang): string => {
   if (step.type === "key_stroke") {
@@ -7,5 +7,5 @@ export const formatMacroStepLabel = (step: MacroStep, lang: Lang): string => {
   if (step.type === "delay") {
     return `${step.ms} ms`;
   }
-  return step.button;
+  return mouseClickLabel(step.button, lang);
 };

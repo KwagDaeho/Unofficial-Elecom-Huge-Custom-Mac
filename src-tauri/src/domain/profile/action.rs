@@ -34,7 +34,7 @@ pub enum MacroStep {
     MouseClick { button: MouseClickButton },
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MouseClickButton {
     Left,
@@ -42,7 +42,37 @@ pub enum MouseClickButton {
     Middle,
     Back,
     Forward,
+    /// Extra mouse buttons (Karabiner `buttonN`, CGEvent button number).
+    Other {
+        number: u8,
+    },
 }
+
+impl MouseClickButton {
+    /// CGEvent `MOUSE_EVENT_BUTTON_NUMBER` when applicable.
+    pub fn event_number(&self) -> Option<u8> {
+        Some(match self {
+            MouseClickButton::Left => 0,
+            MouseClickButton::Right => 1,
+            MouseClickButton::Middle => 2,
+            MouseClickButton::Back => 3,
+            MouseClickButton::Forward => 4,
+            MouseClickButton::Other { number } => *number,
+        })
+    }
+
+    pub fn matches_event_number(&self, number: i64) -> bool {
+        self.event_number().is_some_and(|n| i64::from(n) == number)
+    }
+}
+
+impl PartialEq for MouseClickButton {
+    fn eq(&self, other: &Self) -> bool {
+        self.event_number() == other.event_number()
+    }
+}
+
+impl Eq for MouseClickButton {}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

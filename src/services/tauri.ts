@@ -101,6 +101,9 @@ export const setGestureCanvasDrawing = async (
 export const clearGestureCanvasStroke = async (): Promise<void> => {
   await invoke("clear_gesture_canvas_stroke");
 };
+export const syncGestureRecordCursor = async (): Promise<void> => {
+  await invoke("sync_gesture_record_cursor");
+};
 export const getAppIcon = async (path: string): Promise<string | null> => {
   return invoke<string | null>("get_app_icon", { path });
 };

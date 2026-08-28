@@ -169,8 +169,9 @@ pub fn mouse_from_event(etype: u32, button_number: i64) -> Option<(Activator, bo
 fn other_mouse(button_number: i64) -> Option<MouseClickButton> {
     match button_number {
         2 => Some(MouseClickButton::Middle),
-        3 => Some(MouseClickButton::Back),
-        4 => Some(MouseClickButton::Forward),
+        n if (3..=255).contains(&n) => Some(MouseClickButton::Other {
+            number: n as u8,
+        }),
         _ => None,
     }
 }

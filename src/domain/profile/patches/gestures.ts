@@ -42,22 +42,22 @@ export const withGestureMappingHoldActivator = (
 export const withGestureMappingTemplate = (
   profile: Profile,
   entryId: string,
-  template: GestureMappingEntry["template"],
-  templatePathLength?: number,
-  templatePreview?: GestureMappingEntry["templatePreview"],
-  templateCornerCount?: number,
-  templateBendSignature?: number,
+  templateDirections: number[],
+  templateSegmentLengths: number[],
+  templatePathLength: number,
 ): Profile => ({
   ...profile,
   gestureMappings: gestureMappingsOf(profile).map((entry) =>
     entry.id === entryId
       ? {
           ...entry,
-          template,
-          templatePreview: templatePreview ?? [],
-          templatePathLength: templatePathLength ?? 0,
-          templateCornerCount: templateCornerCount ?? 0,
-          templateBendSignature: templateBendSignature ?? 0,
+          templateDirections,
+          templateSegmentLengths,
+          templatePathLength,
+          template: undefined,
+          templatePreview: undefined,
+          templateCornerCount: undefined,
+          templateBendSignature: undefined,
         }
       : entry,
   ),

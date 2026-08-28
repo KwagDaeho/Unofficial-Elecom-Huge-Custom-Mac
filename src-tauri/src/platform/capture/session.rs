@@ -46,9 +46,14 @@ pub fn apply_capture_session(session: CaptureSession) {
         GESTURE_CANVAS_DRAWING.store(false, Ordering::SeqCst);
         GESTURE_BALL_STROKE_ACTIVE.store(false, Ordering::SeqCst);
         super::emit::emit_gesture_canvas_phase("end");
+        #[cfg(target_os = "macos")]
+        crate::platform::inject::set_gesture_record_overlay_active(false);
     }
 
     GESTURE_RECORD_ACTIVE.store(session.gesture_record, Ordering::SeqCst);
+
+    #[cfg(target_os = "macos")]
+    crate::platform::inject::set_gesture_record_overlay_active(session.gesture_record);
 
     if session.combo_trigger != combo_was {
         #[cfg(target_os = "macos")]

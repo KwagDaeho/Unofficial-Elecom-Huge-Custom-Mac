@@ -108,6 +108,7 @@ pub fn os_mouse_button_suppressed(button: &crate::domain::profile::MouseClickBut
         MouseClickButton::Middle => BIT_MIDDLE,
         MouseClickButton::Back => BIT_BACK,
         MouseClickButton::Forward => BIT_FORWARD,
+        MouseClickButton::Other { .. } => return false,
     };
     mask & bit != 0
 }

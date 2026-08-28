@@ -5,6 +5,7 @@ mod keyboard;
 mod mouse;
 mod pointer;
 mod cursor_badge;
+mod gesture_record_overlay;
 
 pub use action::{
     default_mouse_button, press_action, press_action_forced, release_action, release_action_forced,
@@ -24,6 +25,13 @@ pub use pointer::{
     release_ball_scroll_pin_for_quit, restore_cursor_active, restore_pinned_cursor,
     restore_sync_pin, scroll_ball, scroll_by_units_ex, scroll_notches_ex, set_shared_pointer_mode,
     shared_pointer_mode, sync_cursor_from_system, tick_restore_cursor, POST_UNPIN_BALL_IGNORE,
+};
+pub use gesture_record_overlay::{
+    append_cursor_point as append_gesture_record_cursor_point,
+    append_screen_point as append_gesture_record_screen_point,
+    clear_stroke as clear_gesture_record_overlay_stroke,
+    set_active as set_gesture_record_overlay_active,
+    shutdown as shutdown_gesture_record_overlay,
 };
 // Extra scroll helpers kept public for API parity with the former monolith.
 #[allow(unused_imports)]
@@ -89,6 +97,7 @@ impl ButtonsDown {
             MouseClickButton::Middle => self.middle = down,
             MouseClickButton::Back => self.back = down,
             MouseClickButton::Forward => self.forward = down,
+            MouseClickButton::Other { .. } => {}
         }
     }
 

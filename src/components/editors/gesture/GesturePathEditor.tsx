@@ -55,15 +55,17 @@ export const GesturePathEditor = (props: GesturePathEditorProps) => {
         onMouseUp={canvasHandlers.onCanvasMouseUp}
         onMouseLeave={canvasHandlers.onCanvasMouseLeave}
       />
-      <Muted variant="modal" className={styles.recordStatus}>
-        {statusText}
-      </Muted>
+      {statusText !== null ? (
+        <Muted variant="modal" className={styles.recordStatus}>
+          {statusText}
+        </Muted>
+      ) : null}
       <Row
         className={cx(styles.redrawRow, showRedraw && styles.redrawRowVisible)}
         aria-hidden={!showRedraw}
       >
         <Button variant="ghost" onClick={resetCanvas} tabIndex={showRedraw ? 0 : -1}>
-          {i18n.gestureShapeRedraw}
+          {i18n.gestureShapeReset}
         </Button>
       </Row>
       <Row>

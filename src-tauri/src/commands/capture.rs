@@ -39,4 +39,18 @@ pub fn set_gesture_canvas_drawing(active: bool) {
 pub fn clear_gesture_canvas_stroke() {
     capture::set_gesture_canvas_drawing(false);
     capture::set_gesture_ball_stroke_active(false);
+    #[cfg(target_os = "macos")]
+    crate::platform::inject::clear_gesture_record_overlay_stroke();
+}
+
+#[tauri::command]
+pub fn append_gesture_record_point(x: f64, y: f64) {
+    #[cfg(target_os = "macos")]
+    crate::platform::inject::append_gesture_record_screen_point(x, y);
+}
+
+#[tauri::command]
+pub fn sync_gesture_record_cursor() {
+    #[cfg(target_os = "macos")]
+    crate::platform::inject::append_gesture_record_cursor_point();
 }

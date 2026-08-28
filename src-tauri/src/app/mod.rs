@@ -95,6 +95,7 @@ pub fn run() {
             commands::set_ui_modal,
             commands::set_gesture_canvas_drawing,
             commands::clear_gesture_canvas_stroke,
+            commands::sync_gesture_record_cursor,
             commands::list_installed_apps,
             commands::get_app_icon,
         ])

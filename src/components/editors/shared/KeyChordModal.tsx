@@ -17,6 +17,8 @@ interface KeyChordModalProps {
   error?: ReactNode;
   handlers: ModalActionHandlers;
   saveDisabled?: boolean;
+  resetLabel?: string;
+  onReset?: () => void;
 }
 
 export const KeyChordModal = (props: KeyChordModalProps) => {
@@ -34,6 +36,13 @@ export const KeyChordModal = (props: KeyChordModalProps) => {
       <Muted variant="modal">{props.copy.hint}</Muted>
       <ChordPreview>{props.preview}</ChordPreview>
       {props.error ? <ChordError>{props.error}</ChordError> : null}
+      {props.onReset ? (
+        <Row>
+          <Button variant="ghost" onClick={props.onReset}>
+            {props.resetLabel ?? "Reset"}
+          </Button>
+        </Row>
+      ) : null}
       <Row>
         <Button variant="ghost" onClick={props.handlers.onCancel}>
           {props.copy.cancelLabel}

@@ -58,6 +58,7 @@ export const ko = {
   customMappingTriggerButtonWaiting: "HUGE 버튼 입력…",
   customMappingTriggerIncomplete:
     "키 조합을 먼저 누른 뒤 HUGE 버튼을 누르세요.",
+  customMappingTriggerReset: "초기화",
   gestureMapping: "제스처 매핑",
   gestureMappingAdd: "추가",
   gestureMappingHelp:
@@ -74,13 +75,14 @@ export const ko = {
   gestureShapeSet: "제스처 등록",
   gestureShapeRecorded: "제스처 수정",
   gestureShapeTitle: "제스처 등록",
-  gestureShapeHint: "캔버스에서 드래그하거나, L + 트랙볼로 그리세요. (Esc: 취소)",
+  gestureShapeHint:
+    "8방향(→ ↗ ↑ …)으로 직선을 그리세요. 캔버스에서 드래그하거나, L + 트랙볼로 그리세요. (Esc: 취소)",
   gestureShapeRecording: "그리는 중…",
-  gestureShapeTooShort: "더 길게 그린 뒤 저장하세요.",
-  gestureShapePreview: "자기 일치 점수: {score}%",
+  gestureShapeTooShort:
+    "방향이 분명하게 바뀌도록 더 길게 그린 뒤 저장하세요.",
   gestureShapePreviewHint: "제스처 미리보기",
   gestureRowActions: "관리",
-  gestureShapeRedraw: "다시 그리기",
+  gestureShapeReset: "초기화",
   remove: "삭제",
   activatorTitle: "키 입력",
   activatorHint:

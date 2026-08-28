@@ -1,5 +1,5 @@
 import { gestureMappingsOf, newGestureMappingEntry } from "@/domain/profile";
-import { usePrefs, useProfileCtx } from "@/hooks";
+import { usePrefs, useProfileCtx, useEditor } from "@/hooks";
 import { Button, Muted, Panel } from "@/components/ui";
 import { GestureMappingRow } from "./GestureMappingRow";
 import * as styles from "./GestureMappingPanel.css";
@@ -7,6 +7,7 @@ import * as styles from "./GestureMappingPanel.css";
 export const GestureMappingPanel = () => {
   const { i18n } = usePrefs();
   const { profile, gestureMappings } = useProfileCtx();
+  const { setEditor } = useEditor();
   if (profile === null) {
     return null;
   }
@@ -17,7 +18,11 @@ export const GestureMappingPanel = () => {
         <h2>{i18n.gestureMapping}</h2>
         <Button
           size="tiny"
-          onClick={() => void gestureMappings.add(newGestureMappingEntry())}
+          onClick={() => {
+            const entry = newGestureMappingEntry();
+            void gestureMappings.add(entry);
+            setEditor({ kind: "gesture_path_recorder", entryId: entry.id });
+          }}
         >
           {i18n.gestureMappingAdd}
         </Button>

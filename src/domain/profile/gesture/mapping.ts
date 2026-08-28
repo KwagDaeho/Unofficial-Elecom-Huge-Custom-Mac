@@ -1,4 +1,5 @@
-import { DEFAULT_GESTURE_MIN_SCORE, MIN_RAW_PATH_LENGTH } from "@/constants/gesture";
+import { MIN_GESTURE_SEGMENTS, MIN_RAW_PATH_LENGTH } from "@/constants/gesture";
+import { resolveGestureVector } from "@/domain/gesture/vector";
 import { activatorsEqual, ballScrollOf } from "../activator";
 import type { Activator, GestureMappingEntry, Profile } from "@/types";
 
@@ -16,18 +17,23 @@ export const findGestureMapping = (
 export const newGestureMappingEntry = (): GestureMappingEntry => ({
   id: crypto.randomUUID(),
   holdActivator: null,
-  template: [],
-  minScore: DEFAULT_GESTURE_MIN_SCORE,
+  templateDirections: [],
+  templateSegmentLengths: [],
+  templatePathLength: 0,
   click: { type: "default" },
   longPress: { type: "disabled" },
   longPressEnabled: false,
   autoClick: false,
 });
 
-export const gestureEntryIsValid = (entry: GestureMappingEntry): boolean =>
-  entry.holdActivator !== null &&
-  entry.template.length >= 2 &&
-  (entry.templatePathLength ?? 0) >= MIN_RAW_PATH_LENGTH;
+export const gestureEntryIsValid = (entry: GestureMappingEntry): boolean => {
+  const vector = resolveGestureVector(entry);
+  return (
+    entry.holdActivator !== null &&
+    vector.directions.length >= MIN_GESTURE_SEGMENTS &&
+    (entry.templatePathLength ?? vector.totalLength) >= MIN_RAW_PATH_LENGTH
+  );
+};
 
 export const gestureHoldLabel = (
   entry: GestureMappingEntry,

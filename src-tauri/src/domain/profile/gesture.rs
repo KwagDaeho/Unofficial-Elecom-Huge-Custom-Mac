@@ -10,7 +10,7 @@ pub struct GesturePoint {
 }
 
 fn default_gesture_min_score() -> f64 {
-    0.88
+    0.62
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19,9 +19,13 @@ pub struct GestureMappingEntry {
     pub id: String,
     pub hold_activator: Option<Activator>,
     #[serde(default)]
-    pub template: Vec<GesturePoint>,
+    pub template_directions: Vec<u8>,
+    #[serde(default)]
+    pub template_segment_lengths: Vec<f64>,
     #[serde(default)]
     pub template_path_length: f64,
+    #[serde(default)]
+    pub template: Vec<GesturePoint>,
     #[serde(default)]
     pub template_preview: Vec<GesturePoint>,
     #[serde(default)]
@@ -36,6 +40,11 @@ pub struct GestureMappingEntry {
 
 impl GestureMappingEntry {
     pub fn is_valid(&self) -> bool {
-        self.hold_activator.is_some() && self.template.len() >= 8
+        if self.hold_activator.is_none() {
+            return false;
+        }
+        let vector = crate::domain::gesture_mapping::vector::resolve_entry_vector(self);
+        !vector.directions.is_empty()
+            && vector.total_length >= crate::domain::gesture_mapping::vector::MIN_RAW_PATH_LENGTH
     }
 }

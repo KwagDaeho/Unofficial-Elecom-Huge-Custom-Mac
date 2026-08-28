@@ -60,9 +60,14 @@ export type GesturePoint = { x: number; y: number };
 export type GestureMappingEntry = {
   id: string;
   holdActivator: Activator | null;
-  template: GesturePoint[];
-  templatePreview?: GesturePoint[];
+  /** 8-way directions (0=E … 7=SE). */
+  templateDirections?: number[];
+  /** Normalized segment length ratios (sum ≈ 1). */
+  templateSegmentLengths?: number[];
   templatePathLength?: number;
+  /** Legacy point templates — migrated to vectors on load. */
+  template?: GesturePoint[];
+  templatePreview?: GesturePoint[];
   templateCornerCount?: number;
   templateBendSignature?: number;
   minScore?: number;

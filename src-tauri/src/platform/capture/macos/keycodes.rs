@@ -108,9 +108,22 @@ pub(crate) fn keycode_name(code: u16) -> Option<&'static str> {
         0x6d => "F10",
         0x67 => "F11",
         0x6f => "F12",
+        0x69 => "F13",
+        0x6b => "F14",
+        0x71 => "F15",
+        0x6a => "F16",
+        0x40 => "F17",
+        0x4f => "F18",
+        0x50 => "F19",
         0x37 | 0x36 | 0x3a | 0x3d | 0x3b | 0x3e | 0x38 | 0x3c => return None,
         _ => return None,
     })
+}
+
+pub(crate) fn key_activator_name(code: u16) -> String {
+    keycode_name(code)
+        .map(str::to_string)
+        .unwrap_or_else(|| format!("keycode_{code}"))
 }
 
 pub(crate) fn modifier_name(code: u16) -> Option<(&'static str, u64)> {
@@ -153,9 +166,8 @@ pub(crate) fn chord_from_event(event: CGEventRef) -> Option<CaptureChord> {
 
 pub(crate) fn key_activator(event: CGEventRef) -> Option<Activator> {
     let code = unsafe { CGEventGetIntegerValueField(event, KEYBOARD_EVENT_KEYCODE) } as u16;
-    let name = keycode_name(code)?;
     Some(Activator::Key {
-        name: name.to_string(),
+        name: key_activator_name(code),
     })
 }
 

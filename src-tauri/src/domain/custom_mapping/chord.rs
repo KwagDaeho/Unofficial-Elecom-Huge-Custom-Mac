@@ -123,7 +123,11 @@ pub fn should_swallow_os_button(id: ButtonId, event_flags: u64, down: bool) -> b
         return false;
     }
     if down {
-        if find_match_with_flags(id, event_flags).is_some() {
+        if find_match_with_flags(id, event_flags).is_some() || find_match(id).is_some() {
+            return true;
+        }
+        // Shift (etc.) may live in keyboard state while the mouse event flags omit it.
+        if is_reserved_huge(id) {
             return true;
         }
         return false;

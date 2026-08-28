@@ -2,20 +2,21 @@ export {
   bearingDelta,
   pathBBox,
   pathLength,
-  pathTurning,
   resample,
-  sharpTurnCount,
-  simplifyGesturePath,
   startEndBearing,
 } from "./geometry";
 export {
-  normalizeGesturePreview,
-  normalizeGestureTemplate,
-  pathBendSignature,
+  extractGestureVector,
+  formatGestureVector,
+  gestureDisplayPoints,
+  matchGestureVector,
+  passesGestureVectorChecks,
+  quantizeDirection,
   rawPathLength,
-  significantCornerCount,
-} from "./template";
-export { matchGestureScore, passesShapeChecks } from "./match";
+  resolveGestureVector,
+  vectorToPreviewPoints,
+  type GestureVector,
+} from "./vector";
 export {
   appendCanvasPoint,
   clientToCanvasPoint,

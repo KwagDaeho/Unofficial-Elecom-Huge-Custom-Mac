@@ -105,3 +105,8 @@ pub fn chord_action_inject() -> bool {
 pub fn should_block_chord_modifier(_name: &str) -> bool {
     false
 }
+pub fn set_gesture_record_overlay_active(_active: bool) {}
+pub fn clear_gesture_record_overlay_stroke() {}
+pub fn append_gesture_record_cursor_point() {}
+pub fn append_gesture_record_screen_point(_x: f64, _y: f64) {}
+pub fn shutdown_gesture_record_overlay() {}

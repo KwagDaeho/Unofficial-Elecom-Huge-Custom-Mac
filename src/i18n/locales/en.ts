@@ -59,6 +59,7 @@ export const en = {
   customMappingTriggerButtonWaiting: "Press a HUGE button…",
   customMappingTriggerIncomplete:
     "Press a key chord first, then a HUGE button.",
+  customMappingTriggerReset: "Reset",
   gestureMapping: "Gesture mapping",
   gestureMappingAdd: "Add",
   gestureMappingHelp:
@@ -76,13 +77,14 @@ export const en = {
   gestureShapeSet: "Record gesture",
   gestureShapeRecorded: "Edit gesture",
   gestureShapeTitle: "Record gesture",
-  gestureShapeHint: "Drag on the canvas, or hold L and roll the trackball. (Esc: cancel)",
+  gestureShapeHint:
+    "Draw straight strokes in 8 directions (→ ↗ ↑ …). Drag on the canvas, or hold L and roll the trackball. (Esc: cancel)",
   gestureShapeRecording: "Drawing…",
-  gestureShapeTooShort: "Draw a longer stroke before saving.",
-  gestureShapePreview: "Self-match score: {score}%",
+  gestureShapeTooShort:
+    "Draw a longer stroke with clear direction changes before saving.",
   gestureShapePreviewHint: "Gesture preview",
   gestureRowActions: "Actions",
-  gestureShapeRedraw: "Redraw",
+  gestureShapeReset: "Reset",
   remove: "Remove",
   activatorTitle: "Set a key",
   activatorHint:

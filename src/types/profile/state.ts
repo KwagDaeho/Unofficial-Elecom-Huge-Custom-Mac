@@ -77,11 +77,9 @@ export type ProfileGestureMappingMutations = {
   updateHoldActivator: (entryId: string, holdActivator: Activator) => void;
   updateTemplate: (
     entryId: string,
-    template: GestureMappingEntry["template"],
-    templatePathLength?: number,
-    templatePreview?: GestureMappingEntry["templatePreview"],
-    templateCornerCount?: number,
-    templateBendSignature?: number,
+    templateDirections: number[],
+    templateSegmentLengths: number[],
+    templatePathLength: number,
   ) => void;
 };
 
