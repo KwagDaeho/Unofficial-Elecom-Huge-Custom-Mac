@@ -3,6 +3,7 @@
 mod action;
 mod keyboard;
 mod mouse;
+mod overlay_panel;
 mod pointer;
 mod cursor_badge;
 mod gesture_record_overlay;
