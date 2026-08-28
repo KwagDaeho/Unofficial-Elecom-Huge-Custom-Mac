@@ -78,10 +78,9 @@ export const en = {
   gestureShapeRecorded: "Edit gesture",
   gestureShapeTitle: "Record gesture",
   gestureShapeHint:
-    "Draw straight strokes in 8 directions (→ ↗ ↑ …). Drag on the canvas, or hold L and roll the trackball. (Esc: cancel)",
+    "Drag on the canvas or hold L and roll the trackball to draw a gesture. (Esc: cancel)",
   gestureShapeRecording: "Drawing…",
-  gestureShapeTooShort:
-    "Draw a longer stroke with clear direction changes before saving.",
+  gestureShapeTooShort: "Draw a longer gesture before saving.",
   gestureShapePreviewHint: "Gesture preview",
   gestureRowActions: "Actions",
   gestureShapeReset: "Reset",

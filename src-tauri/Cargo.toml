@@ -1,6 +1,6 @@
 [package]
 name = "elecom-huge"
-version = "1.3.2"
+version = "1.4.0"
 description = "Custom software for ELECOM HUGE trackball"
 authors = ["kwagdaeho"]
 edition = "2021"

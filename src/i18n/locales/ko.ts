@@ -76,10 +76,9 @@ export const ko = {
   gestureShapeRecorded: "제스처 수정",
   gestureShapeTitle: "제스처 등록",
   gestureShapeHint:
-    "8방향(→ ↗ ↑ …)으로 직선을 그리세요. 캔버스에서 드래그하거나, L + 트랙볼로 그리세요. (Esc: 취소)",
+    "캔버스에서 드래그하거나 L + 트랙볼로 제스처를 그리세요. (Esc: 취소)",
   gestureShapeRecording: "그리는 중…",
-  gestureShapeTooShort:
-    "방향이 분명하게 바뀌도록 더 길게 그린 뒤 저장하세요.",
+  gestureShapeTooShort: "제스처를 더 길게 그린 뒤 저장하세요.",
   gestureShapePreviewHint: "제스처 미리보기",
   gestureRowActions: "관리",
   gestureShapeReset: "초기화",

@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## [1.4.0] — 2026-08-28
+
+### Added
+
+- **Gesture $1 matching** — runtime recognition uses the [guessture](https://crates.io/crates/guessture) Unistroke matcher for scale-invariant path scoring; normalized point templates are stored from the canvas recorder.
+
+### Changed
+
+- **Gesture registration** — canvas recorder saves resampled/normalized templates; legacy 8-direction vector profiles still load for thumbnails and fallback matching.
+- **macOS gesture overlays** — shared panel setup for cursor badge and stroke overlay, higher window level for full-screen apps, start badge pinned at trigger.
+
+### Fixed
+
+- **Full-screen gesture feedback** — stroke and badge overlays remain visible above full-screen apps during gesture holds and recording.
+
 ## [1.3.2] — 2026-08-24
 
 ### Fixed
