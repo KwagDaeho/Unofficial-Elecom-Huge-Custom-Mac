@@ -6,13 +6,22 @@ export {
   startEndBearing,
 } from "./geometry";
 export {
+  DEFAULT_GESTURE_MIN_SCORE,
+  GESTURE_SQUARE_SIZE,
+  GESTURE_TEMPLATE_SIZE,
+  matchGestureScore,
+  MIN_RAW_PATH_LENGTH,
+  normalizeGesturePreview,
+  normalizeGestureTemplate,
+  rawPathLength,
+} from "./dollar";
+export {
   extractGestureVector,
   formatGestureVector,
   gestureDisplayPoints,
   matchGestureVector,
   passesGestureVectorChecks,
   quantizeDirection,
-  rawPathLength,
   resolveGestureVector,
   vectorToPreviewPoints,
   type GestureVector,

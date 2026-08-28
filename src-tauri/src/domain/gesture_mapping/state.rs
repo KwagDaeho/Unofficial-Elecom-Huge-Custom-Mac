@@ -6,10 +6,7 @@ use parking_lot::Mutex;
 use crate::domain::profile::{Activator, GestureMappingEntry, GesturePoint, PointerSettings, Profile};
 use crate::platform::inject;
 
-use super::vector::{
-    extract_gesture_vector, match_vector, passes_vector_checks, raw_path_length,
-    resolve_entry_vector, DEFAULT_GESTURE_MIN_SCORE, MIN_RAW_PATH_LENGTH, MIN_GESTURE_SEGMENTS,
-};
+use super::recognizer::{best_match, raw_path_length, MIN_RAW_PATH_LENGTH};
 
 static ENTRIES: Mutex<Vec<GestureMappingEntry>> = Mutex::new(Vec::new());
 static POINTER: Mutex<PointerSettings> = Mutex::new(PointerSettings {
@@ -175,30 +172,12 @@ pub fn record_motion(dx: f64, dy: f64) {
 }
 
 fn try_fire_match(session: GestureSession) {
-    let candidate = extract_gesture_vector(&session.points);
-    if candidate.directions.len() < MIN_GESTURE_SEGMENTS
-        || raw_path_length(&session.points) < MIN_RAW_PATH_LENGTH
-    {
+    if raw_path_length(&session.points) < MIN_RAW_PATH_LENGTH {
         return;
     }
 
     let candidates = entries_for_hold(&session.hold);
-    let mut best: Option<(&GestureMappingEntry, f64)> = None;
-    for entry in &candidates {
-        let template = resolve_entry_vector(entry);
-        if template.directions.is_empty() || !passes_vector_checks(&candidate, &template) {
-            continue;
-        }
-        let score = match_vector(&candidate, &template);
-        let threshold = entry.min_score.min(DEFAULT_GESTURE_MIN_SCORE);
-        if score < threshold {
-            continue;
-        }
-        if best.map(|(_, current)| score > current).unwrap_or(true) {
-            best = Some((entry, score));
-        }
-    }
-    let Some((entry, _score)) = best else {
+    let Some((entry, _score)) = best_match(&session.points, &candidates) else {
         return;
     };
     let pointer = POINTER.lock().clone();

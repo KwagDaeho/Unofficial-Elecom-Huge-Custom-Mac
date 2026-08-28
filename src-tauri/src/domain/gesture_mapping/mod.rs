@@ -1,3 +1,4 @@
+pub mod recognizer;
 mod state;
 pub mod vector;
 

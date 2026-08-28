@@ -229,6 +229,27 @@ pub fn vector_to_stroke_points(vector: &GestureVector, anchor: &GesturePoint) ->
     points
 }
 
+pub fn vector_to_preview_points(vector: &GestureVector, size: f64) -> Vec<GesturePoint> {
+    if vector.directions.is_empty() || vector.segment_lengths.is_empty() {
+        return Vec::new();
+    }
+    let origin = size / 2.0;
+    let draw_length = size * 0.76;
+    let mut x = origin;
+    let mut y = origin;
+    let mut points = vec![GesturePoint { x, y }];
+    for index in 0..vector.directions.len() {
+        let direction = vector.directions[index];
+        let ratio = vector.segment_lengths[index];
+        let (unit_x, unit_y) = direction_unit_vector(direction);
+        let length = ratio * draw_length;
+        x += unit_x * length;
+        y += unit_y * length;
+        points.push(GesturePoint { x, y });
+    }
+    points
+}
+
 pub fn gesture_display_points(raw: &[GesturePoint]) -> Vec<GesturePoint> {
     if raw.len() < 2 {
         return raw.to_vec();

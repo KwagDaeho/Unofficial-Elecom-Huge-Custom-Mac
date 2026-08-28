@@ -11,6 +11,7 @@ import type {
   ComboActivator,
   CustomMappingEntry,
   GestureMappingEntry,
+  GesturePoint,
   Profile,
 } from "./model";
 
@@ -77,9 +78,9 @@ export type ProfileGestureMappingMutations = {
   updateHoldActivator: (entryId: string, holdActivator: Activator) => void;
   updateTemplate: (
     entryId: string,
-    templateDirections: number[],
-    templateSegmentLengths: number[],
+    template: GesturePoint[],
     templatePathLength: number,
+    templatePreview: GesturePoint[],
   ) => void;
 };
 

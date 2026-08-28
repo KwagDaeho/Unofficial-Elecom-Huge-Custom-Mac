@@ -10,7 +10,7 @@ pub struct GesturePoint {
 }
 
 fn default_gesture_min_score() -> f64 {
-    0.62
+    0.72
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -43,8 +43,9 @@ impl GestureMappingEntry {
         if self.hold_activator.is_none() {
             return false;
         }
-        let vector = crate::domain::gesture_mapping::vector::resolve_entry_vector(self);
-        !vector.directions.is_empty()
-            && vector.total_length >= crate::domain::gesture_mapping::vector::MIN_RAW_PATH_LENGTH
+        let points = crate::domain::gesture_mapping::recognizer::resolve_template_points(self);
+        points.len() >= 2
+            && crate::domain::gesture_mapping::recognizer::raw_path_length(&points)
+                >= crate::domain::gesture_mapping::recognizer::MIN_RAW_PATH_LENGTH
     }
 }

@@ -30,6 +30,7 @@ import type {
   CustomMappingEntry,
   EditorMode,
   GestureMappingEntry,
+  GesturePoint,
   MappingTarget,
   Profile,
   ProfileMutateFn,
@@ -163,17 +164,17 @@ export const useProfileMutations = (
 
   const updateGestureTemplate = (
     entryId: string,
-    templateDirections: number[],
-    templateSegmentLengths: number[],
+    template: GesturePoint[],
     templatePathLength: number,
+    templatePreview: GesturePoint[],
   ) => {
     mutateProfile((loadedProfile) =>
       withGestureMappingTemplate(
         loadedProfile,
         entryId,
-        templateDirections,
-        templateSegmentLengths,
+        template,
         templatePathLength,
+        templatePreview,
       ),
     );
   };

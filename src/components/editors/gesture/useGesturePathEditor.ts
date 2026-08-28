@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { MIN_GESTURE_SEGMENTS, MIN_RAW_PATH_LENGTH } from "@/constants/gesture";
+import { MIN_RAW_PATH_LENGTH } from "@/constants/gesture";
 import {
-  extractGestureVector,
-  formatGestureVector,
+  matchGestureScore,
+  normalizeGesturePreview,
+  normalizeGestureTemplate,
   rawPathLength,
   subscribeGestureCanvasUiChange,
   type GestureDrawPhase,
@@ -19,7 +20,7 @@ interface UseGesturePathEditorOptions {
 }
 
 export const useGesturePathEditor = (options: UseGesturePathEditorOptions) => {
-  const { lang, i18n } = usePrefs();
+  const { i18n } = usePrefs();
   const { gestureMappings } = useProfileCtx();
   const { setEditor } = useEditor();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -44,10 +45,17 @@ export const useGesturePathEditor = (options: UseGesturePathEditorOptions) => {
 
   const isDrawing = drawPhase === "drawing";
   const strokeLocked = drawPhase === "done" && points.length > 0;
-  const vector = useMemo(() => extractGestureVector(points), [points]);
-  const pathOk =
-    rawPathLength(points) >= MIN_RAW_PATH_LENGTH &&
-    vector.directions.length >= MIN_GESTURE_SEGMENTS;
+  const pathOk = rawPathLength(points) >= MIN_RAW_PATH_LENGTH;
+  const normalizedTemplate = useMemo(
+    () => normalizeGestureTemplate(points),
+    [points],
+  );
+  const selfScore = useMemo(() => {
+    if (!pathOk || normalizedTemplate.length < 2) {
+      return null;
+    }
+    return matchGestureScore(points, normalizedTemplate);
+  }, [normalizedTemplate, pathOk, points]);
 
   const statusText = useMemo(() => {
     if (isDrawing) {
@@ -56,12 +64,11 @@ export const useGesturePathEditor = (options: UseGesturePathEditorOptions) => {
     if (!pathOk || points.length < 2) {
       return i18n.gestureShapeTooShort;
     }
-    return formatGestureVector(
-      vector.directions,
-      vector.segmentLengths,
-      lang,
-    );
-  }, [i18n, isDrawing, lang, pathOk, points.length, vector]);
+    if (selfScore === null) {
+      return i18n.gestureShapeRecorded;
+    }
+    return `${i18n.gestureShapeRecorded} · ${selfScore.toFixed(2)}`;
+  }, [i18n, isDrawing, pathOk, points.length, selfScore]);
 
   stopRef.current = stop;
 
@@ -87,19 +94,15 @@ export const useGesturePathEditor = (options: UseGesturePathEditorOptions) => {
 
   const saveTemplate = useCallback(() => {
     const committed = pointsRef.current;
-    const nextVector = extractGestureVector(committed);
-    if (
-      rawPathLength(committed) < MIN_RAW_PATH_LENGTH ||
-      drawPhase === "drawing" ||
-      nextVector.directions.length < MIN_GESTURE_SEGMENTS
-    ) {
+    if (rawPathLength(committed) < MIN_RAW_PATH_LENGTH || drawPhase === "drawing") {
       return;
     }
+    const template = normalizeGestureTemplate(committed);
     gestureMappings.updateTemplate(
       options.entryId,
-      nextVector.directions,
-      nextVector.segmentLengths,
-      nextVector.totalLength,
+      template,
+      rawPathLength(committed),
+      normalizeGesturePreview(committed),
     );
     setEditor(null);
   }, [drawPhase, gestureMappings, options.entryId, setEditor]);
